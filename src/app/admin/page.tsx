@@ -14,14 +14,15 @@ import Link from "next/link";
 import { 
   Users, 
   LayoutDashboard, 
-  Settings, 
   Image as ImageIcon, 
   ShieldAlert, 
   ShieldCheck,
   ArrowRight,
   Loader2,
   LogIn,
-  ClipboardList
+  ClipboardList,
+  Database,
+  CheckCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,6 +33,7 @@ export default function AdminDashboard() {
   const functions = useFunctions();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSeeding, setIsSeeding] = React.useState(false);
 
   const { data: userProfile, loading: profileLoading } = useDoc(
     db && user ? doc(db, "users", user.uid) : null
@@ -63,11 +65,25 @@ export default function AdminDashboard() {
     try {
       const bootstrapFunc = httpsCallable(functions, 'adminBootstrapMaster');
       await bootstrapFunc({});
-      toast({ title: "Success", description: "Master Admin initialized securely via Cloud Function." });
+      toast({ title: "Success", description: "Master Admin initialized securely." });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSeedData = async () => {
+    if (!functions) return;
+    setIsSeeding(true);
+    try {
+      const seedFunc = httpsCallable(functions, 'adminSeedInitialData');
+      await seedFunc({});
+      toast({ title: "System Seeded", description: "Initial front-end content has been loaded into Firestore." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Seeding Failed", description: err.message });
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -141,9 +157,31 @@ export default function AdminDashboard() {
       <Navbar />
       <main className="flex-grow py-12 bg-muted/10">
         <div className="container mx-auto px-4">
-          <div className="mb-10">
-            <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {user.displayName}. System is online.</p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back, {user.displayName}. Control center is active.</p>
+            </div>
+            
+            <Card className="bg-primary/5 border-primary/20 w-full md:w-auto">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <Database className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">System Status</div>
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-primary font-bold"
+                    onClick={handleSeedData}
+                    disabled={isSeeding}
+                  >
+                    {isSeeding ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <CheckCircle className="h-3 w-3 mr-2" />}
+                    Seed Initial Content
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

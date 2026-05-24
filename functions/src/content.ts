@@ -22,6 +22,87 @@ async function assertAdmin(request: CallableRequest) {
   return userId;
 }
 
+export const adminSeedInitialData = onCall(async (request: CallableRequest) => {
+  await assertAdmin(request);
+
+  const batch = db.batch();
+
+  // Hero Section
+  batch.set(db.collection('settings').doc('hero'), {
+    badge: "Leading Sanitation Partner in Rwanda",
+    title: "Transforming",
+    titleAccent: "Waste Into Opportunity",
+    description: "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
+    imageUrl: "https://picsum.photos/seed/sanex1/1200/800",
+    ctaText: "Book a Service",
+    ctaLink: "/book"
+  });
+
+  // Highlights Section
+  batch.set(db.collection('settings').doc('highlights'), {
+    items: [
+      { icon: "shield", title: "Licensed Since 2021", description: "Trusted by over 114 clients nationwide with verified operational standards." },
+      { icon: "cpu", title: "Advanced Technology", description: "Eco-friendly wastewater treatment systems using activated sludge technology." },
+      { icon: "globe", title: "Nationwide Coverage", description: "Serving urban and rural communities from Kigali to Musanze and Huye." }
+    ]
+  });
+
+  // Services Section
+  batch.set(db.collection('settings').doc('services'), {
+    title: "Comprehensive Liquid Waste Solutions",
+    subtitle: "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
+    items: [
+      { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600" },
+      { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600" },
+      { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" },
+      { title: "Sanitation Projects", description: "Collaborating with government and private organizations to promote public health.", icon: "users", imageUrl: "https://picsum.photos/seed/sanex6/800/600" }
+    ]
+  });
+
+  // Impact Section
+  batch.set(db.collection('settings').doc('impact'), {
+    title: "Impact Since Our Inception",
+    subtitle: "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
+    items: [
+      { title: "Environmental", icon: "leaf", points: ["Preventing pollutants from contaminating ecosystems", "Cleaner water sources via DWTS"] },
+      { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] },
+      { title: "Community", icon: "users", points: ["Directly created jobs for skilled workers", "Local capacity training programs"] }
+    ]
+  });
+
+  // Milestones Section
+  batch.set(db.collection('settings').doc('milestones'), {
+    title: "Who We Are",
+    description: "SANEX Company Ltd is dedicated to delivering comprehensive liquid waste management solutions across Rwanda...",
+    items: [
+      { year: "2017", title: "Founding", description: "Established to address liquid waste challenges.", icon: "clock" },
+      { year: "2021", title: "Licensing", description: "Achieved official transport licensing.", icon: "shield" },
+      { year: "2024", title: "Expansion", description: "Launched DWTS services nationwide.", icon: "rocket" }
+    ]
+  });
+
+  // Regional Section
+  batch.set(db.collection('settings').doc('regional'), {
+    title: "Regional Availability Portal",
+    description: "Establishing operational offices in key towns across Rwanda...",
+    items: [
+      { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },
+      { name: "Musanze", status: "Strategic Hub", capacity: "Service Center" },
+      { name: "Huye", status: "Planned Expansion", capacity: "Regional Office" }
+    ]
+  });
+
+  // Video Section
+  batch.set(db.collection('settings').doc('video'), {
+    title: "SANEX in Action",
+    description: "Watch our specialized vacuum trucks and decentralized treatment systems in action across Rwanda.",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+  });
+
+  await batch.commit();
+  return { success: true };
+});
+
 export const adminAddGalleryItem = onCall(async (request: CallableRequest) => {
   await assertAdmin(request);
   const { imageUrl, description } = request.data;
