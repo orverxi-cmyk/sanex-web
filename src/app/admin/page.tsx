@@ -13,8 +13,7 @@ import {
   setDoc, 
   query, 
   orderBy, 
-  serverTimestamp,
-  updateDoc
+  serverTimestamp 
 } from "firebase/firestore";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, 
   Plus, 
@@ -43,13 +43,13 @@ import {
 import Image from "next/image";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-
-const BOOTSTRAP_ADMIN = "orverxi@gmail.com";
+import { bootstrapMasterAdmin, updateUserRole } from "@/app/actions/admin";
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useUser();
   const { auth } = useAuth();
   const db = useFirestore();
+  const { toast } = useToast();
 
   const [photoUrl, setPhotoUrl] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -68,30 +68,33 @@ export default function AdminPage() {
     return query(collection(db, "users"), orderBy("lastLogin", "desc"));
   }, [db]);
 
-  const { data: photos, loading: photosLoading } = useCollection(galleryQuery);
-  const { data: registeredUsers, loading: usersLoading } = useCollection(usersQuery);
+  const { data: photos } = useCollection(galleryQuery);
+  const { data: registeredUsers } = useCollection(usersQuery);
   const { data: settings } = useDoc(db ? doc(db, "settings", "general") : null);
   const { data: userProfile, loading: profileLoading } = useDoc(db && user ? doc(db, "users", user.uid) : null);
 
-  // Handle bootstrap admin initialization
-  const handleBootstrapAdmin = () => {
-    if (!db || !user || user.email !== BOOTSTRAP_ADMIN) return;
+  const handleBootstrap = async () => {
+    if (!user) return;
     setIsSubmitting(true);
-    const userRef = doc(db, "users", user.uid);
-    setDoc(userRef, {
-      email: user.email,
-      displayName: user.displayName,
-      lastLogin: Date.now(),
-      role: "admin"
-    }, { merge: true })
-    .catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: userRef.path,
-        operation: 'update',
-        requestResourceData: { role: 'admin' },
-      }));
-    })
-    .finally(() => setIsSubmitting(false));
+    try {
+      await bootstrapMasterAdmin(user.uid, user.email!, user.displayName || "Admin");
+      toast({ title: "Success", description: "Master Admin initialized successfully." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleRole = async (targetUser: any) => {
+    if (!user) return;
+    const newRole = targetUser.role === "admin" ? "user" : "admin";
+    try {
+      await updateUserRole(user.uid, targetUser.id, newRole);
+      toast({ title: "Updated", description: `User role changed to ${newRole}.` });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Action Failed", description: err.message });
+    }
   };
 
   React.useEffect(() => {
@@ -150,12 +153,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleEdit = (photo: any) => {
-    setEditingId(photo.id);
-    setPhotoUrl(photo.imageUrl);
-    setDescription(photo.description);
-  };
-
   const handleDelete = (id: string) => {
     if (!db || !confirm("Are you sure?")) return;
     const docRef = doc(db, "gallery", id);
@@ -183,27 +180,6 @@ export default function AdminPage() {
       })
       .finally(() => setIsSubmitting(false));
   };
-
-  const toggleUserRole = (targetUser: any) => {
-    if (!db) return;
-    const newRole = targetUser.role === "admin" ? "user" : "admin";
-    if (targetUser.email === BOOTSTRAP_ADMIN) {
-      alert("Master administrator role cannot be altered.");
-      return;
-    }
-    const userRef = doc(db, "users", targetUser.id);
-    updateDoc(userRef, { role: newRole })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: userRef.path,
-          operation: 'update',
-          requestResourceData: { role: newRole },
-        }));
-      });
-  };
-
-  const isMaster = user?.email === BOOTSTRAP_ADMIN;
-  const isAuthorized = isMaster || userProfile?.role === "admin";
 
   if (authLoading || profileLoading) {
     return (
@@ -236,6 +212,8 @@ export default function AdminPage() {
     );
   }
 
+  const isAuthorized = userProfile?.role === "admin";
+
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -250,7 +228,10 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">Please contact the system administrator to request access.</p>
+              <p className="text-sm text-muted-foreground">If you are the owner, use the bootstrap option below if available.</p>
+              <Button onClick={handleBootstrap} variant="secondary" className="w-full gap-2" disabled={isSubmitting}>
+                <ShieldCheck className="h-4 w-4" /> Try Bootstrap Master Admin
+              </Button>
               <Button onClick={handleLogout} variant="outline" className="w-full">Sign Out</Button>
             </CardContent>
           </Card>
@@ -268,24 +249,17 @@ export default function AdminPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
               <h1 className="text-3xl font-bold font-headline">Admin Control Center</h1>
-              <p className="text-muted-foreground">Logged in as {user.displayName} ({userProfile?.role || (isMaster ? "Master Bootstrap" : "User")})</p>
+              <p className="text-muted-foreground">Logged in as {user.displayName} (Administrator)</p>
             </div>
-            <div className="flex gap-2">
-              {isMaster && !userProfile?.role && (
-                <Button onClick={handleBootstrapAdmin} variant="secondary" className="gap-2">
-                  <ShieldCheck className="h-4 w-4" /> Initialize Master Admin
-                </Button>
-              )}
-              <Button variant="destructive" onClick={handleLogout} className="gap-2">
-                <LogOut className="h-4 w-4" /> Sign Out
-              </Button>
-            </div>
+            <Button variant="destructive" onClick={handleLogout} className="gap-2">
+              <LogOut className="h-4 w-4" /> Sign Out
+            </Button>
           </div>
 
           <Tabs defaultValue="content" className="space-y-6">
             <TabsList className="bg-white border w-full lg:w-auto p-1 h-auto flex flex-wrap lg:inline-flex">
               <TabsTrigger value="content" className="flex-1 lg:flex-none gap-2 px-6 py-2.5">
-                <ImageIcon className="h-4 w-4" /> Content Management
+                <ImageIcon className="h-4 w-4" /> Content
               </TabsTrigger>
               <TabsTrigger value="users" className="flex-1 lg:flex-none gap-2 px-6 py-2.5">
                 <Users className="h-4 w-4" /> User Management
@@ -299,10 +273,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <Card className="lg:col-span-1 shadow-sm h-fit">
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      {editingId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                      {editingId ? "Edit Photo" : "Add Gallery Photo"}
-                    </CardTitle>
+                    <CardTitle className="text-lg">Add Gallery Photo</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleAddPhoto} className="space-y-4">
@@ -324,43 +295,28 @@ export default function AdminPage() {
                           required
                         />
                       </div>
-                      <div className="flex gap-2">
-                        <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                          {editingId ? "Update" : "Add Photo"}
-                        </Button>
-                        {editingId && (
-                          <Button variant="outline" onClick={() => {setEditingId(null); setPhotoUrl(""); setDescription("");}}>
-                            Cancel
-                          </Button>
-                        )}
-                      </div>
+                      <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {editingId ? "Update Photo" : "Add Photo"}
+                      </Button>
                     </form>
                   </CardContent>
                 </Card>
 
                 <Card className="lg:col-span-2 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Gallery Preview</CardTitle>
-                  </CardHeader>
+                  <CardHeader><CardTitle className="text-lg">Gallery Preview</CardTitle></CardHeader>
                   <CardContent>
                     <div className="grid gap-4">
                       {photos?.map((photo) => (
                         <div key={photo.id} className="flex gap-4 p-3 border rounded-lg items-center bg-white">
-                          <div className="relative h-16 w-16 rounded overflow-hidden flex-shrink-0">
+                          <div className="relative h-12 w-12 rounded overflow-hidden flex-shrink-0">
                             <Image src={photo.imageUrl} alt="" fill className="object-cover" />
                           </div>
                           <div className="flex-grow">
                             <p className="font-bold text-sm">{photo.description}</p>
-                            <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{photo.imageUrl}</p>
                           </div>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(photo)}>
-                              <Pencil className="h-4 w-4 text-primary" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(photo.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(photo.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
                       ))}
                     </div>
@@ -372,25 +328,22 @@ export default function AdminPage() {
             <TabsContent value="users">
               <Card className="shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" /> Role Management
-                  </CardTitle>
-                  <CardDescription>Admins can view and manage roles for other authenticated users. Changes are protected by server-side security rules.</CardDescription>
+                  <CardTitle>Role Management</CardTitle>
+                  <CardDescription>Change user roles. This is protected by server-side verification.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-muted text-muted-foreground">
+                      <thead className="bg-muted">
                         <tr>
                           <th className="px-4 py-3 text-left">User</th>
                           <th className="px-4 py-3 text-left">Role</th>
-                          <th className="px-4 py-3 text-left">Last Active</th>
                           <th className="px-4 py-3 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
                         {registeredUsers?.map((u) => (
-                          <tr key={u.id} className="hover:bg-muted/30">
+                          <tr key={u.id}>
                             <td className="px-4 py-3">
                               <div className="font-medium">{u.displayName}</div>
                               <div className="text-xs text-muted-foreground">{u.email}</div>
@@ -402,22 +355,14 @@ export default function AdminPage() {
                                 {u.role || "user"}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-xs text-muted-foreground">
-                              {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "N/A"}
-                            </td>
                             <td className="px-4 py-3 text-right">
                               <Button 
-                                variant={u.role === "admin" ? "outline" : "default"} 
+                                variant="outline" 
                                 size="sm" 
-                                className="h-8 gap-2"
-                                onClick={() => toggleUserRole(u)}
-                                disabled={u.email === BOOTSTRAP_ADMIN}
+                                onClick={() => handleToggleRole(u)}
+                                disabled={u.isMaster}
                               >
-                                {u.role === "admin" ? (
-                                  <><UserX className="h-3 w-3" /> Demote</>
-                                ) : (
-                                  <><UserCheck className="h-3 w-3" /> Promote</>
-                                )}
+                                {u.role === "admin" ? <><UserX className="h-3 w-3 mr-1" /> Demote</> : <><UserCheck className="h-3 w-3 mr-1" /> Promote</>}
                               </Button>
                             </td>
                           </tr>
@@ -431,11 +376,7 @@ export default function AdminPage() {
 
             <TabsContent value="settings">
               <Card className="max-w-xl shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Video className="h-4 w-4" /> Global Video Highlight
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="text-lg">Homepage Video</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label>YouTube Embed URL</Label>
@@ -448,11 +389,6 @@ export default function AdminPage() {
                   <Button onClick={handleUpdateVideo} className="w-full gap-2" disabled={isSubmitting}>
                     <Save className="h-4 w-4" /> Save Video URL
                   </Button>
-                  {videoUrl && (
-                    <div className="aspect-video mt-4 rounded-lg overflow-hidden border">
-                      <iframe src={videoUrl} className="w-full h-full" allowFullScreen></iframe>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </TabsContent>
