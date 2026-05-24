@@ -5,7 +5,6 @@ import { Services } from "@/components/sections/Services";
 import { ImpactDashboard } from "@/components/sections/ImpactDashboard";
 import { MilestoneTracker } from "@/components/sections/MilestoneTracker";
 import { RegionalPortal } from "@/components/sections/RegionalPortal";
-import { PartnershipsDirectory } from "@/components/sections/PartnershipsDirectory";
 import { Footer } from "@/components/sections/Footer";
 
 export default function Home() {
@@ -19,7 +18,6 @@ export default function Home() {
         <ImpactDashboard />
         <MilestoneTracker />
         <RegionalPortal />
-        <PartnershipsDirectory />
       </main>
       <Footer />
     </div>

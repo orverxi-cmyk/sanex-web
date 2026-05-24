@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { Droplets, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
 
@@ -35,8 +34,8 @@ export function Footer() {
             <ul className="space-y-4">
               <li><Link href="#about" className="text-primary-foreground/70 hover:text-white transition-colors">About Our Journey</Link></li>
               <li><Link href="#services" className="text-primary-foreground/70 hover:text-white transition-colors">Our Solutions</Link></li>
-              <li><Link href="#projects" className="text-primary-foreground/70 hover:text-white transition-colors">Featured Projects</Link></li>
-              <li><Link href="#insights" className="text-primary-foreground/70 hover:text-white transition-colors">News & Insights</Link></li>
+              <li><Link href="#impact" className="text-primary-foreground/70 hover:text-white transition-colors">Our Impact</Link></li>
+              <li><Link href="#contact" className="text-primary-foreground/70 hover:text-white transition-colors">Contact Us</Link></li>
             </ul>
           </div>
 
