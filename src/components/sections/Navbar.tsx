@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -27,8 +26,8 @@ export function Navbar() {
             <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
             <Link href="#about" className="text-sm font-medium hover:text-primary transition-colors">About Us</Link>
             <Link href="#services" className="text-sm font-medium hover:text-primary transition-colors">Services</Link>
+            <Link href="#impact" className="text-sm font-medium hover:text-primary transition-colors">Impact</Link>
             <Link href="#projects" className="text-sm font-medium hover:text-primary transition-colors">Projects</Link>
-            <Link href="#insights" className="text-sm font-medium hover:text-primary transition-colors">Insights</Link>
             <Link href="#contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
             <Button size="sm" className="bg-secondary hover:bg-secondary/90">Get a Quote</Button>
           </div>
@@ -51,6 +50,7 @@ export function Navbar() {
             <Link href="/" onClick={() => setIsOpen(false)} className="text-lg font-medium">Home</Link>
             <Link href="#about" onClick={() => setIsOpen(false)} className="text-lg font-medium">About Us</Link>
             <Link href="#services" onClick={() => setIsOpen(false)} className="text-lg font-medium">Services</Link>
+            <Link href="#impact" onClick={() => setIsOpen(false)} className="text-lg font-medium">Impact</Link>
             <Link href="#projects" onClick={() => setIsOpen(false)} className="text-lg font-medium">Projects</Link>
             <Link href="#contact" onClick={() => setIsOpen(false)} className="text-lg font-medium">Contact</Link>
             <Button className="w-full bg-secondary">Get a Quote</Button>
