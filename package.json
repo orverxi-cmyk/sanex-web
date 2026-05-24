@@ -14,6 +14,8 @@
     "deploy:functions": "npm run build:functions && firebase deploy --only functions --project studio-9595184890-5bb3c"
   },
   "dependencies": {
+    "@genkit-ai/core": "^1.35.0",
+    "@genkit-ai/firebase": "^1.35.0",
     "@genkit-ai/google-genai": "^1.30.0",
     "@hookform/resolvers": "^4.1.3",
     "@radix-ui/react-accordion": "^1.2.3",
@@ -45,9 +47,9 @@
     "firebase": "^11.9.1",
     "firebase-admin": "^13.10.0",
     "firebase-functions": "^6.3.0",
-    "genkit": "^1.30.0",
+    "genkit": "^1.35.0",
     "lucide-react": "^0.475.0",
-    "next": "^15.1.7",
+    "next": "15.1.6",
     "patch-package": "^8.0.0",
     "react": "^19.0.0",
     "react-day-picker": "^9.11.3",
