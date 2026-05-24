@@ -35,6 +35,26 @@
           "description": "URL for the homepage highlight video."
         }
       }
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "User metadata and permissions.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"]
+        },
+        "lastLogin": {
+          "type": "number"
+        }
+      }
     }
   },
   "auth": {
@@ -50,6 +70,10 @@
     "/settings/general": {
       "schema": "#/entities/SiteSettings",
       "description": "General site configuration."
+    },
+    "/users/{userId}": {
+      "schema": "#/entities/User",
+      "description": "Stored user permissions and profile data."
     }
   }
 }

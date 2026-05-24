@@ -13,13 +13,15 @@ import {
   setDoc, 
   query, 
   orderBy, 
-  serverTimestamp 
+  serverTimestamp,
+  updateDoc
 } from "firebase/firestore";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Loader2, 
   Plus, 
@@ -31,17 +33,15 @@ import {
   Save,
   Pencil,
   LayoutDashboard,
-  ShieldAlert
+  ShieldAlert,
+  Users,
+  Settings,
+  UserCheck,
+  UserX
 } from "lucide-react";
 import Image from "next/image";
 
-/**
- * AUTHORIZED ADMIN EMAILS
- * Add your email address here to gain access to the dashboard.
- */
-const AUTHORIZED_EMAILS = [
-  "admin@example.com", // Replace with your actual Google email
-];
+const BOOTSTRAP_ADMIN = "orverxi@gmail.com";
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useUser();
@@ -54,13 +54,35 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
+  // Firestore Queries
   const galleryQuery = React.useMemo(() => {
     if (!db) return null;
     return query(collection(db, "gallery"), orderBy("createdAt", "desc"));
   }, [db]);
 
+  const usersQuery = React.useMemo(() => {
+    if (!db) return null;
+    return query(collection(db, "users"), orderBy("lastLogin", "desc"));
+  }, [db]);
+
   const { data: photos, loading: photosLoading } = useCollection(galleryQuery);
+  const { data: registeredUsers, loading: usersLoading } = useCollection(usersQuery);
   const { data: settings } = useDoc(db ? doc(db, "settings", "general") : null);
+  const { data: userProfile, loading: profileLoading } = useDoc(db && user ? doc(db, "users", user.uid) : null);
+
+  // Sync user profile and check role
+  React.useEffect(() => {
+    if (db && user) {
+      const userRef = doc(db, "users", user.uid);
+      setDoc(userRef, {
+        email: user.email,
+        displayName: user.displayName,
+        lastLogin: Date.now(),
+        // Initial admin gets the role automatically if they are the bootstrap email
+        ...(user.email === BOOTSTRAP_ADMIN ? { role: "admin" } : {})
+      }, { merge: true });
+    }
+  }, [db, user]);
 
   React.useEffect(() => {
     if (settings?.heroVideoUrl) setVideoUrl(settings.heroVideoUrl);
@@ -110,7 +132,6 @@ export default function AdminPage() {
     setEditingId(photo.id);
     setPhotoUrl(photo.imageUrl);
     setDescription(photo.description);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -133,7 +154,19 @@ export default function AdminPage() {
     }
   };
 
-  if (authLoading) {
+  const toggleUserRole = async (targetUser: any) => {
+    if (!db) return;
+    const newRole = targetUser.role === "admin" ? "user" : "admin";
+    if (targetUser.email === BOOTSTRAP_ADMIN && newRole === "user") {
+      alert("Bootstrap admin role cannot be removed.");
+      return;
+    }
+    await updateDoc(doc(db, "users", targetUser.id), { role: newRole });
+  };
+
+  const isAuthorized = user?.email === BOOTSTRAP_ADMIN || userProfile?.role === "admin";
+
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -141,27 +174,21 @@ export default function AdminPage() {
     );
   }
 
-  // Not Logged In State
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4">
-          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
-            <CardHeader className="text-center space-y-2">
-              <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-2">
-                <LayoutDashboard className="h-8 w-8 text-primary" />
-              </div>
-              <CardTitle className="text-2xl font-headline">Admin Access</CardTitle>
-              <CardDescription>Secure login for SANEX Content Management</CardDescription>
+          <Card className="w-full max-w-md shadow-xl">
+            <CardHeader className="text-center">
+              <LayoutDashboard className="mx-auto h-12 w-12 text-primary mb-2" />
+              <CardTitle>Admin Access</CardTitle>
+              <CardDescription>Secure login for SANEX dashboard</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleLogin} className="w-full gap-3 h-12 text-lg">
-                <LogIn className="h-5 w-5" /> Sign in with Google
+              <Button onClick={handleLogin} className="w-full gap-2">
+                <LogIn className="h-4 w-4" /> Sign in with Google
               </Button>
-              <p className="mt-6 text-xs text-center text-muted-foreground">
-                Authorized personnel only. Access is monitored and recorded.
-              </p>
             </CardContent>
           </Card>
         </main>
@@ -170,29 +197,22 @@ export default function AdminPage() {
     );
   }
 
-  // Logged In but Not Authorized State
-  if (user && !AUTHORIZED_EMAILS.includes(user.email || "")) {
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4">
           <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive">
-            <CardHeader className="text-center space-y-2">
-              <div className="mx-auto bg-destructive/10 w-16 h-16 rounded-full flex items-center justify-center mb-2">
-                <ShieldAlert className="h-8 w-8 text-destructive" />
-              </div>
-              <CardTitle className="text-2xl font-headline text-destructive">Access Denied</CardTitle>
+            <CardHeader className="text-center">
+              <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-2" />
+              <CardTitle>Access Denied</CardTitle>
               <CardDescription>
-                Your account <strong>{user.email}</strong> is not authorized to access this dashboard.
+                Account <strong>{user.email}</strong> is not an authorized administrator.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-center text-muted-foreground">
-                If you believe this is an error, please contact the system administrator to whitelist your email address.
-              </p>
-              <Button onClick={handleLogout} variant="outline" className="w-full gap-2">
-                <LogOut className="h-4 w-4" /> Sign Out
-              </Button>
+            <CardContent className="text-center space-y-4">
+              <p className="text-sm text-muted-foreground">Please contact the system administrator to request access.</p>
+              <Button onClick={handleLogout} variant="outline" className="w-full">Sign Out</Button>
             </CardContent>
           </Card>
         </main>
@@ -201,169 +221,196 @@ export default function AdminPage() {
     );
   }
 
-  // Authorized Admin State
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow py-12 bg-muted/10">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back, {user.displayName}</p>
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-10">
+            <div>
+              <h1 className="text-3xl font-bold font-headline">Admin Control Center</h1>
+              <p className="text-muted-foreground">Logged in as {user.displayName} ({userProfile?.role || "Bootstrap Admin"})</p>
             </div>
-            <Button variant="outline" onClick={handleLogout} className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-white">
+            <Button variant="destructive" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" /> Sign Out
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    {editingId ? <Pencil className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5 text-primary" />}
-                    {editingId ? "Edit Photo Information" : "Add New Gallery Photo"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleAddPhoto} className="space-y-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="photoUrl">Image URL</Label>
-                      <Input 
-                        id="photoUrl"
-                        placeholder="https://images.unsplash.com/..." 
-                        value={photoUrl}
-                        onChange={(e) => setPhotoUrl(e.target.value)}
-                        required
-                        className="h-11"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="desc">Photo Description</Label>
-                      <Input 
-                        id="desc"
-                        placeholder="e.g. SANEX truck servicing a school in Musanze" 
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        className="h-11"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <Button type="submit" className="flex-1 gap-2 h-11" disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        {editingId ? "Update Entry" : "Add to Gallery"}
-                      </Button>
-                      {editingId && (
-                        <Button variant="outline" className="h-11" onClick={() => { setEditingId(null); setPhotoUrl(""); setDescription(""); }}>
-                          Cancel
+          <Tabs defaultValue="content" className="space-y-6">
+            <TabsList className="bg-white border w-full lg:w-auto p-1 h-auto flex flex-wrap lg:inline-flex">
+              <TabsTrigger value="content" className="flex-1 lg:flex-none gap-2 px-6 py-2.5">
+                <ImageIcon className="h-4 w-4" /> Content Management
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex-1 lg:flex-none gap-2 px-6 py-2.5">
+                <Users className="h-4 w-4" /> User Management
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex-1 lg:flex-none gap-2 px-6 py-2.5">
+                <Settings className="h-4 w-4" /> Site Settings
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="content" className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="lg:col-span-1 shadow-sm h-fit">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {editingId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {editingId ? "Edit Photo" : "Add Gallery Photo"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddPhoto} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Image URL</Label>
+                        <Input 
+                          placeholder="https://..." 
+                          value={photoUrl}
+                          onChange={(e) => setPhotoUrl(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Input 
+                          placeholder="Short caption..." 
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                          {editingId ? "Update" : "Add Photo"}
                         </Button>
-                      )}
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+                        {editingId && (
+                          <Button variant="outline" onClick={() => {setEditingId(null); setPhotoUrl(""); setDescription("");}}>
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
 
+                <Card className="lg:col-span-2 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Gallery Preview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      {photos?.map((photo) => (
+                        <div key={photo.id} className="flex gap-4 p-3 border rounded-lg items-center bg-white">
+                          <div className="relative h-16 w-16 rounded overflow-hidden flex-shrink-0">
+                            <Image src={photo.imageUrl} alt="" fill className="object-cover" />
+                          </div>
+                          <div className="flex-grow">
+                            <p className="font-bold text-sm">{photo.description}</p>
+                            <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{photo.imageUrl}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => handleEdit(photo)}>
+                              <Pencil className="h-4 w-4 text-primary" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(photo.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="users">
               <Card className="shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <ImageIcon className="h-5 w-5 text-primary" /> Current Gallery ({photos?.length || 0})
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" /> Authorized Personnel
                   </CardTitle>
+                  <CardDescription>Grant or revoke admin permissions for users who have logged in.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {photosLoading ? (
-                    <div className="flex justify-center p-12"><Loader2 className="animate-spin text-primary h-8 w-8" /></div>
-                  ) : (
-                    <div className="grid gap-4">
-                      {photos && photos.length > 0 ? (
-                        photos.map((photo) => (
-                          <div key={photo.id} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-xl bg-white hover:border-primary/50 transition-all shadow-sm">
-                            <div className="relative h-24 w-full sm:w-32 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                              <Image src={photo.imageUrl} alt="" fill className="object-cover" />
-                            </div>
-                            <div className="flex-grow space-y-1">
-                              <p className="font-bold text-lg leading-tight">{photo.description}</p>
-                              <p className="text-xs text-muted-foreground break-all">{photo.imageUrl}</p>
-                            </div>
-                            <div className="flex sm:flex-col gap-2 justify-end sm:justify-start">
-                              <Button variant="ghost" size="icon" className="h-10 w-10 text-primary bg-primary/5 hover:bg-primary hover:text-white" onClick={() => handleEdit(photo)}>
-                                <Pencil className="h-4 w-4" />
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted text-muted-foreground">
+                        <tr>
+                          <th className="px-4 py-3 text-left">User</th>
+                          <th className="px-4 py-3 text-left">Role</th>
+                          <th className="px-4 py-3 text-left">Last Active</th>
+                          <th className="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {registeredUsers?.map((u) => (
+                          <tr key={u.id} className="hover:bg-muted/30">
+                            <td className="px-4 py-3">
+                              <div className="font-medium">{u.displayName}</div>
+                              <div className="text-xs text-muted-foreground">{u.email}</div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                              }`}>
+                                {u.role || "user"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-muted-foreground">
+                              {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button 
+                                variant={u.role === "admin" ? "outline" : "default"} 
+                                size="sm" 
+                                className="h-8 gap-2"
+                                onClick={() => toggleUserRole(u)}
+                                disabled={u.email === BOOTSTRAP_ADMIN}
+                              >
+                                {u.role === "admin" ? (
+                                  <><UserX className="h-3 w-3" /> Demote</>
+                                ) : (
+                                  <><UserCheck className="h-3 w-3" /> Promote</>
+                                )}
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive bg-destructive/5 hover:bg-destructive hover:text-white" onClick={() => handleDelete(photo.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-12 text-muted-foreground italic">
-                          No photos in the gallery yet. Add one above!
-                        </div>
-                      )}
-                    </div>
-                  )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </CardContent>
               </Card>
-            </div>
+            </TabsContent>
 
-            <div className="space-y-8">
-              <Card className="shadow-sm border-l-4 border-l-secondary">
+            <TabsContent value="settings">
+              <Card className="max-w-xl shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Video className="h-5 w-5 text-secondary" /> Highlight Video
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Video className="h-4 w-4" /> Global Video Highlight
                   </CardTitle>
-                  <CardDescription>Update the main operational video on the homepage</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="vidUrl">YouTube Embed URL</Label>
+                    <Label>YouTube Embed URL</Label>
                     <Input 
-                      id="vidUrl"
                       placeholder="https://www.youtube.com/embed/..." 
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
-                      className="h-11"
                     />
                   </div>
-                  <Button onClick={handleUpdateVideo} className="w-full gap-2 h-11 bg-secondary hover:bg-secondary/90" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="h-4 w-4" />} Update Global Video
+                  <Button onClick={handleUpdateVideo} className="w-full gap-2" disabled={isSubmitting}>
+                    <Save className="h-4 w-4" /> Save Video URL
                   </Button>
-
                   {videoUrl && (
-                    <div className="mt-4 aspect-video rounded-xl overflow-hidden bg-black border-2 border-secondary/20 shadow-inner">
-                      <iframe 
-                        src={videoUrl} 
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
+                    <div className="aspect-video mt-4 rounded-lg overflow-hidden border">
+                      <iframe src={videoUrl} className="w-full h-full" allowFullScreen></iframe>
                     </div>
                   )}
                 </CardContent>
               </Card>
-
-              <Card className="bg-primary text-primary-foreground shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">System Status</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center text-sm border-b border-white/20 pb-2">
-                    <span>Database Connection</span>
-                    <span className="flex items-center gap-1 font-bold"><span className="h-2 w-2 rounded-full bg-green-400"></span> Active</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm border-b border-white/20 pb-2">
-                    <span>Auth Service</span>
-                    <span className="flex items-center gap-1 font-bold"><span className="h-2 w-2 rounded-full bg-green-400"></span> Active</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span>Admin User</span>
-                    <span className="font-bold truncate max-w-[120px]">{user.email}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       <Footer />
