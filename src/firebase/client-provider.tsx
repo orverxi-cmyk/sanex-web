@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -21,6 +20,7 @@ export const FirebaseClientProvider: React.FC<{ children: React.ReactNode }> = (
       firebaseApp={services.firebaseApp}
       firestore={services.firestore}
       auth={services.auth}
+      functions={services.functions}
     >
       <FirebaseErrorListener />
       {children}
