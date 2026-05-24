@@ -43,7 +43,7 @@ export function Footer() {
             <h4 className="text-lg font-bold font-headline uppercase tracking-wider text-secondary">Services</h4>
             <ul className="space-y-4">
               <li><span className="text-primary-foreground/70">Liquid Waste Collection and Transport</span></li>
-              <li><span className="text-primary-foreground/70">DWTS Installation</span></li>
+              <li><span className="text-primary-foreground/70">Installation of Decentralized Wastewater Treatment Systems (DWTS)</span></li>
               <li><span className="text-primary-foreground/70">Quarterly Maintenance</span></li>
               <li><span className="text-primary-foreground/70">Expert Consultancy</span></li>
             </ul>

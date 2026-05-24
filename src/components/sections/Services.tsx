@@ -14,7 +14,7 @@ export function Services() {
     },
     {
       id: "dwts",
-      title: "2. Installation of Decentralized Wastewater Treatment Systems (DWTS)",
+      title: "Installation of Decentralized Wastewater Treatment Systems (DWTS)",
       description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.",
       image: PlaceHolderImages.find(img => img.id === "dwts-system"),
       icon: <Droplets className="h-6 w-6" />
