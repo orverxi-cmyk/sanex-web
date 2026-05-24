@@ -37,7 +37,8 @@ import {
   Users,
   Settings,
   UserCheck,
-  UserX
+  UserX,
+  ShieldCheck
 } from "lucide-react";
 import Image from "next/image";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -72,27 +73,26 @@ export default function AdminPage() {
   const { data: settings } = useDoc(db ? doc(db, "settings", "general") : null);
   const { data: userProfile, loading: profileLoading } = useDoc(db && user ? doc(db, "users", user.uid) : null);
 
-  // Sync user profile and check role
-  React.useEffect(() => {
-    if (db && user) {
-      const userRef = doc(db, "users", user.uid);
-      setDoc(userRef, {
-        email: user.email,
-        displayName: user.displayName,
-        lastLogin: Date.now(),
-        // Initial admin gets the role automatically if they are the bootstrap email
-        ...(user.email === BOOTSTRAP_ADMIN ? { role: "admin" } : {})
-      }, { merge: true })
-      .catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-          path: userRef.path,
-          operation: 'update',
-          requestResourceData: { email: user.email, role: 'admin' },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
-    }
-  }, [db, user]);
+  // Handle bootstrap admin initialization
+  const handleBootstrapAdmin = () => {
+    if (!db || !user || user.email !== BOOTSTRAP_ADMIN) return;
+    setIsSubmitting(true);
+    const userRef = doc(db, "users", user.uid);
+    setDoc(userRef, {
+      email: user.email,
+      displayName: user.displayName,
+      lastLogin: Date.now(),
+      role: "admin"
+    }, { merge: true })
+    .catch(async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'update',
+        requestResourceData: { role: 'admin' },
+      }));
+    })
+    .finally(() => setIsSubmitting(false));
+  };
 
   React.useEffect(() => {
     if (settings?.heroVideoUrl) setVideoUrl(settings.heroVideoUrl);
@@ -187,8 +187,8 @@ export default function AdminPage() {
   const toggleUserRole = (targetUser: any) => {
     if (!db) return;
     const newRole = targetUser.role === "admin" ? "user" : "admin";
-    if (targetUser.email === BOOTSTRAP_ADMIN && newRole === "user") {
-      alert("Bootstrap admin role cannot be removed.");
+    if (targetUser.email === BOOTSTRAP_ADMIN) {
+      alert("Master administrator role cannot be altered.");
       return;
     }
     const userRef = doc(db, "users", targetUser.id);
@@ -202,7 +202,8 @@ export default function AdminPage() {
       });
   };
 
-  const isAuthorized = user?.email === BOOTSTRAP_ADMIN || userProfile?.role === "admin";
+  const isMaster = user?.email === BOOTSTRAP_ADMIN;
+  const isAuthorized = isMaster || userProfile?.role === "admin";
 
   if (authLoading || profileLoading) {
     return (
@@ -264,14 +265,21 @@ export default function AdminPage() {
       <Navbar />
       <main className="flex-grow py-12 bg-muted/10">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
               <h1 className="text-3xl font-bold font-headline">Admin Control Center</h1>
-              <p className="text-muted-foreground">Logged in as {user.displayName} ({userProfile?.role || "Bootstrap Admin"})</p>
+              <p className="text-muted-foreground">Logged in as {user.displayName} ({userProfile?.role || (isMaster ? "Master Bootstrap" : "User")})</p>
             </div>
-            <Button variant="destructive" onClick={handleLogout} className="gap-2">
-              <LogOut className="h-4 w-4" /> Sign Out
-            </Button>
+            <div className="flex gap-2">
+              {isMaster && !userProfile?.role && (
+                <Button onClick={handleBootstrapAdmin} variant="secondary" className="gap-2">
+                  <ShieldCheck className="h-4 w-4" /> Initialize Master Admin
+                </Button>
+              )}
+              <Button variant="destructive" onClick={handleLogout} className="gap-2">
+                <LogOut className="h-4 w-4" /> Sign Out
+              </Button>
+            </div>
           </div>
 
           <Tabs defaultValue="content" className="space-y-6">
@@ -365,9 +373,9 @@ export default function AdminPage() {
               <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" /> Authorized Personnel
+                    <Users className="h-5 w-5" /> Role Management
                   </CardTitle>
-                  <CardDescription>Grant or revoke admin permissions for users who have logged in.</CardDescription>
+                  <CardDescription>Admins can view and manage roles for other authenticated users. Changes are protected by server-side security rules.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="border rounded-lg overflow-hidden">
