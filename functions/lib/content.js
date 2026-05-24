@@ -34,34 +34,34 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminUpdateBookingStatus = exports.createBooking = exports.adminUpdateHeroVideo = exports.adminUpdateGalleryItem = exports.adminDeleteGalleryItem = exports.adminAddGalleryItem = void 0;
-const functions = __importStar(require("firebase-functions"));
+const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
 /**
  * Helper to verify admin privileges.
  */
-async function assertAdmin(context) {
+async function assertAdmin(request) {
     var _a;
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+    if (!request.auth) {
+        throw new https_1.HttpsError('unauthenticated', 'User must be logged in.');
     }
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const userDoc = await db.collection('users').doc(userId).get();
     const isAdmin = userDoc.exists && ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role) === 'admin';
-    const hasAdminClaim = context.auth.token.admin === true;
+    const hasAdminClaim = request.auth.token.admin === true;
     if (!isAdmin && !hasAdminClaim) {
-        throw new functions.https.HttpsError('permission-denied', 'Only admins can perform this action.');
+        throw new https_1.HttpsError('permission-denied', 'Only admins can perform this action.');
     }
     return userId;
 }
-exports.adminAddGalleryItem = functions.https.onCall(async (data, context) => {
-    await assertAdmin(context);
-    const { imageUrl, description } = data;
+exports.adminAddGalleryItem = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { imageUrl, description } = request.data;
     if (!imageUrl || !description)
-        throw new functions.https.HttpsError('invalid-argument', 'Missing fields.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing fields.');
     const urlPattern = /^https?:\/\/.+/;
     if (!urlPattern.test(imageUrl))
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid image URL.');
+        throw new https_1.HttpsError('invalid-argument', 'Invalid image URL.');
     const newItem = {
         imageUrl,
         description: description.trim(),
@@ -70,19 +70,19 @@ exports.adminAddGalleryItem = functions.https.onCall(async (data, context) => {
     const ref = await db.collection('gallery').add(newItem);
     return Object.assign({ id: ref.id }, newItem);
 });
-exports.adminDeleteGalleryItem = functions.https.onCall(async (data, context) => {
-    await assertAdmin(context);
-    const { id } = data;
+exports.adminDeleteGalleryItem = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { id } = request.data;
     if (!id)
-        throw new functions.https.HttpsError('invalid-argument', 'Missing id.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing id.');
     await db.collection('gallery').doc(id).delete();
     return { success: true };
 });
-exports.adminUpdateGalleryItem = functions.https.onCall(async (data, context) => {
-    await assertAdmin(context);
-    const { id, imageUrl, description } = data;
+exports.adminUpdateGalleryItem = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { id, imageUrl, description } = request.data;
     if (!id || !imageUrl || !description)
-        throw new functions.https.HttpsError('invalid-argument', 'Missing fields.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing fields.');
     const updateData = {
         imageUrl,
         description: description.trim(),
@@ -91,21 +91,21 @@ exports.adminUpdateGalleryItem = functions.https.onCall(async (data, context) =>
     await db.collection('gallery').doc(id).update(updateData);
     return Object.assign({ id }, updateData);
 });
-exports.adminUpdateHeroVideo = functions.https.onCall(async (data, context) => {
-    await assertAdmin(context);
-    const { videoUrl } = data;
+exports.adminUpdateHeroVideo = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { videoUrl } = request.data;
     if (!videoUrl)
-        throw new functions.https.HttpsError('invalid-argument', 'Missing video URL.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing video URL.');
     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/embed\/|youtu\.be\/)[\w-]+/;
     if (!youtubeRegex.test(videoUrl))
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid YouTube embed URL.');
+        throw new https_1.HttpsError('invalid-argument', 'Invalid YouTube embed URL.');
     await db.collection('settings').doc('general').set({ heroVideoUrl: videoUrl }, { merge: true });
     return { success: true };
 });
-exports.createBooking = functions.https.onCall(async (data) => {
-    const { customerName, email, phone, serviceType, locationUrl, description } = data;
+exports.createBooking = (0, https_1.onCall)(async (request) => {
+    const { customerName, email, phone, serviceType, locationUrl, description } = request.data;
     if (!customerName || !email || !phone || !serviceType || !locationUrl) {
-        throw new functions.https.HttpsError('invalid-argument', 'Missing required booking fields, including location.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing required booking fields, including location.');
     }
     const booking = {
         customerName,
@@ -120,11 +120,11 @@ exports.createBooking = functions.https.onCall(async (data) => {
     const ref = await db.collection('bookings').add(booking);
     return { id: ref.id };
 });
-exports.adminUpdateBookingStatus = functions.https.onCall(async (data, context) => {
-    await assertAdmin(context);
-    const { bookingId, status } = data;
+exports.adminUpdateBookingStatus = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { bookingId, status } = request.data;
     if (!bookingId || !status)
-        throw new functions.https.HttpsError('invalid-argument', 'Missing bookingId or status.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing bookingId or status.');
     await db.collection('bookings').doc(bookingId).update({ status });
     return { success: true };
 });

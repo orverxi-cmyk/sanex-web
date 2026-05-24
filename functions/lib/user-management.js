@@ -34,61 +34,60 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminBootstrapMaster = exports.adminUpdateUserRole = void 0;
-const functions = __importStar(require("firebase-functions"));
+const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
 /**
  * Helper to verify admin privileges.
  */
-async function assertAdmin(context) {
+async function assertAdmin(request) {
     var _a;
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+    if (!request.auth) {
+        throw new https_1.HttpsError('unauthenticated', 'User must be logged in.');
     }
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const userDoc = await db.collection('users').doc(userId).get();
     const isAdmin = userDoc.exists && ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role) === 'admin';
-    const hasAdminClaim = context.auth.token.admin === true;
+    const hasAdminClaim = request.auth.token.admin === true;
     if (!isAdmin && !hasAdminClaim) {
-        throw new functions.https.HttpsError('permission-denied', 'Only admins can perform this action.');
+        throw new https_1.HttpsError('permission-denied', 'Only admins can perform this action.');
     }
     return userId;
 }
-exports.adminUpdateUserRole = functions.https.onCall(async (data, context) => {
-    var _a, _b;
-    const callerUid = await assertAdmin(context);
-    const { targetUserId, newRole } = data;
+exports.adminUpdateUserRole = (0, https_1.onCall)(async (request) => {
+    var _a;
+    const callerUid = await assertAdmin(request);
+    const { targetUserId, newRole } = request.data;
     if (!targetUserId || !newRole)
-        throw new functions.https.HttpsError('invalid-argument', 'Missing userId or role.');
+        throw new https_1.HttpsError('invalid-argument', 'Missing userId or role.');
     if (newRole !== 'admin' && newRole !== 'user')
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid role.');
+        throw new https_1.HttpsError('invalid-argument', 'Invalid role.');
     if (targetUserId === callerUid) {
-        throw new functions.https.HttpsError('failed-precondition', 'You cannot change your own role.');
+        throw new https_1.HttpsError('failed-precondition', 'You cannot change your own role.');
     }
-    const masterEmail = (_a = functions.config().admin) === null || _a === void 0 ? void 0 : _a.master_email;
-    if (masterEmail) {
-        const targetUserDoc = await db.collection('users').doc(targetUserId).get();
-        if (targetUserDoc.exists && ((_b = targetUserDoc.data()) === null || _b === void 0 ? void 0 : _b.email) === masterEmail) {
-            throw new functions.https.HttpsError('permission-denied', 'Cannot modify the master administrator.');
-        }
+    // We use a safe check for master email. In v2, params are preferred but this keeps consistency.
+    // Note: For a real app, use defineString() or secret manager.
+    const masterEmail = 'orverxi@gmail.com';
+    const targetUserDoc = await db.collection('users').doc(targetUserId).get();
+    if (targetUserDoc.exists && ((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email) === masterEmail) {
+        throw new https_1.HttpsError('permission-denied', 'Cannot modify the master administrator.');
     }
     await db.collection('users').doc(targetUserId).update({ role: newRole });
     await admin.auth().setCustomUserClaims(targetUserId, { admin: newRole === 'admin' });
     return { success: true };
 });
-exports.adminBootstrapMaster = functions.https.onCall(async (data, context) => {
-    var _a;
-    if (!context.auth)
-        throw new functions.https.HttpsError('unauthenticated', 'Must be logged in.');
-    const uid = context.auth.uid;
-    const email = context.auth.token.email;
-    const masterEmail = ((_a = functions.config().admin) === null || _a === void 0 ? void 0 : _a.master_email) || 'orverxi@gmail.com';
+exports.adminBootstrapMaster = (0, https_1.onCall)(async (request) => {
+    if (!request.auth)
+        throw new https_1.HttpsError('unauthenticated', 'Must be logged in.');
+    const uid = request.auth.uid;
+    const email = request.auth.token.email;
+    const masterEmail = 'orverxi@gmail.com';
     if (email !== masterEmail) {
-        throw new functions.https.HttpsError('permission-denied', 'Email not authorized to bootstrap.');
+        throw new https_1.HttpsError('permission-denied', 'Email not authorized to bootstrap.');
     }
     await db.collection('users').doc(uid).set({
         email,
-        displayName: context.auth.token.name || 'Admin',
+        displayName: request.auth.token.name || 'Admin',
         role: 'admin',
         lastLogin: Date.now(),
         isMaster: true

@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper to check admin status via user document
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Gallery is public read, write only via Cloud Functions (Admin SDK)
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if false; 
+    }
+
+    // Settings are public read, write only via Cloud Functions
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // User profiles: read by self/admin, write only via Admin SDK
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if false;
+    }
+
+    // Bookings: Admin read, write only via Cloud Functions
+    match /bookings/{bookingId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}
