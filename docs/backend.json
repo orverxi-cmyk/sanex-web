@@ -55,6 +55,31 @@
         "imageUrl": { "type": "string" }
       }
     },
+    "ImpactItem": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "icon": { "type": "string" },
+        "points": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "MilestoneItem": {
+      "type": "object",
+      "properties": {
+        "year": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" }
+      }
+    },
+    "RegionItem": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "capacity": { "type": "string" }
+      }
+    },
     "SiteSettings": {
       "title": "Site Settings",
       "description": "Global settings and section content for the website.",
@@ -70,7 +95,38 @@
             "items": { "type": "array", "items": { "$ref": "#/entities/ServiceItem" } }
           }
         },
-        "heroVideoUrl": { "type": "string" }
+        "impact": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "subtitle": { "type": "string" },
+            "items": { "type": "array", "items": { "$ref": "#/entities/ImpactItem" } }
+          }
+        },
+        "milestones": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "items": { "type": "array", "items": { "$ref": "#/entities/MilestoneItem" } }
+          }
+        },
+        "regional": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "items": { "type": "array", "items": { "$ref": "#/entities/RegionItem" } }
+          }
+        },
+        "video": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "videoUrl": { "type": "string" }
+          }
+        }
       }
     },
     "User": {
