@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { Droplets, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
 
@@ -43,7 +42,7 @@ export function Footer() {
           <div className="space-y-6">
             <h4 className="text-lg font-bold font-headline uppercase tracking-wider text-secondary">Services</h4>
             <ul className="space-y-4">
-              <li><span className="text-primary-foreground/70">Liquid Waste Collection</span></li>
+              <li><span className="text-primary-foreground/70">Liquid Waste Collection and Transport</span></li>
               <li><span className="text-primary-foreground/70">DWTS Installation</span></li>
               <li><span className="text-primary-foreground/70">Quarterly Maintenance</span></li>
               <li><span className="text-primary-foreground/70">Expert Consultancy</span></li>

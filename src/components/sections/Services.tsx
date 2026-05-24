@@ -7,7 +7,7 @@ export function Services() {
   const services = [
     {
       id: "liquid-waste",
-      title: "Waste Collection & Transport",
+      title: "Liquid Waste Collection and Transport",
       description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.",
       image: PlaceHolderImages.find(img => img.id === "vacuum-truck"),
       icon: <Truck className="h-6 w-6" />
