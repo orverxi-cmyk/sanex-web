@@ -1,4 +1,3 @@
-
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
@@ -75,8 +74,8 @@ export const adminUpdateHeroVideo = functions.https.onCall(async (data, context)
 
 export const createBooking = functions.https.onCall(async (data) => {
   const { customerName, email, phone, serviceType, locationUrl, description } = data;
-  if (!customerName || !email || !phone || !serviceType) {
-    throw new functions.https.HttpsError('invalid-argument', 'Missing required booking fields.');
+  if (!customerName || !email || !phone || !serviceType || !locationUrl) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing required booking fields, including location.');
   }
 
   const booking = {
@@ -84,7 +83,7 @@ export const createBooking = functions.https.onCall(async (data) => {
     email,
     phone,
     serviceType,
-    locationUrl: locationUrl || null,
+    locationUrl,
     description: description || '',
     status: 'pending',
     createdAt: Date.now(),

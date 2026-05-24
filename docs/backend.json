@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "GalleryItem": {
@@ -70,7 +69,7 @@
         "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
         "createdAt": { "type": "number" }
       },
-      "required": ["customerName", "email", "phone", "serviceType", "createdAt", "status"]
+      "required": ["customerName", "email", "phone", "serviceType", "locationUrl", "createdAt", "status"]
     }
   },
   "auth": {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -13,14 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Send, CheckCircle2, Navigation, Link as LinkIcon } from "lucide-react";
+import { Loader2, MapPin, Send, CheckCircle2, Navigation, Link as LinkIcon, AlertCircle } from "lucide-react";
 
 export default function BookingPage() {
   const functions = useFunctions();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
-  const [showLocationOptions, setShowLocationOptions] = React.useState(false);
   const [isLocating, setIsLocating] = React.useState(false);
   const [locationMethod, setLocationMethod] = React.useState<'manual' | 'auto' | null>(null);
 
@@ -71,6 +69,16 @@ export default function BookingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!functions) return;
+
+    if (!formData.locationUrl) {
+      toast({
+        variant: "destructive",
+        title: "Location Required",
+        description: "Please provide a location link so our team can find you."
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -122,14 +130,14 @@ export default function BookingPage() {
             <div className="text-center space-y-4">
               <h1 className="text-4xl font-bold font-headline">Book a Service</h1>
               <p className="text-muted-foreground text-lg">
-                Request professional liquid waste management services. Fill out the form below and we'll get back to you within 24 hours.
+                Request professional liquid waste management services. Provide your details and location to help us reach you faster.
               </p>
             </div>
 
             <Card className="shadow-xl border-none">
               <CardHeader className="bg-primary text-primary-foreground rounded-t-lg">
                 <CardTitle>Service Request Form</CardTitle>
-                <CardDescription className="text-primary-foreground/80">All fields marked * are required</CardDescription>
+                <CardDescription className="text-primary-foreground/80">All fields are mandatory</CardDescription>
               </CardHeader>
               <CardContent className="p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -185,67 +193,57 @@ export default function BookingPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Location</Label>
-                      {!showLocationOptions && !formData.locationUrl && (
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-2"
-                          onClick={() => setShowLocationOptions(true)}
-                        >
-                          <MapPin className="h-4 w-4" /> Add Location Link
-                        </Button>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <Label className="flex items-center gap-1">Location * <AlertCircle className="h-3 w-3 text-destructive" /></Label>
                     </div>
                     
-                    {(showLocationOptions || formData.locationUrl) && (
-                      <div className="space-y-4 p-4 border rounded-lg bg-muted/50 animate-in slide-in-from-top-2 duration-300">
-                        <div className="flex flex-wrap gap-2">
-                          <Button 
-                            type="button" 
-                            variant={locationMethod === 'auto' ? 'default' : 'outline'} 
-                            size="sm" 
-                            className="gap-2"
-                            disabled={isLocating}
-                            onClick={handleGetLocation}
-                          >
-                            {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
-                            Detect My Location
-                          </Button>
-                          <Button 
-                            type="button" 
-                            variant={locationMethod === 'manual' ? 'default' : 'outline'} 
-                            size="sm" 
-                            className="gap-2"
-                            onClick={() => setLocationMethod('manual')}
-                          >
-                            <LinkIcon className="h-4 w-4" />
-                            Paste Link Manually
-                          </Button>
-                        </div>
-
-                        {(locationMethod === 'manual' || formData.locationUrl) && (
-                          <div className="space-y-2">
-                            <Input 
-                              placeholder="Paste Google Maps URL here" 
-                              value={formData.locationUrl}
-                              onChange={(e) => {
-                                setFormData({...formData, locationUrl: e.target.value});
-                                setLocationMethod('manual');
-                              }}
-                            />
-                            <p className="text-[10px] text-muted-foreground">
-                              {locationMethod === 'auto' 
-                                ? "Auto-detected link generated above." 
-                                : "Providing a maps link helps our team reach you faster."
-                              }
-                            </p>
-                          </div>
-                        )}
+                    <div className="space-y-4 p-4 border-2 border-dashed rounded-lg bg-muted/30">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        We need a map link to locate your site. Use the button to detect it automatically or paste a link from Google Maps.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button 
+                          type="button" 
+                          variant={locationMethod === 'auto' ? 'default' : 'outline'} 
+                          size="sm" 
+                          className="gap-2"
+                          disabled={isLocating}
+                          onClick={handleGetLocation}
+                        >
+                          {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+                          Detect My Location
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant={locationMethod === 'manual' ? 'default' : 'outline'} 
+                          size="sm" 
+                          className="gap-2"
+                          onClick={() => setLocationMethod('manual')}
+                        >
+                          <LinkIcon className="h-4 w-4" />
+                          Paste Link Manually
+                        </Button>
                       </div>
-                    )}
+
+                      {(locationMethod === 'manual' || formData.locationUrl) && (
+                        <div className="space-y-2 mt-4">
+                          <Input 
+                            placeholder="Paste Google Maps URL here" 
+                            required
+                            value={formData.locationUrl}
+                            onChange={(e) => {
+                              setFormData({...formData, locationUrl: e.target.value});
+                              setLocationMethod('manual');
+                            }}
+                          />
+                          {formData.locationUrl && (
+                            <p className="text-[10px] text-green-600 font-medium flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" /> Location link captured.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
