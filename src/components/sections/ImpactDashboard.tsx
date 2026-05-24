@@ -1,3 +1,4 @@
+
 import { CheckCircle, Leaf, Users, Globe, Building2, Sparkles } from "lucide-react";
 
 export function ImpactDashboard() {
@@ -44,7 +45,6 @@ export function ImpactDashboard() {
 
   return (
     <section id="impact" className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
-      {/* Decorative background circle */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">

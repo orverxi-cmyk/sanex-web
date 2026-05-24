@@ -40,6 +40,8 @@ import {
   UserX
 } from "lucide-react";
 import Image from "next/image";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const BOOTSTRAP_ADMIN = "orverxi@gmail.com";
 
@@ -80,7 +82,15 @@ export default function AdminPage() {
         lastLogin: Date.now(),
         // Initial admin gets the role automatically if they are the bootstrap email
         ...(user.email === BOOTSTRAP_ADMIN ? { role: "admin" } : {})
-      }, { merge: true });
+      }, { merge: true })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: { email: user.email, role: 'admin' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
     }
   }, [db, user]);
 
@@ -99,32 +109,44 @@ export default function AdminPage() {
     signOut(auth);
   };
 
-  const handleAddPhoto = async (e: React.FormEvent) => {
+  const handleAddPhoto = (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !photoUrl || !description) return;
     setIsSubmitting(true);
     
-    try {
-      if (editingId) {
-        await setDoc(doc(db, "gallery", editingId), {
-          imageUrl: photoUrl,
-          description,
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
-        setEditingId(null);
-      } else {
-        await addDoc(collection(db, "gallery"), {
-          imageUrl: photoUrl,
-          description,
-          createdAt: Date.now(),
-        });
-      }
-      setPhotoUrl("");
-      setDescription("");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
+    if (editingId) {
+      const docRef = doc(db, "gallery", editingId);
+      const data = { imageUrl: photoUrl, description, updatedAt: serverTimestamp() };
+      setDoc(docRef, data, { merge: true })
+        .then(() => {
+          setEditingId(null);
+          setPhotoUrl("");
+          setDescription("");
+        })
+        .catch(async (err) => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: data,
+          }));
+        })
+        .finally(() => setIsSubmitting(false));
+    } else {
+      const colRef = collection(db, "gallery");
+      const data = { imageUrl: photoUrl, description, createdAt: Date.now() };
+      addDoc(colRef, data)
+        .then(() => {
+          setPhotoUrl("");
+          setDescription("");
+        })
+        .catch(async (err) => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: colRef.path,
+            operation: 'create',
+            requestResourceData: data,
+          }));
+        })
+        .finally(() => setIsSubmitting(false));
     }
   };
 
@@ -134,34 +156,50 @@ export default function AdminPage() {
     setDescription(photo.description);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!db || !confirm("Are you sure?")) return;
-    await deleteDoc(doc(db, "gallery", id));
+    const docRef = doc(db, "gallery", id);
+    deleteDoc(docRef)
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete',
+        }));
+      });
   };
 
-  const handleUpdateVideo = async () => {
+  const handleUpdateVideo = () => {
     if (!db || !videoUrl) return;
     setIsSubmitting(true);
-    try {
-      await setDoc(doc(db, "settings", "general"), {
-        heroVideoUrl: videoUrl
-      }, { merge: true });
-      alert("Video updated successfully!");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const docRef = doc(db, "settings", "general");
+    const data = { heroVideoUrl: videoUrl };
+    setDoc(docRef, data, { merge: true })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: data,
+        }));
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
-  const toggleUserRole = async (targetUser: any) => {
+  const toggleUserRole = (targetUser: any) => {
     if (!db) return;
     const newRole = targetUser.role === "admin" ? "user" : "admin";
     if (targetUser.email === BOOTSTRAP_ADMIN && newRole === "user") {
       alert("Bootstrap admin role cannot be removed.");
       return;
     }
-    await updateDoc(doc(db, "users", targetUser.id), { role: newRole });
+    const userRef = doc(db, "users", targetUser.id);
+    updateDoc(userRef, { role: newRole })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: { role: newRole },
+        }));
+      });
   };
 
   const isAuthorized = user?.email === BOOTSTRAP_ADMIN || userProfile?.role === "admin";
