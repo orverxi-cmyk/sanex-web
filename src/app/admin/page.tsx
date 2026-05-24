@@ -29,7 +29,8 @@ import {
   LogOut, 
   LogIn,
   Save,
-  Pencil
+  Pencil,
+  LayoutDashboard
 } from "lucide-react";
 import Image from "next/image";
 
@@ -115,7 +116,7 @@ export default function AdminPage() {
       await setDoc(doc(db, "settings", "general"), {
         heroVideoUrl: videoUrl
       }, { merge: true });
-      alert("Video updated!");
+      alert("Video updated successfully!");
     } catch (err) {
       console.error(err);
     } finally {
@@ -123,22 +124,34 @@ export default function AdminPage() {
     }
   };
 
-  if (authLoading) return null;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-muted/30">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <CardTitle>Admin Access</CardTitle>
-              <CardDescription>Sign in with your corporate account to manage content</CardDescription>
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4">
+          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
+            <CardHeader className="text-center space-y-2">
+              <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-2">
+                <LayoutDashboard className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="text-2xl font-headline">Admin Access</CardTitle>
+              <CardDescription>Secure login for SANEX Content Management</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleLogin} className="w-full gap-2 h-12">
+              <Button onClick={handleLogin} className="w-full gap-3 h-12 text-lg">
                 <LogIn className="h-5 w-5" /> Sign in with Google
               </Button>
+              <p className="mt-6 text-xs text-center text-muted-foreground">
+                Authorized personnel only. Access is monitored and recorded.
+              </p>
             </CardContent>
           </Card>
         </main>
@@ -152,9 +165,12 @@ export default function AdminPage() {
       <Navbar />
       <main className="flex-grow py-12 bg-muted/10">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
-            <Button variant="outline" onClick={handleLogout} className="gap-2">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back, {user.displayName}</p>
+            </div>
+            <Button variant="outline" onClick={handleLogout} className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-white">
               <LogOut className="h-4 w-4" /> Sign Out
             </Button>
           </div>
@@ -162,39 +178,44 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Gallery Management */}
             <div className="lg:col-span-2 space-y-8">
-              <Card>
+              <Card className="shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus className="h-5 w-5" /> {editingId ? "Edit Photo" : "Add New Photo"}
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    {editingId ? <Pencil className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5 text-primary" />}
+                    {editingId ? "Edit Photo Information" : "Add New Gallery Photo"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleAddPhoto} className="space-y-4">
+                  <form onSubmit={handleAddPhoto} className="space-y-5">
                     <div className="space-y-2">
-                      <Label>Image URL</Label>
+                      <Label htmlFor="photoUrl">Image URL</Label>
                       <Input 
-                        placeholder="https://example.com/photo.jpg" 
+                        id="photoUrl"
+                        placeholder="https://images.unsplash.com/..." 
                         value={photoUrl}
                         onChange={(e) => setPhotoUrl(e.target.value)}
                         required
+                        className="h-11"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Description</Label>
+                      <Label htmlFor="desc">Photo Description</Label>
                       <Input 
-                        placeholder="e.g. Vacuum truck operation in Kigali" 
+                        id="desc"
+                        placeholder="e.g. SANEX truck servicing a school in Musanze" 
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         required
+                        className="h-11"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" className="flex-1 gap-2" disabled={isSubmitting}>
+                    <div className="flex gap-3">
+                      <Button type="submit" className="flex-1 gap-2 h-11" disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        {editingId ? "Update Photo" : "Add to Gallery"}
+                        {editingId ? "Update Entry" : "Add to Gallery"}
                       </Button>
                       {editingId && (
-                        <Button variant="outline" onClick={() => { setEditingId(null); setPhotoUrl(""); setDescription(""); }}>
+                        <Button variant="outline" className="h-11" onClick={() => { setEditingId(null); setPhotoUrl(""); setDescription(""); }}>
                           Cancel
                         </Button>
                       )}
@@ -203,72 +224,105 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5" /> Gallery Inventory
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <ImageIcon className="h-5 w-5 text-primary" /> Current Gallery ({photos?.length || 0})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {photosLoading ? (
-                    <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>
+                    <div className="flex justify-center p-12"><Loader2 className="animate-spin text-primary h-8 w-8" /></div>
                   ) : (
-                    <div className="space-y-4">
-                      {photos?.map((photo) => (
-                        <div key={photo.id} className="flex gap-4 p-4 border rounded-xl bg-white hover:border-primary/50 transition-colors">
-                          <div className="relative h-20 w-20 rounded-lg overflow-hidden flex-shrink-0">
-                            <Image src={photo.imageUrl} alt="" fill className="object-cover" />
+                    <div className="grid gap-4">
+                      {photos && photos.length > 0 ? (
+                        photos.map((photo) => (
+                          <div key={photo.id} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-xl bg-white hover:border-primary/50 transition-all shadow-sm">
+                            <div className="relative h-24 w-full sm:w-32 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                              <Image src={photo.imageUrl} alt="" fill className="object-cover" />
+                            </div>
+                            <div className="flex-grow space-y-1">
+                              <p className="font-bold text-lg leading-tight">{photo.description}</p>
+                              <p className="text-xs text-muted-foreground break-all">{photo.imageUrl}</p>
+                            </div>
+                            <div className="flex sm:flex-col gap-2 justify-end sm:justify-start">
+                              <Button variant="ghost" size="icon" className="h-10 w-10 text-primary bg-primary/5 hover:bg-primary hover:text-white" onClick={() => handleEdit(photo)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive bg-destructive/5 hover:bg-destructive hover:text-white" onClick={() => handleDelete(photo.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex-grow">
-                            <p className="font-medium line-clamp-1">{photo.description}</p>
-                            <p className="text-xs text-muted-foreground truncate">{photo.imageUrl}</p>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => handleEdit(photo)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(photo.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-12 text-muted-foreground italic">
+                          No photos in the gallery yet. Add one above!
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Video Management */}
+            {/* Settings Management */}
             <div className="space-y-8">
-              <Card>
+              <Card className="shadow-sm border-l-4 border-l-secondary">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5" /> Homepage Highlight Video
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Video className="h-5 w-5 text-secondary" /> Highlight Video
                   </CardTitle>
-                  <CardDescription>Update the video showcased on the landing page</CardDescription>
+                  <CardDescription>Update the main operational video on the homepage</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5">
                   <div className="space-y-2">
-                    <Label>Video Embed URL</Label>
+                    <Label htmlFor="vidUrl">YouTube Embed URL</Label>
                     <Input 
-                      placeholder="YouTube/Vimeo Embed URL" 
+                      id="vidUrl"
+                      placeholder="https://www.youtube.com/embed/..." 
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
+                      className="h-11"
                     />
-                    <p className="text-[10px] text-muted-foreground italic">
-                      Use the "Embed" URL (e.g., https://www.youtube.com/embed/VIDEO_ID)
+                    <p className="text-[10px] text-muted-foreground bg-muted p-2 rounded">
+                      Ensure you use the <strong>Embed</strong> URL format (e.g., https://www.youtube.com/embed/VIDEO_ID)
                     </p>
                   </div>
-                  <Button onClick={handleUpdateVideo} className="w-full gap-2" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="h-4 w-4" />} Update Video
+                  <Button onClick={handleUpdateVideo} className="w-full gap-2 h-11 bg-secondary hover:bg-secondary/90" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="h-4 w-4" />} Update Global Video
                   </Button>
 
                   {videoUrl && (
-                    <div className="mt-4 aspect-video rounded-lg overflow-hidden bg-black border">
-                      <iframe src={videoUrl} className="w-full h-full"></iframe>
+                    <div className="mt-4 aspect-video rounded-xl overflow-hidden bg-black border-2 border-secondary/20 shadow-inner">
+                      <iframe 
+                        src={videoUrl} 
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-primary text-primary-foreground shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg">System Status</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center text-sm border-b border-white/20 pb-2">
+                    <span>Database Connection</span>
+                    <span className="flex items-center gap-1 font-bold"><span className="h-2 w-2 rounded-full bg-green-400"></span> Active</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm border-b border-white/20 pb-2">
+                    <span>Auth Service</span>
+                    <span className="flex items-center gap-1 font-bold"><span className="h-2 w-2 rounded-full bg-green-400"></span> Active</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span>Admin User</span>
+                    <span className="font-bold truncate max-w-[120px]">{user.email}</span>
+                  </div>
                 </CardContent>
               </Card>
             </div>
