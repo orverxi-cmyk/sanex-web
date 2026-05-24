@@ -13,14 +13,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { Loader2, MapPin, Send, CheckCircle2, Navigation, Link as LinkIcon } from "lucide-react";
 
 export default function BookingPage() {
   const functions = useFunctions();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
-  const [showLocationInput, setShowLocationInput] = React.useState(false);
+  const [showLocationOptions, setShowLocationOptions] = React.useState(false);
+  const [isLocating, setIsLocating] = React.useState(false);
+  const [locationMethod, setLocationMethod] = React.useState<'manual' | 'auto' | null>(null);
 
   const [formData, setFormData] = React.useState({
     customerName: "",
@@ -30,6 +32,41 @@ export default function BookingPage() {
     locationUrl: "",
     description: ""
   });
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        variant: "destructive",
+        title: "Not Supported",
+        description: "Geolocation is not supported by your browser."
+      });
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        setFormData({ ...formData, locationUrl: mapsUrl });
+        setLocationMethod('auto');
+        setIsLocating(false);
+        toast({
+          title: "Location Detected",
+          description: "Your current coordinates have been added successfully."
+        });
+      },
+      (error) => {
+        setIsLocating(false);
+        toast({
+          variant: "destructive",
+          title: "Location Error",
+          description: "Could not retrieve your location. Please enter it manually."
+        });
+        setLocationMethod('manual');
+      }
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,29 +187,63 @@ export default function BookingPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label>Location</Label>
-                      {!showLocationInput && (
+                      {!showLocationOptions && !formData.locationUrl && (
                         <Button 
                           type="button" 
                           variant="outline" 
                           size="sm" 
                           className="gap-2"
-                          onClick={() => setShowLocationInput(true)}
+                          onClick={() => setShowLocationOptions(true)}
                         >
                           <MapPin className="h-4 w-4" /> Add Location Link
                         </Button>
                       )}
                     </div>
                     
-                    {showLocationInput && (
-                      <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                        <Input 
-                          placeholder="Paste Google Maps URL here" 
-                          value={formData.locationUrl}
-                          onChange={(e) => setFormData({...formData, locationUrl: e.target.value})}
-                        />
-                        <p className="text-[10px] text-muted-foreground">
-                          Providing a maps link helps our team reach you faster.
-                        </p>
+                    {(showLocationOptions || formData.locationUrl) && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/50 animate-in slide-in-from-top-2 duration-300">
+                        <div className="flex flex-wrap gap-2">
+                          <Button 
+                            type="button" 
+                            variant={locationMethod === 'auto' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="gap-2"
+                            disabled={isLocating}
+                            onClick={handleGetLocation}
+                          >
+                            {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+                            Detect My Location
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant={locationMethod === 'manual' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="gap-2"
+                            onClick={() => setLocationMethod('manual')}
+                          >
+                            <LinkIcon className="h-4 w-4" />
+                            Paste Link Manually
+                          </Button>
+                        </div>
+
+                        {(locationMethod === 'manual' || formData.locationUrl) && (
+                          <div className="space-y-2">
+                            <Input 
+                              placeholder="Paste Google Maps URL here" 
+                              value={formData.locationUrl}
+                              onChange={(e) => {
+                                setFormData({...formData, locationUrl: e.target.value});
+                                setLocationMethod('manual');
+                              }}
+                            />
+                            <p className="text-[10px] text-muted-foreground">
+                              {locationMethod === 'auto' 
+                                ? "Auto-detected link generated above." 
+                                : "Providing a maps link helps our team reach you faster."
+                              }
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
