@@ -30,6 +30,12 @@
       "description": "Beautiful landscape of Rwanda showing clean environment",
       "imageUrl": "https://picsum.photos/seed/sanex5/1200/400",
       "imageHint": "rwanda nature"
+    },
+    {
+      "id": "partnerships",
+      "description": "Collaboration between professional teams and community",
+      "imageUrl": "https://picsum.photos/seed/sanex6/800/600",
+      "imageHint": "community health"
     }
   ]
 }

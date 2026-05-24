@@ -1,7 +1,8 @@
+
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Truck, Settings, Users, Droplets } from "lucide-react";
+import { Truck, Settings, Droplets, Users } from "lucide-react";
 
 export function Services() {
   const services = [
@@ -25,6 +26,13 @@ export function Services() {
       description: "Quarterly maintenance services and expert advice for optimal wastewater management.",
       image: PlaceHolderImages.find(img => img.id === "maintenance-service"),
       icon: <Settings className="h-6 w-6" />
+    },
+    {
+      id: "partnerships",
+      title: "Sanitation Projects and Partnerships",
+      description: "Collaborating with government and private organizations to promote public health and hygiene nationwide.",
+      image: PlaceHolderImages.find(img => img.id === "partnerships"),
+      icon: <Users className="h-6 w-6" />
     }
   ];
 
@@ -38,7 +46,7 @@ export function Services() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {services.map((service, i) => (
             <Card key={service.id} className="group overflow-hidden border-none shadow-xl transition-all duration-300 hover:-translate-y-2">
               <div className="relative h-64 overflow-hidden bg-muted">
@@ -55,10 +63,10 @@ export function Services() {
                 </div>
               </div>
               <CardHeader>
-                <CardTitle className="font-headline text-2xl">{service.title}</CardTitle>
+                <CardTitle className="font-headline text-xl lg:text-2xl">{service.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">{service.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{service.description}</p>
               </CardContent>
             </Card>
           ))}
