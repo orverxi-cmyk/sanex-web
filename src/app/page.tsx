@@ -1,3 +1,30 @@
+
+import { Navbar } from "@/components/sections/Navbar";
+import { Hero } from "@/components/sections/Hero";
+import { Highlights } from "@/components/sections/Highlights";
+import { Services } from "@/components/sections/Services";
+import { ImpactDashboard } from "@/components/sections/ImpactDashboard";
+import { MilestoneTracker } from "@/components/sections/MilestoneTracker";
+import { RegionalPortal } from "@/components/sections/RegionalPortal";
+import { AIArchitectTool } from "@/components/sections/AIArchitectTool";
+import { PartnershipsDirectory } from "@/components/sections/PartnershipsDirectory";
+import { Footer } from "@/components/sections/Footer";
+
 export default function Home() {
-  return <></>;
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow">
+        <Hero />
+        <Highlights />
+        <AIArchitectTool />
+        <Services />
+        <ImpactDashboard />
+        <MilestoneTracker />
+        <RegionalPortal />
+        <PartnershipsDirectory />
+      </main>
+      <Footer />
+    </div>
+  );
 }
