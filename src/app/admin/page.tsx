@@ -30,9 +30,18 @@ import {
   LogIn,
   Save,
   Pencil,
-  LayoutDashboard
+  LayoutDashboard,
+  ShieldAlert
 } from "lucide-react";
 import Image from "next/image";
+
+/**
+ * AUTHORIZED ADMIN EMAILS
+ * Add your email address here to gain access to the dashboard.
+ */
+const AUTHORIZED_EMAILS = [
+  "admin@example.com", // Replace with your actual Google email
+];
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useUser();
@@ -132,6 +141,7 @@ export default function AdminPage() {
     );
   }
 
+  // Not Logged In State
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -160,6 +170,38 @@ export default function AdminPage() {
     );
   }
 
+  // Logged In but Not Authorized State
+  if (user && !AUTHORIZED_EMAILS.includes(user.email || "")) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4">
+          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive">
+            <CardHeader className="text-center space-y-2">
+              <div className="mx-auto bg-destructive/10 w-16 h-16 rounded-full flex items-center justify-center mb-2">
+                <ShieldAlert className="h-8 w-8 text-destructive" />
+              </div>
+              <CardTitle className="text-2xl font-headline text-destructive">Access Denied</CardTitle>
+              <CardDescription>
+                Your account <strong>{user.email}</strong> is not authorized to access this dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-center text-muted-foreground">
+                If you believe this is an error, please contact the system administrator to whitelist your email address.
+              </p>
+              <Button onClick={handleLogout} variant="outline" className="w-full gap-2">
+                <LogOut className="h-4 w-4" /> Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Authorized Admin State
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -176,7 +218,6 @@ export default function AdminPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Gallery Management */}
             <div className="lg:col-span-2 space-y-8">
               <Card className="shadow-sm">
                 <CardHeader>
@@ -266,7 +307,6 @@ export default function AdminPage() {
               </Card>
             </div>
 
-            {/* Settings Management */}
             <div className="space-y-8">
               <Card className="shadow-sm border-l-4 border-l-secondary">
                 <CardHeader>
@@ -285,9 +325,6 @@ export default function AdminPage() {
                       onChange={(e) => setVideoUrl(e.target.value)}
                       className="h-11"
                     />
-                    <p className="text-[10px] text-muted-foreground bg-muted p-2 rounded">
-                      Ensure you use the <strong>Embed</strong> URL format (e.g., https://www.youtube.com/embed/VIDEO_ID)
-                    </p>
                   </div>
                   <Button onClick={handleUpdateVideo} className="w-full gap-2 h-11 bg-secondary hover:bg-secondary/90" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="h-4 w-4" />} Update Global Video
