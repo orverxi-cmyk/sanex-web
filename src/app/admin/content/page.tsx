@@ -29,7 +29,8 @@ import {
   List,
   Target,
   Globe,
-  Milestone
+  Milestone,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -114,10 +115,17 @@ export default function ContentManagementPage() {
           </Button>
           
           <div className="flex justify-between items-center mb-10">
-            <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
-              <Layout className="h-8 w-8 text-primary" /> Site Content Manager
-            </h1>
-            {isSubmitting && <Loader2 className="h-6 w-6 animate-spin text-primary" />}
+            <div>
+              <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
+                <Layout className="h-8 w-8 text-primary" /> Site Content Manager
+              </h1>
+              <p className="text-muted-foreground">Update text, images, and services across your homepage.</p>
+            </div>
+            {isSubmitting && (
+              <div className="flex items-center gap-2 text-primary font-medium">
+                <Loader2 className="h-4 w-4 animate-spin" /> Saving Changes...
+              </div>
+            )}
           </div>
 
           <Tabs defaultValue="hero" className="space-y-8">
@@ -126,7 +134,7 @@ export default function ContentManagementPage() {
                 <TabsTrigger value="hero" className="gap-2"><Sparkles className="h-4 w-4" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2"><Target className="h-4 w-4" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2"><List className="h-4 w-4" /> Services</TabsTrigger>
-                <TabsTrigger value="impact" className="gap-2"><Sparkles className="h-4 w-4" /> Impact</TabsTrigger>
+                <TabsTrigger value="impact" className="gap-2"><RefreshCw className="h-4 w-4" /> Impact</TabsTrigger>
                 <TabsTrigger value="milestones" className="gap-2"><Milestone className="h-4 w-4" /> Milestones</TabsTrigger>
                 <TabsTrigger value="regional" className="gap-2"><Globe className="h-4 w-4" /> Regional</TabsTrigger>
                 <TabsTrigger value="video" className="gap-2"><Video className="h-4 w-4" /> Video</TabsTrigger>
@@ -174,48 +182,63 @@ export default function ContentManagementPage() {
 }
 
 function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || {});
+  const defaults = {
+    badge: "Leading Sanitation Partner in Rwanda",
+    title: "Transforming",
+    titleAccent: "Waste Into Opportunity",
+    description: "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
+    imageUrl: "https://picsum.photos/seed/sanex1/1200/800",
+    ctaText: "Book a Service",
+    ctaLink: "/book"
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
 
   React.useEffect(() => {
     if (initialData) setFormData(initialData);
   }, [initialData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Hero Section</CardTitle>
-        <CardDescription>Main headline and top imagery.</CardDescription>
+        <CardDescription>Main headline and call-to-action on the home page.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Badge Text</Label>
-              <Input value={formData.badge || ""} onChange={e => setFormData({...formData, badge: e.target.value})} />
+              <Input value={formData.badge} onChange={e => setFormData({...formData, badge: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Title (Main)</Label>
-              <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+              <Label>Title (First Part)</Label>
+              <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Title Accent (Colored)</Label>
-              <Input value={formData.titleAccent || ""} onChange={e => setFormData({...formData, titleAccent: e.target.value})} />
+              <Label>Title Accent (Second Part - Colored)</Label>
+              <Input value={formData.titleAccent} onChange={e => setFormData({...formData, titleAccent: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Image URL</Label>
-              <Input value={formData.imageUrl || ""} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+              <Label>Hero Image URL</Label>
+              <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Description</Label>
-            <Textarea value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} />
+            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="min-h-[100px]" />
           </div>
-          <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Hero</Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>CTA Button Text</Label>
+              <Input value={formData.ctaText} onChange={e => setFormData({...formData, ctaText: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label>CTA Link Path</Label>
+              <Input value={formData.ctaLink} onChange={e => setFormData({...formData, ctaLink: e.target.value})} />
+            </div>
+          </div>
+          <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Hero Section</Button>
         </form>
       </CardContent>
     </Card>
@@ -223,7 +246,13 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
 }
 
 function HighlightsEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [items, setItems] = React.useState<any[]>(initialData?.items || []);
+  const defaults = [
+    { icon: "shield", title: "Licensed Since 2021", description: "Trusted by over 114 clients nationwide with verified operational standards." },
+    { icon: "cpu", title: "Advanced Technology", description: "Eco-friendly wastewater treatment systems using activated sludge technology." },
+    { icon: "globe", title: "Nationwide Coverage", description: "Serving urban and rural communities from Kigali to Musanze and Huye." }
+  ];
+
+  const [items, setItems] = React.useState<any[]>(initialData?.items || defaults);
 
   React.useEffect(() => {
     if (initialData?.items) setItems(initialData.items);
@@ -243,29 +272,33 @@ function HighlightsEditor({ initialData, onSave }: { initialData: any, onSave: (
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Highlights Section</CardTitle>
-          <CardDescription>Key features shown below the hero.</CardDescription>
+          <CardDescription>Key credentials shown below the hero.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Item</Button>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <Card key={i} className="p-4 space-y-3 bg-muted/20">
-              <div className="flex justify-between">
-                <Label className="text-xs font-bold">Highlight #{i + 1}</Label>
-                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
+            <Card key={i} className="p-4 space-y-3 bg-muted/20 relative group">
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
+                onClick={() => removeItem(i)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase font-bold">Icon (shield, cpu, globe, zap, award)</Label>
+                <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Icon (Lucide name)</Label>
-                <Input value={item.icon || ""} onChange={e => updateItem(i, 'icon', e.target.value)} />
+                <Label className="text-[10px] uppercase font-bold">Title</Label>
+                <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Title</Label>
-                <Input value={item.title || ""} onChange={e => updateItem(i, 'title', e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px]">Description</Label>
-                <Textarea value={item.description || ""} onChange={e => updateItem(i, 'description', e.target.value)} className="h-20" />
+                <Label className="text-[10px] uppercase font-bold">Description</Label>
+                <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="h-20" />
               </div>
             </Card>
           ))}
@@ -277,19 +310,29 @@ function HighlightsEditor({ initialData, onSave }: { initialData: any, onSave: (
 }
 
 function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { title: "", subtitle: "", items: [] });
+  const defaults = {
+    title: "Comprehensive Liquid Waste Solutions",
+    subtitle: "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
+    items: [
+      { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600" },
+      { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600" },
+      { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" }
+    ]
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
 
   React.useEffect(() => {
     if (initialData) setFormData(initialData);
   }, [initialData]);
 
   const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...(formData.items || [])];
+    const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
     setFormData({ ...formData, items: newItems });
   };
 
-  const addItem = () => setFormData({ ...formData, items: [...(formData.items || []), { title: "", description: "", icon: "truck", imageUrl: "" }] });
+  const addItem = () => setFormData({ ...formData, items: [...formData.items, { title: "", description: "", icon: "truck", imageUrl: "" }] });
   const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
 
   return (
@@ -297,7 +340,7 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Services Section</CardTitle>
-          <CardDescription>Main service blocks.</CardDescription>
+          <CardDescription>Core service offerings list.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Service</Button>
       </CardHeader>
@@ -305,38 +348,35 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Section Title</Label>
-            <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
           </div>
           <div className="space-y-2">
             <Label>Section Subtitle</Label>
-            <Input value={formData.subtitle || ""} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
+            <Input value={formData.subtitle} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {(formData.items || []).map((item: any, i: number) => (
-            <Card key={i} className="bg-muted/30 p-4 space-y-3">
-              <div className="flex justify-between">
-                <Label className="text-xs">Service Item #{i + 1}</Label>
-                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
-              </div>
+          {formData.items.map((item: any, i: number) => (
+            <Card key={i} className="bg-muted/30 p-4 space-y-3 relative group">
+              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Title</Label>
-                  <Input value={item.title || ""} onChange={e => updateItem(i, 'title', e.target.value)} />
+                  <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Icon</Label>
-                  <Input value={item.icon || ""} onChange={e => updateItem(i, 'icon', e.target.value)} />
+                  <Label className="text-xs">Icon (truck, droplets, settings)</Label>
+                  <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
                 </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Description</Label>
-                <Textarea value={item.description || ""} onChange={e => updateItem(i, 'description', e.target.value)} />
+                <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Image URL</Label>
-                <Input value={item.imageUrl || ""} onChange={e => updateItem(i, 'imageUrl', e.target.value)} />
+                <Input value={item.imageUrl} onChange={e => updateItem(i, 'imageUrl', e.target.value)} />
               </div>
             </Card>
           ))}
@@ -348,19 +388,28 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
 }
 
 function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { title: "", subtitle: "", items: [] });
+  const defaults = {
+    title: "Impact Since Our Inception",
+    subtitle: "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
+    items: [
+      { title: "Environmental", icon: "leaf", points: ["Preventing pollutants from contaminating ecosystems", "Cleaner water sources via DWTS"] },
+      { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] }
+    ]
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
 
   React.useEffect(() => {
     if (initialData) setFormData(initialData);
   }, [initialData]);
 
   const updateItem = (index: number, field: string, value: any) => {
-    const newItems = [...(formData.items || [])];
+    const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
     setFormData({ ...formData, items: newItems });
   };
 
-  const addItem = () => setFormData({ ...formData, items: [...(formData.items || []), { title: "", icon: "leaf", points: [""] }] });
+  const addItem = () => setFormData({ ...formData, items: [...formData.items, { title: "", icon: "leaf", points: [""] }] });
   const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
 
   return (
@@ -368,7 +417,7 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Impact Stats</CardTitle>
-          <CardDescription>Environmental and community impact data.</CardDescription>
+          <CardDescription>Social and environmental impact metrics.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Impact Area</Button>
       </CardHeader>
@@ -376,63 +425,70 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Section Title</Label>
-            <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
           </div>
           <div className="space-y-2">
             <Label>Section Subtitle</Label>
-            <Textarea value={formData.subtitle || ""} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
+            <Textarea value={formData.subtitle} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
           </div>
         </div>
 
         <div className="space-y-4">
-          {(formData.items || []).map((item: any, i: number) => (
-            <Card key={i} className="p-4 bg-muted/20">
-              <div className="flex justify-between mb-3">
-                <Label className="text-xs font-bold uppercase tracking-wider text-primary">Impact Area #{i + 1}</Label>
-                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
-              </div>
+          {formData.items.map((item: any, i: number) => (
+            <Card key={i} className="p-4 bg-muted/20 relative group">
+              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
               <div className="grid grid-cols-2 gap-4 mb-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Title</Label>
-                  <Input value={item.title || ""} onChange={e => updateItem(i, 'title', e.target.value)} />
+                  <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Icon</Label>
-                  <Input value={item.icon || ""} onChange={e => updateItem(i, 'icon', e.target.value)} />
+                  <Label className="text-xs">Icon (leaf, heart, users, scale)</Label>
+                  <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Bullet Points (JSON array format or newline separated)</Label>
+                <Label className="text-xs">Bullet Points (One per line)</Label>
                 <Textarea 
                   value={item.points?.join("\n") || ""} 
                   onChange={e => updateItem(i, 'points', e.target.value.split("\n"))} 
-                  placeholder="Point 1&#10;Point 2"
+                  placeholder="Enter points here..."
                   className="h-24"
                 />
               </div>
             </Card>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Impact Content</Button>
+        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Impact Stats</Button>
       </CardContent>
     </Card>
   );
 }
 
 function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { title: "", description: "", items: [] });
+  const defaults = {
+    title: "Who We Are",
+    description: "SANEX Company Ltd is dedicated to delivering comprehensive liquid waste management solutions across Rwanda...",
+    items: [
+      { year: "2017", title: "Founding", description: "Established to address liquid waste challenges.", icon: "clock" },
+      { year: "2021", title: "Licensing", description: "Achieved official transport licensing.", icon: "shield" },
+      { year: "2024", title: "Expansion", description: "Launched DWTS services nationwide.", icon: "rocket" }
+    ]
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
 
   React.useEffect(() => {
     if (initialData) setFormData(initialData);
   }, [initialData]);
 
   const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...(formData.items || [])];
+    const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
     setFormData({ ...formData, items: newItems });
   };
 
-  const addItem = () => setFormData({ ...formData, items: [...(formData.items || []), { year: "2024", title: "", description: "", icon: "rocket" }] });
+  const addItem = () => setFormData({ ...formData, items: [...formData.items, { year: "2024", title: "", description: "", icon: "rocket" }] });
   const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
 
   return (
@@ -440,7 +496,7 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Milestone Timeline</CardTitle>
-          <CardDescription>Historical and future milestones.</CardDescription>
+          <CardDescription>Company history and future goals.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Milestone</Button>
       </CardHeader>
@@ -448,33 +504,33 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Section Title</Label>
-            <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
           </div>
           <div className="space-y-2">
-            <Label>Introduction Text</Label>
-            <Textarea value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} />
+            <Label>Section Description</Label>
+            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
           </div>
         </div>
 
         <div className="space-y-4">
-          {(formData.items || []).map((item: any, i: number) => (
-            <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border rounded-lg bg-muted/10 relative">
-              <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
+          {formData.items.map((item: any, i: number) => (
+            <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border rounded-lg bg-muted/10 relative group">
+              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
               <div className="md:col-span-2 space-y-1">
                 <Label className="text-xs">Year</Label>
-                <Input value={item.year || ""} onChange={e => updateItem(i, 'year', e.target.value)} />
+                <Input value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} />
               </div>
               <div className="md:col-span-3 space-y-1">
                 <Label className="text-xs">Title</Label>
-                <Input value={item.title || ""} onChange={e => updateItem(i, 'title', e.target.value)} />
+                <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
               </div>
               <div className="md:col-span-2 space-y-1">
-                <Label className="text-xs">Icon</Label>
-                <Input value={item.icon || ""} onChange={e => updateItem(i, 'icon', e.target.value)} />
+                <Label className="text-xs">Icon (clock, shield, rocket)</Label>
+                <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
               </div>
               <div className="md:col-span-5 space-y-1">
                 <Label className="text-xs">Description</Label>
-                <Textarea value={item.description || ""} onChange={e => updateItem(i, 'description', e.target.value)} className="h-16" />
+                <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="h-16" />
               </div>
             </div>
           ))}
@@ -486,27 +542,37 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
 }
 
 function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { title: "", description: "", items: [] });
+  const defaults = {
+    title: "Regional Availability Portal",
+    description: "Establishing operational offices in key towns across Rwanda...",
+    items: [
+      { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },
+      { name: "Musanze", status: "Strategic Hub", capacity: "Service Center" },
+      { name: "Huye", status: "Planned Expansion", capacity: "Regional Office" }
+    ]
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
 
   React.useEffect(() => {
     if (initialData) setFormData(initialData);
   }, [initialData]);
 
   const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...(formData.items || [])];
+    const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
     setFormData({ ...formData, items: newItems });
   };
 
-  const addItem = () => setFormData({ ...formData, items: [...(formData.items || []), { name: "", status: "", capacity: "" }] });
+  const addItem = () => setFormData({ ...formData, items: [...formData.items, { name: "", status: "", capacity: "" }] });
   const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Regional Availability</CardTitle>
-          <CardDescription>Locations where SANEX operates.</CardDescription>
+          <CardTitle>Regional Portal</CardTitle>
+          <CardDescription>Locations where SANEX is active.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Region</Button>
       </CardHeader>
@@ -514,41 +580,47 @@ function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (da
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Portal Title</Label>
-            <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
           </div>
           <div className="space-y-2">
             <Label>Portal Description</Label>
-            <Textarea value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} />
+            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(formData.items || []).map((item: any, i: number) => (
-            <Card key={i} className="p-4 space-y-3 bg-muted/20 relative">
-              <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
+          {formData.items.map((item: any, i: number) => (
+            <Card key={i} className="p-4 space-y-3 bg-muted/20 relative group">
+              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
               <div className="space-y-1">
-                <Label className="text-[10px]">Location Name</Label>
-                <Input value={item.name || ""} onChange={e => updateItem(i, 'name', e.target.value)} />
+                <Label className="text-[10px]">City/Region Name</Label>
+                <Input value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Status (e.g. Operational)</Label>
-                <Input value={item.status || ""} onChange={e => updateItem(i, 'status', e.target.value)} />
+                <Label className="text-[10px]">Status</Label>
+                <Input value={item.status} onChange={e => updateItem(i, 'status', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Capacity (e.g. Full Fleet)</Label>
-                <Input value={item.capacity || ""} onChange={e => updateItem(i, 'capacity', e.target.value)} />
+                <Label className="text-[10px]">Capacity info</Label>
+                <Input value={item.capacity} onChange={e => updateItem(i, 'capacity', e.target.value)} />
               </div>
             </Card>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Regional Portal</Button>
+        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Regions</Button>
       </CardContent>
     </Card>
   );
 }
 
 function VideoEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || {});
+  const defaults = {
+    title: "SANEX in Action",
+    description: "Watch our specialized vacuum trucks and decentralized treatment systems in action across Rwanda.",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
 
   React.useEffect(() => {
     if (initialData) setFormData(initialData);
@@ -558,22 +630,23 @@ function VideoEditor({ initialData, onSave }: { initialData: any, onSave: (data:
     <Card>
       <CardHeader>
         <CardTitle>Video Highlight</CardTitle>
-        <CardDescription>Featured YouTube video on the homepage.</CardDescription>
+        <CardDescription>Featured YouTube video for the homepage.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label>Title</Label>
-          <Input value={formData.title || ""} onChange={e => setFormData({...formData, title: e.target.value})} />
+          <Label>Section Title</Label>
+          <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
         </div>
         <div className="space-y-2">
-          <Label>Description</Label>
-          <Textarea value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} />
+          <Label>Section Description</Label>
+          <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
         </div>
         <div className="space-y-2">
           <Label>YouTube Embed URL</Label>
-          <Input placeholder="https://www.youtube.com/embed/..." value={formData.videoUrl || ""} onChange={e => setFormData({...formData, videoUrl: e.target.value})} />
+          <Input placeholder="https://www.youtube.com/embed/..." value={formData.videoUrl} onChange={e => setFormData({...formData, videoUrl: e.target.value})} />
+          <p className="text-[10px] text-muted-foreground italic">Ensure you use the 'embed' URL format from YouTube.</p>
         </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Video</Button>
+        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Video Info</Button>
       </CardContent>
     </Card>
   );
@@ -617,19 +690,20 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
       <Card className="lg:col-span-1 h-fit">
         <CardHeader>
           <CardTitle>Add to Gallery</CardTitle>
+          <CardDescription>Upload service operation photos.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="space-y-2">
               <Label>Image URL</Label>
-              <Input value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} required />
+              <Input value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} required placeholder="https://images.unsplash.com/..." />
             </div>
             <div className="space-y-2">
               <Label>Caption</Label>
-              <Input value={description} onChange={e => setDescription(e.target.value)} required />
+              <Input value={description} onChange={e => setDescription(e.target.value)} required placeholder="Site maintenance in Kigali..." />
             </div>
-            <Button className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add Photo"}
+            <Button className="w-full h-12" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />} Add Photo
             </Button>
           </form>
         </CardContent>
@@ -637,15 +711,20 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
       
       <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Existing Photos</CardTitle>
-          <Badge variant="outline">{photos?.length || 0}</Badge>
+          <div>
+            <CardTitle>Photo Management</CardTitle>
+            <CardDescription>Manage your visual portfolio.</CardDescription>
+          </div>
+          <Badge variant="secondary">{photos?.length || 0} Total</Badge>
         </CardHeader>
         <CardContent>
-          {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto" /> : (
+          {loading ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {photos?.map((p: any) => (
-                <div key={p.id} className="group relative rounded-lg overflow-hidden border">
-                  <div className="relative h-40 w-full">
+                <div key={p.id} className="group relative rounded-lg overflow-hidden border bg-white shadow-sm">
+                  <div className="relative h-40 w-full bg-muted">
                     <Image src={p.imageUrl} alt="" fill className="object-cover" />
                     <Button 
                       size="icon" 
@@ -656,9 +735,14 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="p-3 text-sm truncate">{p.description}</div>
+                  <div className="p-3 text-sm font-medium truncate">{p.description}</div>
                 </div>
               ))}
+              {(!photos || photos.length === 0) && (
+                <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed rounded-lg">
+                  No photos uploaded to gallery.
+                </div>
+              )}
             </div>
           )}
         </CardContent>
