@@ -1,0 +1,55 @@
+
+{
+  "entities": {
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "description": "An image with a description for the SANEX gallery.",
+      "type": "object",
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the image."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the photo."
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp when added."
+        }
+      },
+      "required": [
+        "imageUrl",
+        "description",
+        "createdAt"
+      ]
+    },
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global settings for the website.",
+      "type": "object",
+      "properties": {
+        "heroVideoUrl": {
+          "type": "string",
+          "description": "URL for the homepage highlight video."
+        }
+      }
+    }
+  },
+  "auth": {
+    "providers": [
+      "google.com"
+    ]
+  },
+  "firestore": {
+    "/gallery/{itemId}": {
+      "schema": "#/entities/GalleryItem",
+      "description": "Collection of gallery photos."
+    },
+    "/settings/general": {
+      "schema": "#/entities/SiteSettings",
+      "description": "General site configuration."
+    }
+  }
+}
