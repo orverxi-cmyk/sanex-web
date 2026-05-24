@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Truck, Settings, Droplets, Users, Award, Leaf, Handshake, Sparkles } from "lucide-react";
+import { Truck, Settings, Droplets, Users, ShieldCheck, Leaf, Globe, Sparkles } from "lucide-react";
 
 export function Services() {
   const services = [
@@ -37,24 +37,24 @@ export function Services() {
 
   const whyChooseUs = [
     {
-      title: "Expertise",
-      description: "With years of experience, we bring unmatched knowledge and skills to every project we undertake.",
-      icon: <Award className="h-6 w-6 text-primary" />
+      title: "Comprehensive Coverage",
+      description: "From collection to treatment, we handle every aspect of liquid waste management.",
+      icon: <Globe className="h-6 w-6 text-primary" />
     },
     {
-      title: "Sustainability",
-      description: "Our solutions are designed to minimize environmental impact while promoting long-term benefits for communities.",
+      title: "Eco-Friendly Solutions",
+      description: "Our services are designed to promote environmental sustainability.",
       icon: <Leaf className="h-6 w-6 text-secondary" />
     },
     {
-      title: "Reliability",
-      description: "From timely service delivery to quality assurance, we are a partner you can count on.",
-      icon: <Handshake className="h-6 w-6 text-primary" />
+      title: "Customer-Centric Approach",
+      description: "We prioritize your needs and provide customized solutions.",
+      icon: <Users className="h-6 w-6 text-primary" />
     },
     {
-      title: "Customer Focus",
-      description: "At SANEX, our customers are at the heart of everything we do. We strive to exceed expectations.",
-      icon: <Users className="h-6 w-6 text-secondary" />
+      title: "Compliance and Safety",
+      description: "Adherence to all regulatory standards ensures reliable and safe service delivery.",
+      icon: <ShieldCheck className="h-6 w-6 text-secondary" />
     }
   ];
 
@@ -98,7 +98,7 @@ export function Services() {
         {/* Why Choose Us Section */}
         <div className="mt-32 space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl lg:text-4xl font-bold font-headline">Why Choose Us</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold font-headline">Why Choose SANEX?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               We combine technical excellence with a deep commitment to Rwanda's environmental health.
             </p>
@@ -120,11 +120,11 @@ export function Services() {
             <Sparkles className="absolute top-4 right-4 h-24 w-24 opacity-10 rotate-12" />
             <div className="max-w-3xl relative z-10">
               <p className="text-xl lg:text-2xl font-medium leading-relaxed italic">
-                "As we continue to grow, we remain committed to creating meaningful impact and driving Rwanda towards a cleaner, healthier, and more sustainable future. Together, we can build a world where waste is no longer a problem but an opportunity for innovation and progress."
+                "With SANEX, you’re not just choosing a service provider – you’re partnering with a company committed to building a cleaner, healthier, and more sustainable Rwanda."
               </p>
               <div className="mt-8 flex items-center gap-4">
                 <div className="h-1 w-12 bg-secondary rounded-full" />
-                <span className="font-bold tracking-widest uppercase text-sm">The SANEX Commitment</span>
+                <span className="font-bold tracking-widest uppercase text-sm">The SANEX Partnership</span>
               </div>
             </div>
           </div>
