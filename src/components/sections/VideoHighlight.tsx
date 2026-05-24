@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -19,6 +18,8 @@ export function VideoHighlight() {
   if (loading) return null;
   if (!content.videoUrl) return null;
 
+  const isYouTube = content.videoUrl.includes("youtube.com") || content.videoUrl.includes("youtu.be");
+
   return (
     <section className="py-24 bg-muted/20">
       <div className="container mx-auto px-4 md:px-6">
@@ -31,12 +32,21 @@ export function VideoHighlight() {
         </div>
 
         <div className="max-w-5xl mx-auto aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-black relative">
-          <iframe
-            src={content.videoUrl}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
+          {isYouTube ? (
+            <iframe
+              src={content.videoUrl}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <video 
+              src={content.videoUrl} 
+              controls 
+              className="w-full h-full object-cover"
+              poster="/video-poster.jpg"
+            />
+          )}
         </div>
       </div>
     </section>

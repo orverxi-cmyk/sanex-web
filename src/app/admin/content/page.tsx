@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -14,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { MediaPicker } from "@/components/MediaPicker";
 import Link from "next/link";
 import { 
   ChevronLeft, 
@@ -219,10 +219,12 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
               <Label>Title Accent (Second Part - Colored)</Label>
               <Input value={formData.titleAccent} onChange={e => setFormData({...formData, titleAccent: e.target.value})} />
             </div>
-            <div className="space-y-2">
-              <Label>Hero Image URL</Label>
-              <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
-            </div>
+            <MediaPicker 
+              label="Hero Image" 
+              folder="hero"
+              value={formData.imageUrl} 
+              onChange={(url) => setFormData({...formData, imageUrl: url})} 
+            />
           </div>
           <div className="space-y-2">
             <Label>Description</Label>
@@ -358,7 +360,7 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {formData.items.map((item: any, i: number) => (
-            <Card key={i} className="bg-muted/30 p-4 space-y-3 relative group">
+            <Card key={i} className="bg-muted/30 p-4 space-y-4 relative group">
               <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -374,10 +376,12 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
                 <Label className="text-xs">Description</Label>
                 <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Image URL</Label>
-                <Input value={item.imageUrl} onChange={e => updateItem(i, 'imageUrl', e.target.value)} />
-              </div>
+              <MediaPicker 
+                label="Service Image" 
+                folder="services"
+                value={item.imageUrl} 
+                onChange={(url) => updateItem(i, 'imageUrl', url)} 
+              />
             </Card>
           ))}
         </div>
@@ -630,7 +634,7 @@ function VideoEditor({ initialData, onSave }: { initialData: any, onSave: (data:
     <Card>
       <CardHeader>
         <CardTitle>Video Highlight</CardTitle>
-        <CardDescription>Featured YouTube video for the homepage.</CardDescription>
+        <CardDescription>Featured YouTube video or uploaded file for the homepage.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -641,12 +645,15 @@ function VideoEditor({ initialData, onSave }: { initialData: any, onSave: (data:
           <Label>Section Description</Label>
           <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
         </div>
-        <div className="space-y-2">
-          <Label>YouTube Embed URL</Label>
-          <Input placeholder="https://www.youtube.com/embed/..." value={formData.videoUrl} onChange={e => setFormData({...formData, videoUrl: e.target.value})} />
-          <p className="text-[10px] text-muted-foreground italic">Ensure you use the 'embed' URL format from YouTube.</p>
-        </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Video Info</Button>
+        <MediaPicker 
+          label="Highlight Video" 
+          folder="videos"
+          accept="video/*"
+          value={formData.videoUrl} 
+          onChange={(url) => setFormData({...formData, videoUrl: url})} 
+        />
+        <p className="text-[10px] text-muted-foreground italic">Supports YouTube embeds or uploaded video files (MP4/WebM).</p>
+        <Button onClick={() => onSave(formData)} className="gap-2 mt-4"><Save className="h-4 w-4" /> Save Video Info</Button>
       </CardContent>
     </Card>
   );
@@ -694,15 +701,17 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAdd} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Image URL</Label>
-              <Input value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} required placeholder="https://images.unsplash.com/..." />
-            </div>
-            <div className="space-y-2">
+            <MediaPicker 
+              label="Gallery Image" 
+              folder="gallery"
+              value={photoUrl} 
+              onChange={setPhotoUrl} 
+            />
+            <div className="space-y-2 pt-2">
               <Label>Caption</Label>
               <Input value={description} onChange={e => setDescription(e.target.value)} required placeholder="Site maintenance in Kigali..." />
             </div>
-            <Button className="w-full h-12" disabled={isSubmitting}>
+            <Button className="w-full h-12" disabled={isSubmitting || !photoUrl}>
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />} Add Photo
             </Button>
           </form>
