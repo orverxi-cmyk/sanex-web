@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "GalleryItem": {
@@ -24,15 +25,52 @@
         "createdAt"
       ]
     },
-    "SiteSettings": {
-      "title": "Site Settings",
-      "description": "Global settings for the website.",
+    "HeroSettings": {
       "type": "object",
       "properties": {
-        "heroVideoUrl": {
-          "type": "string",
-          "description": "URL for the homepage highlight video."
-        }
+        "badge": { "type": "string" },
+        "title": { "type": "string" },
+        "titleAccent": { "type": "string" },
+        "description": { "type": "string" },
+        "ctaText": { "type": "string" },
+        "ctaLink": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      }
+    },
+    "HighlightItem": {
+      "type": "object",
+      "properties": {
+        "icon": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "ServiceItem": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "icon": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      }
+    },
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global settings and section content for the website.",
+      "type": "object",
+      "properties": {
+        "hero": { "$ref": "#/entities/HeroSettings" },
+        "highlights": { "type": "array", "items": { "$ref": "#/entities/HighlightItem" } },
+        "services": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "subtitle": { "type": "string" },
+            "items": { "type": "array", "items": { "$ref": "#/entities/ServiceItem" } }
+          }
+        },
+        "heroVideoUrl": { "type": "string" }
       }
     },
     "User": {
@@ -40,19 +78,10 @@
       "description": "User metadata and permissions.",
       "type": "object",
       "properties": {
-        "email": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "role": {
-          "type": "string",
-          "enum": ["admin", "user"]
-        },
-        "lastLogin": {
-          "type": "number"
-        }
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "lastLogin": { "type": "number" }
       }
     },
     "Booking": {
@@ -64,7 +93,7 @@
         "email": { "type": "string" },
         "phone": { "type": "string" },
         "serviceType": { "type": "string" },
-        "locationUrl": { "type": "string", "description": "Google Maps or similar link." },
+        "locationUrl": { "type": "string" },
         "description": { "type": "string" },
         "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
         "createdAt": { "type": "number" }
@@ -82,9 +111,9 @@
       "schema": "#/entities/GalleryItem",
       "description": "Collection of gallery photos."
     },
-    "/settings/general": {
+    "/settings/{sectionId}": {
       "schema": "#/entities/SiteSettings",
-      "description": "General site configuration."
+      "description": "Site configuration sections (hero, services, highlights, etc)."
     },
     "/users/{userId}": {
       "schema": "#/entities/User",

@@ -1,3 +1,4 @@
+
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
@@ -21,13 +22,10 @@ async function assertAdmin(request: CallableRequest) {
   return userId;
 }
 
-export const adminAddGalleryItem = onCall(async (request) => {
+export const adminAddGalleryItem = onCall(async (request: CallableRequest) => {
   await assertAdmin(request);
   const { imageUrl, description } = request.data;
   if (!imageUrl || !description) throw new HttpsError('invalid-argument', 'Missing fields.');
-  
-  const urlPattern = /^https?:\/\/.+/;
-  if (!urlPattern.test(imageUrl)) throw new HttpsError('invalid-argument', 'Invalid image URL.');
   
   const newItem = {
     imageUrl,
@@ -38,7 +36,7 @@ export const adminAddGalleryItem = onCall(async (request) => {
   return { id: ref.id, ...newItem };
 });
 
-export const adminDeleteGalleryItem = onCall(async (request) => {
+export const adminDeleteGalleryItem = onCall(async (request: CallableRequest) => {
   await assertAdmin(request);
   const { id } = request.data;
   if (!id) throw new HttpsError('invalid-argument', 'Missing id.');
@@ -46,7 +44,7 @@ export const adminDeleteGalleryItem = onCall(async (request) => {
   return { success: true };
 });
 
-export const adminUpdateGalleryItem = onCall(async (request) => {
+export const adminUpdateGalleryItem = onCall(async (request: CallableRequest) => {
   await assertAdmin(request);
   const { id, imageUrl, description } = request.data;
   if (!id || !imageUrl || !description) throw new HttpsError('invalid-argument', 'Missing fields.');
@@ -60,22 +58,19 @@ export const adminUpdateGalleryItem = onCall(async (request) => {
   return { id, ...updateData };
 });
 
-export const adminUpdateHeroVideo = onCall(async (request) => {
+export const adminUpdateSiteSection = onCall(async (request: CallableRequest) => {
   await assertAdmin(request);
-  const { videoUrl } = request.data;
-  if (!videoUrl) throw new HttpsError('invalid-argument', 'Missing video URL.');
+  const { sectionId, content } = request.data;
+  if (!sectionId || !content) throw new HttpsError('invalid-argument', 'Missing sectionId or content.');
   
-  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/embed\/|youtu\.be\/)[\w-]+/;
-  if (!youtubeRegex.test(videoUrl)) throw new HttpsError('invalid-argument', 'Invalid YouTube embed URL.');
-  
-  await db.collection('settings').doc('general').set({ heroVideoUrl: videoUrl }, { merge: true });
+  await db.collection('settings').doc(sectionId).set(content, { merge: true });
   return { success: true };
 });
 
-export const createBooking = onCall(async (request) => {
+export const createBooking = onCall(async (request: CallableRequest) => {
   const { customerName, email, phone, serviceType, locationUrl, description } = request.data;
   if (!customerName || !email || !phone || !serviceType || !locationUrl) {
-    throw new HttpsError('invalid-argument', 'Missing required booking fields, including location.');
+    throw new HttpsError('invalid-argument', 'Missing required booking fields.');
   }
 
   const booking = {
@@ -93,7 +88,7 @@ export const createBooking = onCall(async (request) => {
   return { id: ref.id };
 });
 
-export const adminUpdateBookingStatus = onCall(async (request) => {
+export const adminUpdateBookingStatus = onCall(async (request: CallableRequest) => {
   await assertAdmin(request);
   const { bookingId, status } = request.data;
   if (!bookingId || !status) throw new HttpsError('invalid-argument', 'Missing bookingId or status.');
