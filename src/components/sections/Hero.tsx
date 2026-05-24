@@ -1,7 +1,9 @@
+
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 
 export function Hero() {
   const heroImage = PlaceHolderImages.find((img) => img.id === "hero-sanitation");
@@ -25,11 +27,11 @@ export function Hero() {
               Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="h-14 px-8 text-lg rounded-full">
-                Learn More About Us <ArrowRight className="ml-2 h-5 w-5" />
+              <Button asChild size="lg" className="h-14 px-8 text-lg rounded-full gap-2">
+                <Link href="/book"><Calendar className="h-5 w-5" /> Book a Service</Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-primary text-primary hover:bg-primary/5">
-                Get a Quote
+              <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-primary text-primary hover:bg-primary/5">
+                <Link href="/#about">Learn More About Us <ArrowRight className="ml-2 h-5 w-5" /></Link>
               </Button>
             </div>
           </div>

@@ -72,3 +72,33 @@ export const adminUpdateHeroVideo = functions.https.onCall(async (data, context)
   await db.collection('settings').doc('general').set({ heroVideoUrl: videoUrl }, { merge: true });
   return { success: true };
 });
+
+export const createBooking = functions.https.onCall(async (data) => {
+  const { customerName, email, phone, serviceType, locationUrl, description } = data;
+  if (!customerName || !email || !phone || !serviceType) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing required booking fields.');
+  }
+
+  const booking = {
+    customerName,
+    email,
+    phone,
+    serviceType,
+    locationUrl: locationUrl || null,
+    description: description || '',
+    status: 'pending',
+    createdAt: Date.now(),
+  };
+
+  const ref = await db.collection('bookings').add(booking);
+  return { id: ref.id };
+});
+
+export const adminUpdateBookingStatus = functions.https.onCall(async (data, context) => {
+  await assertAdmin(context);
+  const { bookingId, status } = data;
+  if (!bookingId || !status) throw new functions.https.HttpsError('invalid-argument', 'Missing bookingId or status.');
+  
+  await db.collection('bookings').doc(bookingId).update({ status });
+  return { success: true };
+});

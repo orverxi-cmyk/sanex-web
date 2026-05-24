@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   ArrowRight,
   Loader2,
-  LogIn
+  LogIn,
+  ClipboardList
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -149,14 +150,14 @@ export default function AdminDashboard() {
             <Card className="group hover:shadow-lg transition-all border-l-4 border-l-primary">
               <CardHeader>
                 <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6" />
+                  <ClipboardList className="h-6 w-6" />
                 </div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Secure role promotion using Cloud Functions and Custom Claims.</CardDescription>
+                <CardTitle>Service Requests</CardTitle>
+                <CardDescription>Review and manage customer bookings and service statuses.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild variant="outline" className="w-full group-hover:bg-primary group-hover:text-white">
-                  <Link href="/admin/users">Manage Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  <Link href="/admin/bookings">Manage Bookings <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
             </Card>
@@ -179,14 +180,14 @@ export default function AdminDashboard() {
             <Card className="group hover:shadow-lg transition-all border-l-4 border-l-accent">
               <CardHeader>
                 <div className="h-12 w-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4">
-                  <Settings className="h-6 w-6" />
+                  <Users className="h-6 w-6" />
                 </div>
-                <CardTitle>System Settings</CardTitle>
-                <CardDescription>Configure global site configurations through secure endpoints.</CardDescription>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Secure role promotion using Cloud Functions and Custom Claims.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-white">
-                  <Link href="/admin/content">Manage Settings <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  <Link href="/admin/users">Manage Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
             </Card>

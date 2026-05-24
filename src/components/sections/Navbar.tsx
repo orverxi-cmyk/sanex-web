@@ -4,7 +4,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Droplets, Menu, X, LayoutDashboard } from "lucide-react";
+import { Droplets, Menu, X, LayoutDashboard, Calendar } from "lucide-react";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -60,7 +60,9 @@ export function Navbar() {
             )}
             
             <div className="flex items-center gap-4 ml-4">
-              <Button size="sm" className="bg-secondary hover:bg-secondary/90">Get a Quote</Button>
+              <Button asChild className="bg-secondary hover:bg-secondary/90 gap-2">
+                <Link href="/book"><Calendar className="h-4 w-4" /> Book a Service</Link>
+              </Button>
             </div>
           </div>
 
@@ -96,7 +98,9 @@ export function Navbar() {
                 <LayoutDashboard className="h-5 w-5" /> Admin Portal
               </Link>
             )}
-            <Button className="w-full bg-secondary">Get a Quote</Button>
+            <Button asChild className="w-full bg-secondary gap-2">
+              <Link href="/book"><Calendar className="h-4 w-4" /> Book a Service</Link>
+            </Button>
           </div>
         </div>
       )}
