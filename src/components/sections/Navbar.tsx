@@ -4,12 +4,18 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Droplets, Menu, X, User } from "lucide-react";
-import { useUser } from "@/firebase";
+import { Droplets, Menu, X, LayoutDashboard } from "lucide-react";
+import { useUser, useDoc, useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user } = useUser();
+  const db = useFirestore();
+
+  const { data: userProfile } = useDoc(
+    db && user ? doc(db, "users", user.uid) : null
+  );
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -19,6 +25,8 @@ export function Navbar() {
     { name: "Gallery", href: "/gallery" },
     { name: "Contact", href: "/#contact" },
   ];
+
+  const isAdmin = userProfile?.role === "admin";
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
@@ -45,9 +53,9 @@ export function Navbar() {
               </Link>
             ))}
             
-            {user && (
-              <Link href="/admin" className="text-sm font-bold text-secondary hover:underline flex items-center gap-1">
-                <User className="h-4 w-4" /> Admin
+            {isAdmin && (
+              <Link href="/admin" className="text-sm font-bold text-secondary hover:underline flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" /> Admin Portal
               </Link>
             )}
             
@@ -79,9 +87,9 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            {user && (
-              <Link href="/admin" onClick={() => setIsOpen(false)} className="text-lg font-bold text-secondary">
-                Admin Dashboard
+            {isAdmin && (
+              <Link href="/admin" onClick={() => setIsOpen(false)} className="text-lg font-bold text-secondary flex items-center gap-2">
+                <LayoutDashboard className="h-5 w-5" /> Admin Portal
               </Link>
             )}
             <Button className="w-full bg-secondary">Get a Quote</Button>
