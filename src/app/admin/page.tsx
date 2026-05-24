@@ -4,8 +4,9 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useUser, useDoc, useFirestore } from "@/firebase";
+import { useUser, useDoc, useFirestore, useFunctions } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,12 +20,12 @@ import {
   ArrowRight,
   Loader2
 } from "lucide-react";
-import { bootstrapMasterAdmin } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
+  const functions = useFunctions();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -33,11 +34,12 @@ export default function AdminDashboard() {
   );
 
   const handleBootstrap = async () => {
-    if (!user) return;
+    if (!user || !functions) return;
     setIsSubmitting(true);
     try {
-      await bootstrapMasterAdmin(user.uid, user.email!, user.displayName || "Admin");
-      toast({ title: "Success", description: "Master Admin initialized successfully." });
+      const bootstrapFunc = httpsCallable(functions, 'adminBootstrapMaster');
+      await bootstrapFunc({});
+      toast({ title: "Success", description: "Master Admin initialized securely via Cloud Function." });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
@@ -95,9 +97,9 @@ export default function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">If you are the master administrator, you can initialize your account below.</p>
+              <p className="text-sm text-muted-foreground">If you are the master administrator, you can initialize your account securely.</p>
               <Button onClick={handleBootstrap} variant="secondary" className="w-full gap-2" disabled={isSubmitting}>
-                <ShieldCheck className="h-4 w-4" /> Bootstrap Master Admin
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Bootstrap Master Admin
               </Button>
             </CardContent>
           </Card>
@@ -124,7 +126,7 @@ export default function AdminDashboard() {
                   <Users className="h-6 w-6" />
                 </div>
                 <CardTitle>User Management</CardTitle>
-                <CardDescription>Set user roles, manage permissions, and audit access.</CardDescription>
+                <CardDescription>Secure role promotion using Cloud Functions and Custom Claims.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild variant="outline" className="w-full group-hover:bg-primary group-hover:text-white">
@@ -139,7 +141,7 @@ export default function AdminDashboard() {
                   <ImageIcon className="h-6 w-6" />
                 </div>
                 <CardTitle>Content Management</CardTitle>
-                <CardDescription>Update gallery photos, descriptions, and site highlights.</CardDescription>
+                <CardDescription>Update gallery photos and site highlights via server-side logic.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild variant="outline" className="w-full group-hover:bg-secondary group-hover:text-white">
@@ -154,7 +156,7 @@ export default function AdminDashboard() {
                   <Settings className="h-6 w-6" />
                 </div>
                 <CardTitle>System Settings</CardTitle>
-                <CardDescription>Configure homepage videos and global site configurations.</CardDescription>
+                <CardDescription>Configure global site configurations through secure endpoints.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-white">

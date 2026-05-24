@@ -4,8 +4,9 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
+import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
 import { doc, collection, query, orderBy } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +22,13 @@ import {
   Mail,
   Calendar
 } from "lucide-react";
-import { updateUserRole } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 
 export default function UserManagementPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
+  const functions = useFunctions();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [updatingId, setUpdatingId] = React.useState<string | null>(null);
@@ -52,12 +53,13 @@ export default function UserManagementPage() {
   }, [allUsers, searchTerm]);
 
   const handleToggleRole = async (targetUser: any) => {
-    if (!user) return;
+    if (!functions) return;
     setUpdatingId(targetUser.id);
     const newRole = targetUser.role === "admin" ? "user" : "admin";
     try {
-      await updateUserRole(user.uid, targetUser.id, newRole);
-      toast({ title: "Updated", description: `Role for ${targetUser.displayName} changed to ${newRole}.` });
+      const updateRoleFunc = httpsCallable(functions, 'adminUpdateUserRole');
+      await updateRoleFunc({ targetUserId: targetUser.id, newRole });
+      toast({ title: "Updated", description: `Role for ${targetUser.displayName} changed to ${newRole} via secure function.` });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Action Failed", description: err.message });
     } finally {
@@ -105,7 +107,7 @@ export default function UserManagementPage() {
                 <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
               </Button>
               <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
-                <Users className="h-8 w-8 text-primary" /> User Management
+                <Users className="h-8 w-8 text-primary" /> Secure User Management
               </h1>
             </div>
             <div className="relative w-full md:w-80">
@@ -122,7 +124,7 @@ export default function UserManagementPage() {
           <Card className="shadow-sm border-none">
             <CardHeader className="border-b bg-white/50">
               <CardTitle>System Users</CardTitle>
-              <CardDescription>Promote or demote users. Master Admin status is permanent.</CardDescription>
+              <CardDescription>Managed via server-side Cloud Functions and Custom Claims.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">

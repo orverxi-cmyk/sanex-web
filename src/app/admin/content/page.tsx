@@ -4,12 +4,14 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
-import { doc, collection, query, orderBy, setDoc, addDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
+import { doc, collection, query, orderBy } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { 
   ChevronLeft, 
@@ -25,12 +27,11 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { errorEmitter } from "@/firebase/error-emitter";
-import { FirestorePermissionError } from "@/firebase/errors";
 
 export default function ContentManagementPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
+  const functions = useFunctions();
   const { toast } = useToast();
   
   const [photoUrl, setPhotoUrl] = React.useState("");
@@ -55,46 +56,28 @@ export default function ContentManagementPage() {
     if (settings?.heroVideoUrl) setVideoUrl(settings.heroVideoUrl);
   }, [settings]);
 
-  const handleAddPhoto = (e: React.FormEvent) => {
+  const handleAddPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !photoUrl || !description) return;
+    if (!functions || !photoUrl || !description) return;
     setIsSubmitting(true);
     
-    if (editingId) {
-      const docRef = doc(db, "gallery", editingId);
-      const data = { imageUrl: photoUrl, description, updatedAt: serverTimestamp() };
-      setDoc(docRef, data, { merge: true })
-        .then(() => {
-          setEditingId(null);
-          setPhotoUrl("");
-          setDescription("");
-          toast({ title: "Updated", description: "Gallery item updated successfully." });
-        })
-        .catch(async (err) => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'update',
-            requestResourceData: data,
-          }));
-        })
-        .finally(() => setIsSubmitting(false));
-    } else {
-      const colRef = collection(db, "gallery");
-      const data = { imageUrl: photoUrl, description, createdAt: Date.now() };
-      addDoc(colRef, data)
-        .then(() => {
-          setPhotoUrl("");
-          setDescription("");
-          toast({ title: "Added", description: "New photo added to gallery." });
-        })
-        .catch(async (err) => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: colRef.path,
-            operation: 'create',
-            requestResourceData: data,
-          }));
-        })
-        .finally(() => setIsSubmitting(false));
+    try {
+      if (editingId) {
+        const updateFunc = httpsCallable(functions, 'adminUpdateGalleryItem');
+        await updateFunc({ id: editingId, imageUrl: photoUrl, description });
+        setEditingId(null);
+        toast({ title: "Updated", description: "Gallery item updated successfully via secure function." });
+      } else {
+        const addFunc = httpsCallable(functions, 'adminAddGalleryItem');
+        await addFunc({ imageUrl: photoUrl, description });
+        toast({ title: "Added", description: "New photo added to gallery via secure function." });
+      }
+      setPhotoUrl("");
+      setDescription("");
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Operation Failed", description: err.message });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -105,38 +88,29 @@ export default function ContentManagementPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = (id: string) => {
-    if (!db || !confirm("Are you sure you want to delete this photo?")) return;
-    const docRef = doc(db, "gallery", id);
-    deleteDoc(docRef)
-      .then(() => {
-        toast({ title: "Deleted", description: "Photo removed from gallery." });
-      })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'delete',
-        }));
-      });
+  const handleDelete = async (id: string) => {
+    if (!functions || !confirm("Are you sure you want to delete this photo?")) return;
+    try {
+      const deleteFunc = httpsCallable(functions, 'adminDeleteGalleryItem');
+      await deleteFunc({ id });
+      toast({ title: "Deleted", description: "Photo removed successfully." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    }
   };
 
-  const handleUpdateVideo = () => {
-    if (!db || !videoUrl) return;
+  const handleUpdateVideo = async () => {
+    if (!functions || !videoUrl) return;
     setIsSubmitting(true);
-    const docRef = doc(db, "settings", "general");
-    const data = { heroVideoUrl: videoUrl };
-    setDoc(docRef, data, { merge: true })
-      .then(() => {
-        toast({ title: "Saved", description: "Homepage video highlight updated." });
-      })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'update',
-          requestResourceData: data,
-        }));
-      })
-      .finally(() => setIsSubmitting(false));
+    try {
+      const updateVideoFunc = httpsCallable(functions, 'adminUpdateHeroVideo');
+      await updateVideoFunc({ videoUrl });
+      toast({ title: "Saved", description: "Homepage video highlight updated via secure function." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (authLoading || profileLoading) {
@@ -178,7 +152,7 @@ export default function ContentManagementPage() {
           </Button>
           
           <h1 className="text-3xl font-bold font-headline mb-10 flex items-center gap-3">
-            <Globe className="h-8 w-8 text-primary" /> Content Management
+            <Globe className="h-8 w-8 text-primary" /> Secure Content Management
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -189,6 +163,7 @@ export default function ContentManagementPage() {
                     <Plus className="h-5 w-5 text-primary" /> 
                     {editingId ? "Edit Photo" : "Add Gallery Photo"}
                   </CardTitle>
+                  <CardDescription>Handled by Cloud Function</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddPhoto} className="space-y-4">
@@ -212,7 +187,7 @@ export default function ContentManagementPage() {
                     </div>
                     <div className="flex gap-2">
                       <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                        {editingId ? "Update Item" : "Add to Gallery"}
+                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (editingId ? "Update Item" : "Add to Gallery")}
                       </Button>
                       {editingId && (
                         <Button variant="outline" onClick={() => { setEditingId(null); setPhotoUrl(""); setDescription(""); }}>
@@ -229,7 +204,7 @@ export default function ContentManagementPage() {
                   <CardTitle className="flex items-center gap-2 text-secondary">
                     <Video className="h-5 w-5" /> Homepage Highlight
                   </CardTitle>
-                  <CardDescription>Update the cinematic video on the landing page.</CardDescription>
+                  <CardDescription>Update the cinematic video securely.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -241,7 +216,7 @@ export default function ContentManagementPage() {
                     />
                   </div>
                   <Button onClick={handleUpdateVideo} variant="secondary" className="w-full gap-2" disabled={isSubmitting}>
-                    <Save className="h-4 w-4" /> Save Highlight URL
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Highlight URL
                   </Button>
                 </CardContent>
               </Card>
