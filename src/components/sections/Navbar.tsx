@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Droplets, Menu, X, LayoutDashboard } from "lucide-react";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { UserNav } from "./UserNav";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -59,17 +60,23 @@ export function Navbar() {
               </Link>
             )}
             
-            <Button size="sm" className="bg-secondary hover:bg-secondary/90">Get a Quote</Button>
+            <div className="flex items-center gap-4 ml-4">
+              <UserNav />
+              <Button size="sm" className="bg-secondary hover:bg-secondary/90">Get a Quote</Button>
+            </div>
           </div>
 
           {/* Mobile Menu Toggle */}
-          <button
-            className="lg:hidden p-2"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X /> : <Menu />}
-          </button>
+          <div className="flex items-center gap-4 lg:hidden">
+            <UserNav />
+            <button
+              className="p-2"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X /> : <Menu />}
+            </button>
+          </div>
         </div>
       </div>
 

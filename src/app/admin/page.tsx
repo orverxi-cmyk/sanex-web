@@ -4,9 +4,10 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useUser, useDoc, useFirestore, useFunctions } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useUser, useDoc, useFirestore, useFunctions, useAuth } from "@/firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -18,12 +19,14 @@ import {
   ShieldAlert, 
   ShieldCheck,
   ArrowRight,
-  Loader2
+  Loader2,
+  LogIn
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
+  const { auth } = useAuth();
   const db = useFirestore();
   const functions = useFunctions();
   const { toast } = useToast();
@@ -32,6 +35,26 @@ export default function AdminDashboard() {
   const { data: userProfile, loading: profileLoading } = useDoc(
     db && user ? doc(db, "users", user.uid) : null
   );
+
+  const handleSignIn = async () => {
+    if (!auth || !db) return;
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const userRef = doc(db, "users", result.user.uid);
+      await setDoc(userRef, {
+        email: result.user.email,
+        displayName: result.user.displayName,
+        lastLogin: Date.now(),
+      }, { merge: true });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Error",
+        description: error.message,
+      });
+    }
+  };
 
   const handleBootstrap = async () => {
     if (!user || !functions) return;
@@ -66,11 +89,14 @@ export default function AdminDashboard() {
               <CardTitle>Admin Access</CardTitle>
               <CardDescription>Secure login required for SANEX dashboard</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-center text-muted-foreground mb-6">
+            <CardContent className="space-y-4">
+              <p className="text-sm text-center text-muted-foreground mb-4">
                 Please sign in with an authorized account to access administrative tools.
               </p>
-              <Button asChild className="w-full">
+              <Button onClick={handleSignIn} className="w-full gap-2">
+                <LogIn className="h-4 w-4" /> Sign In with Google
+              </Button>
+              <Button asChild variant="ghost" className="w-full">
                 <Link href="/">Back to Home</Link>
               </Button>
             </CardContent>
