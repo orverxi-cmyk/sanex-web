@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -36,16 +35,18 @@ export function Hero() {
           </div>
 
           <div className="relative animate-in fade-in slide-in-from-right duration-1000">
-            <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl rotate-2">
-              <Image
-                src={heroImage?.imageUrl || ""}
-                alt={heroImage?.description || "Wastewater plant"}
-                width={800}
-                height={600}
-                className="object-cover"
-                data-ai-hint="wastewater plant"
-                priority
-              />
+            <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl rotate-2 bg-muted">
+              {heroImage?.imageUrl && (
+                <Image
+                  src={heroImage.imageUrl}
+                  alt={heroImage.description || "Wastewater plant"}
+                  width={800}
+                  height={600}
+                  className="object-cover"
+                  data-ai-hint="wastewater plant"
+                  priority
+                />
+              )}
             </div>
             {/* Decorative backgrounds */}
             <div className="absolute -top-6 -right-6 w-full h-full bg-secondary/10 rounded-2xl -z-10 -rotate-3 border border-secondary/20" />

@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -42,13 +41,15 @@ export function Services() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {services.map((service, i) => (
             <Card key={service.id} className="group overflow-hidden border-none shadow-xl transition-all duration-300 hover:-translate-y-2">
-              <div className="relative h-64 overflow-hidden">
-                <Image
-                  src={service.image?.imageUrl || ""}
-                  alt={service.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
+              <div className="relative h-64 overflow-hidden bg-muted">
+                {service.image?.imageUrl && (
+                  <Image
+                    src={service.image.imageUrl}
+                    alt={service.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                )}
                 <div className="absolute top-4 left-4 h-12 w-12 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-lg">
                   {service.icon}
                 </div>
