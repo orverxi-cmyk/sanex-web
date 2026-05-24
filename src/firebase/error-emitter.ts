@@ -1,3 +1,4 @@
+
 type ErrorEvents = {
   'permission-error': (error: any) => void;
 };
