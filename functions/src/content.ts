@@ -1,3 +1,4 @@
+
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
@@ -41,6 +42,8 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     excerpt: "How SANEX transformed liquid waste collection for over 50 schools in the capital.",
     content: "Detailed story about our 2024 project in Kigali... [More content here]",
     imageUrl: "https://picsum.photos/seed/impact1/1200/600",
+    imageWidth: 1200,
+    imageHeight: 600,
     category: "Impact",
     author: "SANEX Editorial",
     createdAt: Date.now(),
@@ -54,6 +57,8 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
         title: "Liquid Waste Collection", 
         description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.", 
         imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+        width: 1200,
+        height: 600,
         link: "/services",
         buttonText: "Our Solutions"
       },
@@ -61,6 +66,8 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
         title: "Clean Water Reuse", 
         description: "Advanced DWTS systems using activated sludge technology for irrigation.", 
         imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
+        width: 1200,
+        height: 600,
         link: "/articles",
         buttonText: "Environmental Impact"
       }
@@ -74,6 +81,8 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     titleAccent: "Waste Into Opportunity",
     description: "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
     imageUrl: "https://picsum.photos/seed/sanex1/1200/800",
+    imageWidth: 1200,
+    imageHeight: 800,
     ctaText: "Book a Service",
     ctaLink: "/book"
   });
@@ -92,9 +101,9 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     title: "Comprehensive Liquid Waste Solutions",
     subtitle: "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
     items: [
-      { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600" },
-      { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600" },
-      { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" }
+      { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600", width: 800, height: 600 },
+      { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600", width: 800, height: 600 },
+      { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600", width: 800, height: 600 }
     ]
   });
 
@@ -125,7 +134,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
 
 export const adminAddArticle = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
-  const { title, content, excerpt, imageUrl, category, author } = request.data;
+  const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author } = request.data;
   if (!title || !content) throw new HttpsError('invalid-argument', 'Title and content are required.');
   
   const newItem = {
@@ -133,6 +142,8 @@ export const adminAddArticle = onCall({ cors: true }, async (request: CallableRe
     content,
     excerpt: excerpt || '',
     imageUrl: imageUrl || '',
+    imageWidth: Number(imageWidth) || 1200,
+    imageHeight: Number(imageHeight) || 600,
     category: category || 'General',
     author: author || 'Admin',
     createdAt: Date.now(),
@@ -157,6 +168,8 @@ export const adminUpdateArticle = onCall({ cors: true }, async (request: Callabl
   
   const updateData = {
     ...data,
+    imageWidth: Number(data.imageWidth) || 1200,
+    imageHeight: Number(data.imageHeight) || 600,
     updatedAt: Date.now(),
   };
   await db.collection('articles').doc(id).update(updateData);
@@ -165,12 +178,14 @@ export const adminUpdateArticle = onCall({ cors: true }, async (request: Callabl
 
 export const adminAddGalleryItem = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
-  const { imageUrl, description } = request.data;
+  const { imageUrl, description, width, height } = request.data;
   if (!imageUrl || !description) throw new HttpsError('invalid-argument', 'Missing fields.');
   
   const newItem = {
     imageUrl,
     description: description.trim(),
+    width: Number(width) || 800,
+    height: Number(height) || 600,
     createdAt: Date.now(),
   };
   const ref = await db.collection('gallery').add(newItem);

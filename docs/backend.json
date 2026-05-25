@@ -17,6 +17,14 @@
         "createdAt": {
           "type": "number",
           "description": "Timestamp when added."
+        },
+        "width": {
+          "type": "number",
+          "description": "Display width in pixels."
+        },
+        "height": {
+          "type": "number",
+          "description": "Display height in pixels."
         }
       },
       "required": [
@@ -34,6 +42,8 @@
         "excerpt": { "type": "string" },
         "content": { "type": "string" },
         "imageUrl": { "type": "string" },
+        "imageWidth": { "type": "number" },
+        "imageHeight": { "type": "number" },
         "category": { "type": "string" },
         "author": { "type": "string" },
         "createdAt": { "type": "number" },
@@ -50,7 +60,9 @@
         "description": { "type": "string" },
         "ctaText": { "type": "string" },
         "ctaLink": { "type": "string" },
-        "imageUrl": { "type": "string" }
+        "imageUrl": { "type": "string" },
+        "imageWidth": { "type": "number" },
+        "imageHeight": { "type": "number" }
       }
     },
     "SliderItem": {
@@ -59,6 +71,8 @@
         "title": { "type": "string" },
         "description": { "type": "string" },
         "imageUrl": { "type": "string" },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
         "link": { "type": "string" },
         "buttonText": { "type": "string" }
       }
@@ -87,7 +101,9 @@
         "icon": { "type": "string" },
         "title": { "type": "string" },
         "description": { "type": "string" },
-        "imageUrl": { "type": "string" }
+        "imageUrl": { "type": "string" },
+        "width": { "type": "number" },
+        "height": { "type": "number" }
       }
     },
     "ImpactItem": {
@@ -222,4 +238,3 @@
     }
   }
 }
-

@@ -71,8 +71,14 @@ export default function ArticleDetailPage() {
           </header>
 
           {article.imageUrl && (
-            <div className="relative aspect-video rounded-2xl overflow-hidden mb-5 shadow-xl border border-primary/10">
-              <Image src={article.imageUrl} alt={article.title} fill className="object-cover" />
+            <div className="relative rounded-2xl overflow-hidden mb-5 shadow-xl border border-primary/10 bg-muted flex justify-center">
+              <Image 
+                src={article.imageUrl} 
+                alt={article.title} 
+                width={article.imageWidth || 1200}
+                height={article.imageHeight || 600}
+                className="object-contain h-auto w-full max-w-full" 
+              />
             </div>
           )}
 

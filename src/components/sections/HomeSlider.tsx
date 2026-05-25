@@ -26,6 +26,8 @@ export function HomeSlider() {
       title: "Liquid Waste Collection", 
       description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda. We ensure efficient and hygienic collection processes tailored to your needs.", 
       imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+      width: 1200,
+      height: 600,
       link: "/services",
       buttonText: "Our Solutions"
     },
@@ -33,6 +35,8 @@ export function HomeSlider() {
       title: "Clean Water Reuse", 
       description: "Advanced DWTS systems using activated sludge technology for irrigation and flushing. Transform your waste into a sustainable resource for the future.", 
       imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
+      width: 1200,
+      height: 600,
       link: "/articles",
       buttonText: "Environmental Impact"
     }
@@ -54,7 +58,7 @@ export function HomeSlider() {
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[400px] lg:min-h-[500px]">
-                  {/* Text Content Area - Left Side (Desktop) */}
+                  {/* Text Content Area - Left Side */}
                   <div className="flex flex-col justify-center p-8 lg:p-12 space-y-6 order-2 lg:order-1">
                     <div className="space-y-4">
                       <h2 className="text-3xl lg:text-5xl font-bold font-headline text-primary tracking-tight leading-tight">
@@ -73,14 +77,17 @@ export function HomeSlider() {
                     </div>
                   </div>
 
-                  {/* Media Area - Right Side (Desktop) */}
-                  <div className="relative h-[300px] lg:h-auto w-full bg-muted order-1 lg:order-2 border-l border-primary/10">
-                    <Image
-                      src={slide.imageUrl}
-                      alt={slide.title}
-                      fill
-                      className="object-cover"
-                    />
+                  {/* Media Area - Right Side */}
+                  <div className="relative w-full bg-muted order-1 lg:order-2 border-l border-primary/10 flex items-center justify-center p-4">
+                    <div className="relative" style={{ width: '100%', maxWidth: slide.width || 800 }}>
+                      <Image
+                        src={slide.imageUrl}
+                        alt={slide.title}
+                        width={slide.width || 1200}
+                        height={slide.height || 600}
+                        className="object-contain w-full h-auto rounded-lg shadow-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               </CarouselItem>

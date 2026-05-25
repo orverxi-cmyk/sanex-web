@@ -15,12 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/components/MediaPicker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 import { 
   ChevronLeft, 
   ImageIcon, 
-  Video, 
   Plus, 
   Trash2, 
   Save, 
@@ -29,13 +27,9 @@ import {
   Layout,
   Sparkles,
   List,
-  Target,
   Globe,
-  Milestone,
   RefreshCw,
   Settings,
-  Mail,
-  Phone,
   Layers,
   FileText
 } from "lucide-react";
@@ -57,7 +51,6 @@ export default function ContentManagementPage() {
   const heroRef = React.useMemo(() => (db ? doc(db, "settings", "hero") : null), [db]);
   const sliderRef = React.useMemo(() => (db ? doc(db, "settings", "slider") : null), [db]);
   const servicesRef = React.useMemo(() => (db ? doc(db, "settings", "services") : null), [db]);
-  const videoRef = React.useMemo(() => (db ? doc(db, "settings", "video") : null), [db]);
   const highlightsRef = React.useMemo(() => (db ? doc(db, "settings", "highlights") : null), [db]);
   const impactRef = React.useMemo(() => (db ? doc(db, "settings", "impact") : null), [db]);
   const regionalRef = React.useMemo(() => (db ? doc(db, "settings", "regional") : null), [db]);
@@ -66,7 +59,6 @@ export default function ContentManagementPage() {
   const { data: heroData } = useDoc(heroRef);
   const { data: sliderData } = useDoc(sliderRef);
   const { data: servicesData } = useDoc(servicesRef);
-  const { data: videoData } = useDoc(videoRef);
   const { data: highlightsData } = useDoc(highlightsRef);
   const { data: impactData } = useDoc(impactRef);
   const { data: regionalData } = useDoc(regionalRef);
@@ -202,7 +194,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
-    title: "", excerpt: "", content: "", imageUrl: "", category: "Impact", author: "SANEX Team"
+    title: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
   });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -219,7 +211,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
         toast({ title: "Created", description: "Article published." });
       }
       setIsEditing(null);
-      setFormData({ title: "", excerpt: "", content: "", imageUrl: "", category: "Impact", author: "SANEX Team" });
+      setFormData({ title: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team" });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -232,6 +224,8 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
       excerpt: article.excerpt,
       content: article.content,
       imageUrl: article.imageUrl,
+      imageWidth: article.imageWidth || 1200,
+      imageHeight: article.imageHeight || 600,
       category: article.category,
       author: article.author
     });
@@ -260,19 +254,35 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
               <Input className="h-9 text-xs" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
             </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Category</Label>
-              <Input className="h-9 text-xs" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Category</Label>
+                <Input className="h-9 text-xs" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Author</Label>
+                <Input className="h-9 text-xs" value={formData.author} onChange={e => setFormData({...formData, author: e.target.value})} />
+              </div>
             </div>
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Excerpt</Label>
               <Textarea className="min-h-[60px] text-xs" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Content (Full Details)</Label>
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Content</Label>
               <Textarea className="min-h-[150px] text-xs" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required />
             </div>
             <MediaPicker label="Featured Image" value={formData.imageUrl} onChange={url => setFormData({...formData, imageUrl: url})} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label>
+                <Input type="number" className="h-9 text-xs" value={formData.imageWidth} onChange={e => setFormData({...formData, imageWidth: Number(e.target.value)})} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label>
+                <Input type="number" className="h-9 text-xs" value={formData.imageHeight} onChange={e => setFormData({...formData, imageHeight: Number(e.target.value)})} />
+              </div>
+            </div>
             <div className="flex gap-2 pt-2">
               <Button type="submit" className="flex-grow h-10 text-xs font-bold uppercase tracking-widest">{isEditing ? "Save Changes" : "Publish Article"}</Button>
               {isEditing && <Button type="button" variant="outline" className="h-10 text-xs font-bold uppercase tracking-widest" onClick={() => setIsEditing(null)}>Cancel</Button>}
@@ -295,8 +305,9 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
                 <div className="flex-grow">
                   <h4 className="font-bold text-sm">{a.title}</h4>
                   <p className="text-[10px] text-muted-foreground line-clamp-1">{a.excerpt}</p>
-                  <div className="mt-1">
+                  <div className="mt-1 flex gap-2">
                     <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0">{a.category}</Badge>
+                    <span className="text-[8px] text-muted-foreground">{a.imageWidth}x{a.imageHeight}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -319,13 +330,13 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
     if (initialData?.items) setItems(initialData.items);
   }, [initialData]);
 
-  const updateItem = (index: number, field: string, value: string) => {
+  const updateItem = (index: number, field: string, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
 
-  const addItem = () => setItems([...items, { title: "", description: "", imageUrl: "", link: "/articles", buttonText: "Learn More" }]);
+  const addItem = () => setItems([...items, { title: "", description: "", imageUrl: "", width: 1200, height: 600, link: "/articles", buttonText: "Learn More" }]);
   const removeItem = (index: number) => setItems(items.filter((_, i) => i !== index));
 
   return (
@@ -333,7 +344,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-xl">Homepage Slider</CardTitle>
-          <CardDescription className="text-xs">Side-by-side featured carousel.</CardDescription>
+          <CardDescription className="text-xs">Manage featured carousel slides.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest"><Plus className="h-4 w-4" /> Add Slide</Button>
       </CardHeader>
@@ -347,11 +358,12 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
                   <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label><Input className="h-9 text-xs" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} /></div>
                   <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Textarea className="min-h-[60px] text-xs" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} /></div>
                   <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label><Input type="number" className="h-9 text-xs" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label><Input type="number" className="h-9 text-xs" value={item.height} onChange={e => updateItem(i, 'height', Number(e.target.value))} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Btn Text</Label><Input className="h-9 text-xs" value={item.buttonText} onChange={e => updateItem(i, 'buttonText', e.target.value)} /></div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Link Path</Label>
-                      <Input className="h-9 text-xs" value={item.link} onChange={e => updateItem(i, 'link', e.target.value)} placeholder="/articles" />
-                    </div>
+                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Link</Label><Input className="h-9 text-xs" value={item.link} onChange={e => updateItem(i, 'link', e.target.value)} /></div>
                   </div>
                 </div>
                 <MediaPicker label="Slide Image" value={item.imageUrl} onChange={(url) => updateItem(i, 'imageUrl', url)} />
@@ -402,6 +414,10 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
             <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Title Accent</Label><Input className="h-9 text-xs" value={formData.titleAccent} onChange={e => setFormData({...formData, titleAccent: e.target.value})} /></div>
             <MediaPicker label="Hero Media" value={formData.imageUrl} onChange={url => setFormData({...formData, imageUrl: url})} />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label><Input type="number" className="h-9 text-xs" value={formData.imageWidth} onChange={e => setFormData({...formData, imageWidth: Number(e.target.value)})} /></div>
+            <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label><Input type="number" className="h-9 text-xs" value={formData.imageHeight} onChange={e => setFormData({...formData, imageHeight: Number(e.target.value)})} /></div>
+          </div>
           <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Textarea className="min-h-[80px] text-xs" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} /></div>
           <Button type="submit" className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Hero</Button>
         </form>
@@ -413,14 +429,14 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
 function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState(initialData || { items: [] });
   React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
-  const updateItem = (i: number, f: string, v: string) => {
+  const updateItem = (i: number, f: string, v: any) => {
     const ni = [...formData.items]; ni[i] = { ...ni[i], [f]: v }; setFormData({ ...formData, items: ni });
   };
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-xl">Services</CardTitle>
-        <Button size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest" onClick={() => setFormData({...formData, items: [...formData.items, {title: "", description: "", icon: "truck", imageUrl: ""}]})}><Plus className="h-4 w-4" /> Add Service</Button>
+        <Button size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest" onClick={() => setFormData({...formData, items: [...formData.items, {title: "", description: "", icon: "truck", imageUrl: "", width: 800, height: 600}]})}><Plus className="h-4 w-4" /> Add Service</Button>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -429,6 +445,10 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
               <Input className="h-9 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
               <Textarea className="min-h-[60px] text-xs" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Description" />
               <MediaPicker value={item.imageUrl} onChange={u => updateItem(i, 'imageUrl', u)} />
+              <div className="grid grid-cols-2 gap-2">
+                <Input type="number" className="h-8 text-[10px]" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} placeholder="Width" />
+                <Input type="number" className="h-8 text-[10px]" value={item.height} onChange={e => updateItem(i, 'height', Number(e.target.value))} placeholder="Height" />
+              </div>
               <Button size="icon" variant="destructive" className="h-8 w-8 absolute top-2 right-2" onClick={() => setFormData({...formData, items: formData.items.filter((_:any, idx:number) => idx !== i)})}><Trash2 className="h-4 w-4" /></Button>
             </Card>
           ))}
@@ -497,13 +517,15 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
   const { toast } = useToast();
   const [photoUrl, setPhotoUrl] = React.useState("");
   const [description, setDescription] = React.useState("");
+  const [width, setWidth] = React.useState(800);
+  const [height, setHeight] = React.useState(600);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!functions || !photoUrl) return;
     try {
       const addFunc = httpsCallable(functions, 'adminAddGalleryItem');
-      await addFunc({ imageUrl: photoUrl, description });
+      await addFunc({ imageUrl: photoUrl, description, width, height });
       setPhotoUrl(""); setDescription("");
       toast({ title: "Success", description: "Photo added." });
     } catch (err: any) {
@@ -533,6 +555,16 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Caption</Label>
               <Input className="h-9 text-xs" value={description} onChange={e => setDescription(e.target.value)} placeholder="Service description..." />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label>
+                <Input type="number" className="h-9 text-xs" value={width} onChange={e => setWidth(Number(e.target.value))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label>
+                <Input type="number" className="h-9 text-xs" value={height} onChange={e => setHeight(Number(e.target.value))} />
+              </div>
+            </div>
             <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-black">Add Photo</Button>
           </form>
         </CardContent>
@@ -553,7 +585,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                   <Trash2 className="h-3 w-3" />
                 </Button>
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-[8px] text-white font-medium line-clamp-1">{p.description}</p>
+                  <p className="text-[8px] text-white font-medium line-clamp-1">{p.description} ({p.width}x{p.height})</p>
                 </div>
               </div>
             ))}
