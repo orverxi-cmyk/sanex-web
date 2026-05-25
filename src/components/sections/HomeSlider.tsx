@@ -44,6 +44,12 @@ export function HomeSlider() {
 
   const items = sliderData?.items || defaultItems;
 
+  const isVideo = (url: string) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || url.includes('firebasestorage') && url.toLowerCase().includes('.mp4');
+  };
+
   if (loading) return (
     <div className="h-[400px] flex items-center justify-center bg-muted/20">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -77,15 +83,29 @@ export function HomeSlider() {
                   </div>
 
                   <div className="relative w-full bg-muted order-1 lg:order-2 border-l border-primary/10 flex items-center justify-center p-4">
-                    <div className="relative" style={{ width: '100%', maxWidth: slide.width || 800 }}>
-                      {slide.imageUrl && (
+                    <div className="relative w-full h-full flex items-center justify-center" style={{ maxWidth: slide.width || 800 }}>
+                      {slide.imageUrl && isVideo(slide.imageUrl) ? (
+                        <video 
+                          src={slide.imageUrl} 
+                          controls 
+                          autoPlay 
+                          muted 
+                          loop 
+                          className="w-full h-auto rounded-lg shadow-sm max-h-[450px] object-contain"
+                        />
+                      ) : slide.imageUrl ? (
                         <Image
                           src={slide.imageUrl}
-                          alt={slide.title || "Slide image"}
+                          alt={slide.title || "Slide media"}
                           width={slide.width || 1200}
                           height={slide.height || 600}
                           className="object-contain w-full h-auto rounded-lg shadow-sm"
+                          priority={i === 0}
                         />
+                      ) : (
+                        <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-xs uppercase font-bold">
+                          Media Pending
+                        </div>
                       )}
                     </div>
                   </div>

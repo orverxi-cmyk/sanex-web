@@ -44,8 +44,12 @@ export default function ArticlesPage() {
               {articles.map((article: any) => (
                 <div key={article.id} className="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all flex flex-col">
                   <div className="relative h-56 w-full bg-muted">
-                    {article.imageUrl && (
+                    {article.imageUrl ? (
                       <Image src={article.imageUrl} alt={article.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <div className="h-full w-full bg-muted flex items-center justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        No Image
+                      </div>
                     )}
                   </div>
                   <div className="p-6 flex-grow flex flex-col">

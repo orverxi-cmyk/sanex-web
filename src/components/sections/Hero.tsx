@@ -21,6 +21,8 @@ export function Hero() {
     titleAccent: heroData?.titleAccent || "Waste Into Opportunity",
     description: heroData?.description || "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
     imageUrl: heroData?.imageUrl || "https://picsum.photos/seed/sanex1/1200/800",
+    imageWidth: heroData?.imageWidth || 800,
+    imageHeight: heroData?.imageHeight || 600,
     ctaText: heroData?.ctaText || "Book a Service",
     ctaLink: heroData?.ctaLink || "/book"
   };
@@ -61,14 +63,18 @@ export function Hero() {
 
           <div className="relative animate-in fade-in slide-in-from-right duration-1000">
             <div className="relative z-10 rounded-2xl overflow-hidden shadow-xl bg-muted border border-primary/10">
-              {content.imageUrl && (
+              {content.imageUrl ? (
                 <Image
                   src={content.imageUrl}
                   alt="Sanitation facility"
-                  width={800}
-                  height={600}
-                  className="object-cover"
+                  width={content.imageWidth}
+                  height={content.imageHeight}
+                  className="object-cover w-full h-auto"
                 />
+              ) : (
+                <div className="aspect-video bg-muted flex items-center justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Media Placeholder
+                </div>
               )}
             </div>
           </div>
