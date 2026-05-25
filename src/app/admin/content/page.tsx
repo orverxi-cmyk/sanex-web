@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -30,7 +31,8 @@ import {
   Target,
   Globe,
   Milestone,
-  RefreshCw
+  RefreshCw,
+  Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -48,6 +50,7 @@ export default function ContentManagementPage() {
     db && user ? doc(db, "users", user.uid) : null
   );
 
+  const { data: generalData } = useDoc(db ? doc(db, "settings", "general") : null);
   const { data: heroData } = useDoc(db ? doc(db, "settings", "hero") : null);
   const { data: servicesData } = useDoc(db ? doc(db, "settings", "services") : null);
   const { data: videoData } = useDoc(db ? doc(db, "settings", "video") : null);
@@ -128,9 +131,10 @@ export default function ContentManagementPage() {
             )}
           </div>
 
-          <Tabs defaultValue="hero" className="space-y-8">
+          <Tabs defaultValue="general" className="space-y-8">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
+                <TabsTrigger value="general" className="gap-2"><Settings className="h-4 w-4" /> Branding</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2"><Sparkles className="h-4 w-4" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2"><Target className="h-4 w-4" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2"><List className="h-4 w-4" /> Services</TabsTrigger>
@@ -141,6 +145,10 @@ export default function ContentManagementPage() {
                 <TabsTrigger value="gallery" className="gap-2"><ImageIcon className="h-4 w-4" /> Gallery</TabsTrigger>
               </TabsList>
             </div>
+
+            <TabsContent value="general">
+              <GeneralEditor initialData={generalData} onSave={(data) => handleUpdateSection('general', data)} />
+            </TabsContent>
 
             <TabsContent value="hero">
               <HeroEditor initialData={heroData} onSave={(data) => handleUpdateSection('hero', data)} />
@@ -178,6 +186,45 @@ export default function ContentManagementPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const defaults = {
+    siteName: "SANEX Company Ltd",
+    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200"
+  };
+
+  const [formData, setFormData] = React.useState(initialData || defaults);
+
+  React.useEffect(() => {
+    if (initialData) setFormData(initialData);
+  }, [initialData]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Branding & Identity</CardTitle>
+        <CardDescription>Global site identity settings like logo and name.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Site Name</Label>
+              <Input value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} />
+            </div>
+            <MediaPicker 
+              label="Company Logo" 
+              folder="branding"
+              value={formData.logoUrl} 
+              onChange={(url) => setFormData({...formData, logoUrl: url})} 
+            />
+          </div>
+          <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Branding</Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

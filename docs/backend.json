@@ -37,6 +37,13 @@
         "imageUrl": { "type": "string" }
       }
     },
+    "GeneralSettings": {
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string" },
+        "logoUrl": { "type": "string" }
+      }
+    },
     "HighlightItem": {
       "type": "object",
       "properties": {
@@ -85,6 +92,7 @@
       "description": "Global settings and section content for the website.",
       "type": "object",
       "properties": {
+        "general": { "$ref": "#/entities/GeneralSettings" },
         "hero": { "$ref": "#/entities/HeroSettings" },
         "highlights": { "type": "array", "items": { "$ref": "#/entities/HighlightItem" } },
         "services": {
@@ -169,7 +177,7 @@
     },
     "/settings/{sectionId}": {
       "schema": "#/entities/SiteSettings",
-      "description": "Site configuration sections (hero, services, highlights, etc)."
+      "description": "Site configuration sections (hero, services, highlights, general etc)."
     },
     "/users/{userId}": {
       "schema": "#/entities/User",

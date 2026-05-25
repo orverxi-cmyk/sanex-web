@@ -27,6 +27,12 @@ export const adminSeedInitialData = onCall(async (request: CallableRequest) => {
 
   const batch = db.batch();
 
+  // General Settings
+  batch.set(db.collection('settings').doc('general'), {
+    siteName: "SANEX Company Ltd",
+    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200"
+  });
+
   // Hero Section
   batch.set(db.collection('settings').doc('hero'), {
     badge: "Leading Sanitation Partner in Rwanda",

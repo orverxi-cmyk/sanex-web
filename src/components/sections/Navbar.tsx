@@ -3,6 +3,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Droplets, Menu, X, LayoutDashboard, Calendar } from "lucide-react";
 import { useUser, useDoc, useFirestore } from "@/firebase";
@@ -17,6 +18,10 @@ export function Navbar() {
     db && user ? doc(db, "users", user.uid) : null
   );
 
+  const { data: generalData } = useDoc(
+    db ? doc(db, "settings", "general") : null
+  );
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/#about" },
@@ -27,17 +32,25 @@ export function Navbar() {
   ];
 
   const isAdmin = userProfile?.role === "admin";
+  const siteName = generalData?.siteName || "SANEX Company Ltd";
+  const logoUrl = generalData?.logoUrl;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Droplets className="h-6 w-6" />
-            </div>
+            {logoUrl ? (
+              <div className="relative h-10 w-10 overflow-hidden rounded-lg">
+                <Image src={logoUrl} alt={siteName} fill className="object-contain" />
+              </div>
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Droplets className="h-6 w-6" />
+              </div>
+            )}
             <span className="text-xl font-bold tracking-tight font-headline text-primary">
-              SANEX <span className="text-foreground">Ltd</span>
+              {siteName.split(' ')[0]} <span className="text-foreground">{siteName.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
 

@@ -1,20 +1,41 @@
+
+"use client";
+
+import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Droplets, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { useDoc, useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export function Footer() {
+  const db = useFirestore();
+  const { data: generalData } = useDoc(
+    db ? doc(db, "settings", "general") : null
+  );
+
+  const siteName = generalData?.siteName || "SANEX Company Ltd";
+  const logoUrl = generalData?.logoUrl;
+
   return (
     <footer id="contact" className="bg-primary text-primary-foreground pt-20 pb-10">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-primary">
-                <Droplets className="h-6 w-6" />
-              </div>
-              <span className="text-2xl font-bold font-headline tracking-tight text-white">SANEX</span>
+              {logoUrl ? (
+                <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-white">
+                  <Image src={logoUrl} alt={siteName} fill className="object-contain p-1" />
+                </div>
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-primary">
+                  <Droplets className="h-6 w-6" />
+                </div>
+              )}
+              <span className="text-2xl font-bold font-headline tracking-tight text-white">{siteName.split(' ')[0]}</span>
             </Link>
             <p className="text-primary-foreground/70 leading-relaxed">
-              Founded in 2017, SANEX Company Ltd is Rwanda's leading provider of sustainable liquid waste management solutions.
+              Founded in 2017, {siteName} is Rwanda's leading provider of sustainable liquid waste management solutions.
             </p>
             <div className="flex gap-4">
               <Link href="#" className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary transition-colors">
@@ -69,7 +90,7 @@ export function Footer() {
         </div>
         
         <div className="border-t border-white/10 pt-8 text-center text-sm text-primary-foreground/50">
-          <p>© {new Date().getFullYear()} SANEX Company Ltd. All rights reserved. Transforming Waste into Opportunity.</p>
+          <p>© {new Date().getFullYear()} {siteName}. All rights reserved. Transforming Waste into Opportunity.</p>
         </div>
       </div>
     </footer>
