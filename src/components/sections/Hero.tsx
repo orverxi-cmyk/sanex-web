@@ -61,13 +61,15 @@ export function Hero() {
 
           <div className="relative animate-in fade-in slide-in-from-right duration-1000">
             <div className="relative z-10 rounded-2xl overflow-hidden shadow-xl bg-muted border border-primary/10">
-              <Image
-                src={content.imageUrl}
-                alt="Sanitation facility"
-                width={800}
-                height={600}
-                className="object-cover"
-              />
+              {content.imageUrl && (
+                <Image
+                  src={content.imageUrl}
+                  alt="Sanitation facility"
+                  width={800}
+                  height={600}
+                  className="object-cover"
+                />
+              )}
             </div>
           </div>
         </div>

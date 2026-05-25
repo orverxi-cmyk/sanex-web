@@ -58,7 +58,6 @@ export function HomeSlider() {
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[400px] lg:min-h-[500px]">
-                  {/* Text Content Area - Left Side */}
                   <div className="flex flex-col justify-center p-8 lg:p-12 space-y-6 order-2 lg:order-1">
                     <div className="space-y-4">
                       <h2 className="text-3xl lg:text-5xl font-bold font-headline text-primary tracking-tight leading-tight">
@@ -77,16 +76,17 @@ export function HomeSlider() {
                     </div>
                   </div>
 
-                  {/* Media Area - Right Side */}
                   <div className="relative w-full bg-muted order-1 lg:order-2 border-l border-primary/10 flex items-center justify-center p-4">
                     <div className="relative" style={{ width: '100%', maxWidth: slide.width || 800 }}>
-                      <Image
-                        src={slide.imageUrl}
-                        alt={slide.title}
-                        width={slide.width || 1200}
-                        height={slide.height || 600}
-                        className="object-contain w-full h-auto rounded-lg shadow-sm"
-                      />
+                      {slide.imageUrl && (
+                        <Image
+                          src={slide.imageUrl}
+                          alt={slide.title || "Slide image"}
+                          width={slide.width || 1200}
+                          height={slide.height || 600}
+                          className="object-contain w-full h-auto rounded-lg shadow-sm"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

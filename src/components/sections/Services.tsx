@@ -70,12 +70,14 @@ export function Services() {
           {content.items.map((service: any, i: number) => (
             <Card key={i} className="group overflow-hidden border-none shadow-md transition-all duration-300 hover:shadow-lg bg-white">
               <div className="relative h-44 overflow-hidden bg-muted">
-                <Image
-                  src={service.imageUrl}
-                  alt={service.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                {service.imageUrl && (
+                  <Image
+                    src={service.imageUrl}
+                    alt={service.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
                 <div className="absolute top-3 left-3 h-9 w-9 rounded-lg bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-sm border border-primary/20">
                   {getIcon(service.icon || 'users')}
                 </div>

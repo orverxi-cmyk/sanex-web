@@ -44,13 +44,15 @@ export default function GalleryPage() {
                   key={photo.id} 
                   className="group relative rounded-xl overflow-hidden bg-muted shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center p-2"
                 >
-                  <Image
-                    src={photo.imageUrl}
-                    alt={photo.description}
-                    width={photo.width || 800}
-                    height={photo.height || 600}
-                    className="object-contain transition-transform duration-500 group-hover:scale-105 rounded-lg h-auto w-full"
-                  />
+                  {photo.imageUrl && (
+                    <Image
+                      src={photo.imageUrl}
+                      alt={photo.description || "Gallery photo"}
+                      width={photo.width || 800}
+                      height={photo.height || 600}
+                      className="object-contain transition-transform duration-500 group-hover:scale-105 rounded-lg h-auto w-full"
+                    />
+                  )}
                   <div className="absolute inset-x-2 bottom-2 bg-black/80 p-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p className="text-white font-medium text-xs">
                       {photo.description}
