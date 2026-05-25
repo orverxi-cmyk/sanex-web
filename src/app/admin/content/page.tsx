@@ -32,7 +32,9 @@ import {
   Globe,
   Milestone,
   RefreshCw,
-  Settings
+  Settings,
+  Mail,
+  Phone
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -192,7 +194,9 @@ export default function ContentManagementPage() {
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const defaults = {
     siteName: "SANEX Company Ltd",
-    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200"
+    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
+    phone: "+250 788 303 628",
+    email: "info@sanex.rw"
   };
 
   const [formData, setFormData] = React.useState(initialData || defaults);
@@ -205,7 +209,7 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
     <Card>
       <CardHeader>
         <CardTitle>Branding & Identity</CardTitle>
-        <CardDescription>Global site identity settings like logo and name.</CardDescription>
+        <CardDescription>Global site identity settings and contact info.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
@@ -220,6 +224,16 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
               value={formData.logoUrl} 
               onChange={(url) => setFormData({...formData, logoUrl: url})} 
             />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Contact Phone</Label>
+              <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+250 000 000 000" />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2"><Mail className="h-4 w-4" /> Contact Email</Label>
+              <Input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="info@example.rw" />
+            </div>
           </div>
           <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Branding</Button>
         </form>

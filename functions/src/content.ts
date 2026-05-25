@@ -30,7 +30,9 @@ export const adminSeedInitialData = onCall(async (request: CallableRequest) => {
   // General Settings
   batch.set(db.collection('settings').doc('general'), {
     siteName: "SANEX Company Ltd",
-    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200"
+    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
+    phone: "+250 788 303 628",
+    email: "info@sanex.rw"
   });
 
   // Hero Section

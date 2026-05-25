@@ -41,7 +41,9 @@
       "type": "object",
       "properties": {
         "siteName": { "type": "string" },
-        "logoUrl": { "type": "string" }
+        "logoUrl": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" }
       }
     },
     "HighlightItem": {

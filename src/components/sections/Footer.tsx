@@ -16,6 +16,8 @@ export function Footer() {
 
   const siteName = generalData?.siteName || "SANEX Company Ltd";
   const logoUrl = generalData?.logoUrl;
+  const phone = generalData?.phone || "+250 788 303 628";
+  const email = generalData?.email || "info@sanex.rw";
 
   return (
     <footer id="contact" className="bg-primary text-black pt-20 pb-10">
@@ -79,11 +81,15 @@ export function Footer() {
               </li>
               <li className="flex gap-3 text-black/70 font-medium">
                 <Phone className="h-5 w-5 flex-shrink-0 text-black" />
-                <span>+250 000 000 000</span>
+                <a href={`mailto:${email}?subject=Inquiry from Website&body=Hello, I would like to inquire about...`} className="hover:text-black transition-colors">
+                  {phone}
+                </a>
               </li>
               <li className="flex gap-3 text-black/70 font-medium">
                 <Mail className="h-5 w-5 flex-shrink-0 text-black" />
-                <span>info@sanex.rw</span>
+                <a href={`mailto:${email}`} className="hover:text-black transition-colors">
+                  {email}
+                </a>
               </li>
             </ul>
           </div>
