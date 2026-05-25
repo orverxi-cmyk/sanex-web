@@ -90,20 +90,20 @@ export function HomeSlider() {
                     )}
                   </div>
 
-                  {/* Content Section (1/4) */}
-                  <div className="flex flex-col justify-center p-6 lg:p-8 space-y-6 lg:col-span-1">
+                  {/* Content Section (1/4) - Green background with black text */}
+                  <div className="flex flex-col justify-center p-6 lg:p-8 space-y-6 lg:col-span-1 bg-primary text-black">
                     <div className="space-y-4">
-                      <h2 className="text-2xl lg:text-3xl font-bold font-headline text-primary tracking-tight leading-tight">
+                      <h2 className="text-2xl lg:text-3xl font-bold font-headline text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
-                      <p className="text-muted-foreground text-xs lg:text-sm leading-relaxed font-medium">
+                      <p className="text-black/80 text-xs lg:text-sm leading-relaxed font-medium">
                         {slide.description}
                       </p>
                     </div>
                     <div className="pt-2">
-                      <Button asChild size="lg" className="w-full rounded-full bg-primary text-black font-bold uppercase tracking-widest hover:bg-primary/90 gap-2 h-11 px-6 text-[10px]">
+                      <Button asChild size="lg" className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-11 px-6 text-[10px]">
                         <Link href={slide.link || "#"}>
-                          {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-black" />
+                          {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-primary" />
                         </Link>
                       </Button>
                     </div>
