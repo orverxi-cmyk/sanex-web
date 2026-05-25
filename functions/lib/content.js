@@ -74,7 +74,8 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
         logoWidth: 160,
         logoHeight: 40,
-        phone: "+250 788 303 628",
+        logoSpacing: 8,
+        phone: "+250 788303628",
         email: "info@sanex.rw"
     });
     // Articles Seeding (Impact Stories)

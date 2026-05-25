@@ -65,8 +65,6 @@ exports.adminUpdateUserRole = (0, https_1.onCall)({ cors: true }, async (request
     if (targetUserId === callerUid) {
         throw new https_1.HttpsError('failed-precondition', 'You cannot change your own role.');
     }
-    // We use a safe check for master email. In v2, params are preferred but this keeps consistency.
-    // Note: For a real app, use defineString() or secret manager.
     const masterEmail = 'orverxi@gmail.com';
     const targetUserDoc = await db.collection('users').doc(targetUserId).get();
     if (targetUserDoc.exists && ((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email) === masterEmail) {
