@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -68,6 +69,7 @@ export function HomeSlider() {
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
                       <video 
                         src={slide.imageUrl} 
+                        controls
                         autoPlay 
                         muted 
                         loop 

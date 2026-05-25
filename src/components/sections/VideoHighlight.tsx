@@ -8,7 +8,8 @@ import { Activity, Loader2 } from "lucide-react";
 
 export function VideoHighlight() {
   const db = useFirestore();
-  const { data: videoData, loading } = useDoc(db ? doc(db, "settings", "video") : null);
+  const videoRef = React.useMemo(() => (db ? doc(db, "settings", "video") : null), [db]);
+  const { data: videoData, loading } = useDoc(videoRef);
 
   const content = {
     title: videoData?.title || "SANEX in Action",
@@ -16,10 +17,29 @@ export function VideoHighlight() {
     videoUrl: videoData?.videoUrl || ""
   };
 
-  if (loading) return null;
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return "";
+    let videoId = "";
+    if (url.includes("youtube.com/watch?v=")) {
+      videoId = url.split("v=")[1].split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1].split("?")[0];
+    } else if (url.includes("youtube.com/embed/")) {
+      return url;
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0` : url;
+  };
+
+  if (loading) return (
+    <div className="h-20 flex items-center justify-center">
+      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+    </div>
+  );
+  
   if (!content.videoUrl) return null;
 
   const isYouTube = content.videoUrl.includes("youtube.com") || content.videoUrl.includes("youtu.be");
+  const embedUrl = isYouTube ? getYouTubeEmbedUrl(content.videoUrl) : content.videoUrl;
 
   return (
     <section className="py-5 bg-muted/20">
@@ -35,7 +55,7 @@ export function VideoHighlight() {
         <div className="max-w-4xl mx-auto aspect-video rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-black relative">
           {isYouTube ? (
             <iframe
-              src={content.videoUrl}
+              src={embedUrl}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
