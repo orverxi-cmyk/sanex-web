@@ -35,6 +35,33 @@ export const adminSeedInitialData = onCall(async (request: CallableRequest) => {
     email: "info@sanex.rw"
   });
 
+  // Slider Section
+  batch.set(db.collection('settings').doc('slider'), {
+    items: [
+      { 
+        title: "Liquid Waste Collection", 
+        description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.", 
+        imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+        link: "/#services",
+        buttonText: "Our Solutions"
+      },
+      { 
+        title: "Clean Water Reuse", 
+        description: "Advanced DWTS systems using activated sludge technology for irrigation.", 
+        imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
+        link: "/#impact",
+        buttonText: "Environmental Impact"
+      },
+      { 
+        title: "Nationwide Coverage", 
+        description: "Operational hubs in Kigali, Musanze, and Huye to serve your community.", 
+        imageUrl: "https://picsum.photos/seed/sanexslide3/1200/600",
+        link: "/book",
+        buttonText: "Book Now"
+      }
+    ]
+  });
+
   // Hero Section
   batch.set(db.collection('settings').doc('hero'), {
     badge: "Leading Sanitation Partner in Rwanda",

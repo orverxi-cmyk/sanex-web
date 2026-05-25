@@ -37,6 +37,16 @@
         "imageUrl": { "type": "string" }
       }
     },
+    "SliderItem": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "link": { "type": "string" },
+        "buttonText": { "type": "string" }
+      }
+    },
     "GeneralSettings": {
       "type": "object",
       "properties": {
@@ -96,6 +106,7 @@
       "properties": {
         "general": { "$ref": "#/entities/GeneralSettings" },
         "hero": { "$ref": "#/entities/HeroSettings" },
+        "slider": { "type": "array", "items": { "$ref": "#/entities/SliderItem" } },
         "highlights": { "type": "array", "items": { "$ref": "#/entities/HighlightItem" } },
         "services": {
           "type": "object",

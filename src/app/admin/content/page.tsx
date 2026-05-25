@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/components/MediaPicker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 import { 
   ChevronLeft, 
@@ -34,7 +35,8 @@ import {
   RefreshCw,
   Settings,
   Mail,
-  Phone
+  Phone,
+  Layers
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -54,6 +56,7 @@ export default function ContentManagementPage() {
 
   const { data: generalData } = useDoc(db ? doc(db, "settings", "general") : null);
   const { data: heroData } = useDoc(db ? doc(db, "settings", "hero") : null);
+  const { data: sliderData } = useDoc(db ? doc(db, "settings", "slider") : null);
   const { data: servicesData } = useDoc(db ? doc(db, "settings", "services") : null);
   const { data: videoData } = useDoc(db ? doc(db, "settings", "video") : null);
   const { data: highlightsData } = useDoc(db ? doc(db, "settings", "highlights") : null);
@@ -137,6 +140,7 @@ export default function ContentManagementPage() {
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
                 <TabsTrigger value="general" className="gap-2"><Settings className="h-4 w-4" /> Branding</TabsTrigger>
+                <TabsTrigger value="slider" className="gap-2"><Layers className="h-4 w-4" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2"><Sparkles className="h-4 w-4" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2"><Target className="h-4 w-4" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2"><List className="h-4 w-4" /> Services</TabsTrigger>
@@ -150,6 +154,10 @@ export default function ContentManagementPage() {
 
             <TabsContent value="general">
               <GeneralEditor initialData={generalData} onSave={(data) => handleUpdateSection('general', data)} />
+            </TabsContent>
+
+            <TabsContent value="slider">
+              <SliderEditor initialData={sliderData} onSave={(data) => handleUpdateSection('slider', data)} />
             </TabsContent>
 
             <TabsContent value="hero">
@@ -188,6 +196,103 @@ export default function ContentManagementPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const defaults = [
+    { 
+      title: "Liquid Waste Collection", 
+      description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.", 
+      imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+      link: "/#services",
+      buttonText: "Our Solutions"
+    }
+  ];
+
+  const [items, setItems] = React.useState<any[]>(initialData?.items || defaults);
+
+  React.useEffect(() => {
+    if (initialData?.items) setItems(initialData.items);
+  }, [initialData]);
+
+  const updateItem = (index: number, field: string, value: string) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setItems(newItems);
+  };
+
+  const addItem = () => setItems([...items, { title: "", description: "", imageUrl: "", link: "/#about", buttonText: "Learn More" }]);
+  const removeItem = (index: number) => setItems(items.filter((_, i) => i !== index));
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Homepage Slider</CardTitle>
+          <CardDescription>Featured content carousel at the top of the home page.</CardDescription>
+        </div>
+        <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Slide</Button>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 gap-6">
+          {items.map((item, i) => (
+            <Card key={i} className="p-6 space-y-4 bg-muted/20 relative group">
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                className="absolute top-4 right-4 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" 
+                onClick={() => removeItem(i)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs uppercase font-bold">Slide Title</Label>
+                    <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs uppercase font-bold">Description</Label>
+                    <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs uppercase font-bold">Button Text</Label>
+                      <Input value={item.buttonText} onChange={e => updateItem(i, 'buttonText', e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs uppercase font-bold">Target Section</Label>
+                      <Select value={item.link} onValueChange={(val) => updateItem(i, 'link', val)}>
+                        <SelectTrigger className="h-10 text-xs">
+                          <SelectValue placeholder="Select section" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="/#about">About Us</SelectItem>
+                          <SelectItem value="/#services">Services</SelectItem>
+                          <SelectItem value="/#impact">Impact</SelectItem>
+                          <SelectItem value="/gallery">Gallery</SelectItem>
+                          <SelectItem value="/book">Booking</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <MediaPicker 
+                    label="Slide Background" 
+                    folder="slider"
+                    value={item.imageUrl} 
+                    onChange={(url) => updateItem(i, 'imageUrl', url)} 
+                  />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+        <Button onClick={() => onSave({ items })} className="gap-2"><Save className="h-4 w-4" /> Save Slider Config</Button>
+      </CardContent>
+    </Card>
   );
 }
 
