@@ -54,7 +54,7 @@ async function assertAdmin(request) {
     }
     return userId;
 }
-exports.adminUpdateUserRole = (0, https_1.onCall)(async (request) => {
+exports.adminUpdateUserRole = (0, https_1.onCall)({ cors: true }, async (request) => {
     var _a;
     const callerUid = await assertAdmin(request);
     const { targetUserId, newRole } = request.data;
@@ -76,7 +76,7 @@ exports.adminUpdateUserRole = (0, https_1.onCall)(async (request) => {
     await admin.auth().setCustomUserClaims(targetUserId, { admin: newRole === 'admin' });
     return { success: true };
 });
-exports.adminBootstrapMaster = (0, https_1.onCall)(async (request) => {
+exports.adminBootstrapMaster = (0, https_1.onCall)({ cors: true }, async (request) => {
     if (!request.auth)
         throw new https_1.HttpsError('unauthenticated', 'Must be logged in.');
     const uid = request.auth.uid;

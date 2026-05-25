@@ -33,7 +33,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
     logoWidth: 160,
     logoHeight: 40,
-    phone: "+250 788 303 628",
+    phone: "+250 788303628",
     email: "info@sanex.rw"
   });
 

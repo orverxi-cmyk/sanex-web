@@ -65,13 +65,15 @@ async function assertAdmin(request) {
     }
     return userId;
 }
-exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
+exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const batch = db.batch();
     // General Settings
     batch.set(db.collection('settings').doc('general'), {
         siteName: "SANEX Company Ltd",
         logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
+        logoWidth: 160,
+        logoHeight: 40,
         phone: "+250 788 303 628",
         email: "info@sanex.rw"
     });
@@ -82,6 +84,8 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
         excerpt: "How SANEX transformed liquid waste collection for over 50 schools in the capital.",
         content: "Detailed story about our 2024 project in Kigali... [More content here]",
         imageUrl: "https://picsum.photos/seed/impact1/1200/600",
+        imageWidth: 1200,
+        imageHeight: 600,
         category: "Impact",
         author: "SANEX Editorial",
         createdAt: Date.now(),
@@ -94,6 +98,8 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
                 title: "Liquid Waste Collection",
                 description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.",
                 imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+                width: 1200,
+                height: 600,
                 link: "/services",
                 buttonText: "Our Solutions"
             },
@@ -101,6 +107,8 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
                 title: "Clean Water Reuse",
                 description: "Advanced DWTS systems using activated sludge technology for irrigation.",
                 imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
+                width: 1200,
+                height: 600,
                 link: "/articles",
                 buttonText: "Environmental Impact"
             }
@@ -113,6 +121,8 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
         titleAccent: "Waste Into Opportunity",
         description: "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
         imageUrl: "https://picsum.photos/seed/sanex1/1200/800",
+        imageWidth: 1200,
+        imageHeight: 800,
         ctaText: "Book a Service",
         ctaLink: "/book"
     });
@@ -129,9 +139,9 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
         title: "Comprehensive Liquid Waste Solutions",
         subtitle: "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
         items: [
-            { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600" },
-            { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600" },
-            { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" }
+            { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600", width: 800, height: 600 },
+            { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600", width: 800, height: 600 },
+            { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600", width: 800, height: 600 }
         ]
     });
     // Impact Section
@@ -156,9 +166,9 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
     await batch.commit();
     return { success: true };
 });
-exports.adminAddArticle = (0, https_1.onCall)(async (request) => {
+exports.adminAddArticle = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
-    const { title, content, excerpt, imageUrl, category, author } = request.data;
+    const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author } = request.data;
     if (!title || !content)
         throw new https_1.HttpsError('invalid-argument', 'Title and content are required.');
     const newItem = {
@@ -166,6 +176,8 @@ exports.adminAddArticle = (0, https_1.onCall)(async (request) => {
         content,
         excerpt: excerpt || '',
         imageUrl: imageUrl || '',
+        imageWidth: Number(imageWidth) || 1200,
+        imageHeight: Number(imageHeight) || 600,
         category: category || 'General',
         author: author || 'Admin',
         createdAt: Date.now(),
@@ -174,7 +186,7 @@ exports.adminAddArticle = (0, https_1.onCall)(async (request) => {
     const ref = await db.collection('articles').add(newItem);
     return Object.assign({ id: ref.id }, newItem);
 });
-exports.adminDeleteArticle = (0, https_1.onCall)(async (request) => {
+exports.adminDeleteArticle = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const { id } = request.data;
     if (!id)
@@ -182,29 +194,31 @@ exports.adminDeleteArticle = (0, https_1.onCall)(async (request) => {
     await db.collection('articles').doc(id).delete();
     return { success: true };
 });
-exports.adminUpdateArticle = (0, https_1.onCall)(async (request) => {
+exports.adminUpdateArticle = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const _a = request.data, { id } = _a, data = __rest(_a, ["id"]);
     if (!id)
         throw new https_1.HttpsError('invalid-argument', 'Missing id.');
-    const updateData = Object.assign(Object.assign({}, data), { updatedAt: Date.now() });
+    const updateData = Object.assign(Object.assign({}, data), { imageWidth: Number(data.imageWidth) || 1200, imageHeight: Number(data.imageHeight) || 600, updatedAt: Date.now() });
     await db.collection('articles').doc(id).update(updateData);
     return Object.assign({ id }, updateData);
 });
-exports.adminAddGalleryItem = (0, https_1.onCall)(async (request) => {
+exports.adminAddGalleryItem = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
-    const { imageUrl, description } = request.data;
+    const { imageUrl, description, width, height } = request.data;
     if (!imageUrl || !description)
         throw new https_1.HttpsError('invalid-argument', 'Missing fields.');
     const newItem = {
         imageUrl,
         description: description.trim(),
+        width: Number(width) || 800,
+        height: Number(height) || 600,
         createdAt: Date.now(),
     };
     const ref = await db.collection('gallery').add(newItem);
     return Object.assign({ id: ref.id }, newItem);
 });
-exports.adminDeleteGalleryItem = (0, https_1.onCall)(async (request) => {
+exports.adminDeleteGalleryItem = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const { id } = request.data;
     if (!id)
@@ -212,7 +226,7 @@ exports.adminDeleteGalleryItem = (0, https_1.onCall)(async (request) => {
     await db.collection('gallery').doc(id).delete();
     return { success: true };
 });
-exports.adminUpdateSiteSection = (0, https_1.onCall)(async (request) => {
+exports.adminUpdateSiteSection = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const { sectionId, content } = request.data;
     if (!sectionId || !content)
@@ -220,7 +234,7 @@ exports.adminUpdateSiteSection = (0, https_1.onCall)(async (request) => {
     await db.collection('settings').doc(sectionId).set(content, { merge: true });
     return { success: true };
 });
-exports.createBooking = (0, https_1.onCall)(async (request) => {
+exports.createBooking = (0, https_1.onCall)({ cors: true }, async (request) => {
     const { customerName, email, phone, serviceType, locationUrl, description } = request.data;
     if (!customerName || !email || !phone || !serviceType || !locationUrl) {
         throw new https_1.HttpsError('invalid-argument', 'Missing required booking fields.');
@@ -238,7 +252,7 @@ exports.createBooking = (0, https_1.onCall)(async (request) => {
     const ref = await db.collection('bookings').add(booking);
     return { id: ref.id };
 });
-exports.adminUpdateBookingStatus = (0, https_1.onCall)(async (request) => {
+exports.adminUpdateBookingStatus = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const { bookingId, status } = request.data;
     if (!bookingId || !status)

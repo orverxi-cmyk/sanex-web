@@ -32,8 +32,6 @@ export const adminUpdateUserRole = onCall({ cors: true }, async (request: Callab
     throw new HttpsError('failed-precondition', 'You cannot change your own role.');
   }
   
-  // We use a safe check for master email. In v2, params are preferred but this keeps consistency.
-  // Note: For a real app, use defineString() or secret manager.
   const masterEmail = 'orverxi@gmail.com'; 
   
   const targetUserDoc = await db.collection('users').doc(targetUserId).get();

@@ -70,10 +70,6 @@ export function HomeSlider() {
                       <video 
                         src={slide.imageUrl} 
                         controls
-                        autoPlay 
-                        muted 
-                        loop 
-                        playsInline
                         className="w-full h-full object-cover"
                       />
                     ) : slide.imageUrl ? (
@@ -91,7 +87,7 @@ export function HomeSlider() {
                     )}
                   </div>
 
-                  {/* Content Section (1/4) - Green background with black text */}
+                  {/* Content Section (1/4) */}
                   <div className="flex flex-col justify-center p-6 lg:p-10 space-y-6 lg:col-span-1 bg-primary text-black">
                     <div className="space-y-4">
                       <h2 className="text-2xl lg:text-3xl font-bold font-headline text-black tracking-tight leading-tight">

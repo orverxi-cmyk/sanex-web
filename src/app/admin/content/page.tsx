@@ -366,7 +366,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
                     <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Link</Label><Input className="h-9 text-xs" value={item.link} onChange={e => updateItem(i, 'link', e.target.value)} /></div>
                   </div>
                 </div>
-                <MediaPicker label="Slide Image" value={item.imageUrl} onChange={(url) => updateItem(i, 'imageUrl', url)} />
+                <MediaPicker label="Slide Image/Video" value={item.imageUrl} onChange={(url) => updateItem(i, 'imageUrl', url)} />
               </div>
             </Card>
           ))}
