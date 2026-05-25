@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -21,17 +22,17 @@ export function VideoHighlight() {
   const isYouTube = content.videoUrl.includes("youtube.com") || content.videoUrl.includes("youtu.be");
 
   return (
-    <section className="py-24 bg-muted/20">
+    <section className="py-5 bg-muted/20">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col items-center text-center mb-12 space-y-4">
+        <div className="flex flex-col items-center text-center mb-5 space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest">
             <Activity className="h-3 w-3" /> Operational Highlights
           </div>
-          <h2 className="text-3xl lg:text-5xl font-bold font-headline">{content.title}</h2>
-          <p className="text-muted-foreground max-w-2xl">{content.description}</p>
+          <h2 className="text-2xl lg:text-4xl font-bold font-headline">{content.title}</h2>
+          <p className="text-sm text-muted-foreground max-w-2xl">{content.description}</p>
         </div>
 
-        <div className="max-w-5xl mx-auto aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-black relative">
+        <div className="max-w-4xl mx-auto aspect-video rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-black relative">
           {isYouTube ? (
             <iframe
               src={content.videoUrl}
@@ -44,7 +45,6 @@ export function VideoHighlight() {
               src={content.videoUrl} 
               controls 
               className="w-full h-full object-cover"
-              poster="/video-poster.jpg"
             />
           )}
         </div>

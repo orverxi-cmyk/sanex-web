@@ -21,37 +21,37 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-20 bg-background">
+      <main className="flex-grow py-5 bg-background">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="text-center mb-16 space-y-4">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
-              <Camera className="h-6 w-6" />
+          <div className="text-center mb-5 space-y-2">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Camera className="h-5 w-5" />
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold font-headline">Service Gallery</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              A visual journey through our nationwide liquid waste management operations and sustainable sanitation projects.
+            <h1 className="text-3xl lg:text-5xl font-bold font-headline">Service Gallery</h1>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+              Visual journey through our nationwide liquid waste management operations.
             </p>
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-20">
+            <div className="flex justify-center py-10">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
           ) : photos && photos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {photos.map((photo) => (
                 <div 
                   key={photo.id} 
-                  className="group relative rounded-2xl overflow-hidden bg-muted aspect-[4/3] shadow-lg hover:shadow-2xl transition-all duration-500"
+                  className="group relative rounded-xl overflow-hidden bg-muted aspect-[4/3] shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   <Image
                     src={photo.imageUrl}
                     alt={photo.description}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
-                    <p className="text-white font-medium text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                    <p className="text-white font-medium text-sm">
                       {photo.description}
                     </p>
                   </div>
@@ -59,8 +59,8 @@ export default function GalleryPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 opacity-50">
-              <p className="text-lg">No photos uploaded yet.</p>
+            <div className="text-center py-10 opacity-50">
+              <p className="text-base">No photos uploaded yet.</p>
             </div>
           )}
         </div>

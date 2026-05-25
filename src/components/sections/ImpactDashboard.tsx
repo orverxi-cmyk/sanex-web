@@ -14,24 +14,24 @@ export function ImpactDashboard() {
     {
       title: "Environmental Preservation",
       points: [
-        "We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.",
-        "Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation."
+        "We have successfully treated and managed thousands of cubic meters of liquid waste.",
+        "Our systems have contributed to cleaner water sources, promoting biodiversity."
       ],
       icon: "leaf"
     },
     {
       title: "Public Health Improvement",
       points: [
-        "By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.",
-        "Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living environments."
+        "Helping to mitigate waterborne diseases and improving overall community health.",
+        "Our awareness campaigns empowered local populations to adopt safer practices."
       ],
       icon: "check"
     },
     {
       title: "Community Development",
       points: [
-        "SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.",
-        "Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices."
+        "SANEX has directly created jobs for skilled and unskilled workers.",
+        "Our training programs enhanced capacities of local communities."
       ],
       icon: "users"
     }
@@ -39,12 +39,12 @@ export function ImpactDashboard() {
 
   const content = {
     title: impactData?.title || "Impact Since Our Inception",
-    subtitle: impactData?.subtitle || "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda. Our commitment to sustainable and innovative solutions has resulted in measurable outcomes that benefit communities, the environment, and the economy.",
+    subtitle: impactData?.subtitle || "Since 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
     items: impactData?.items?.length ? impactData.items : defaultImpacts
   };
 
   const getIcon = (name: string) => {
-    const iconClass = "h-6 w-6 text-black"; // Black icons on green background
+    const iconClass = "h-6 w-6 text-black";
     switch (name.toLowerCase()) {
       case 'leaf': return <Leaf className={iconClass} />;
       case 'check': return <CheckCircle className={iconClass} />;
@@ -60,29 +60,27 @@ export function ImpactDashboard() {
   if (loading) return null;
 
   return (
-    <section id="impact" className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-black/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-      
+    <section id="impact" className="py-5 bg-primary text-primary-foreground relative overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="max-w-4xl mx-auto text-center mb-16 space-y-6">
-          <h2 className="text-4xl lg:text-5xl font-bold font-headline leading-tight text-black">{content.title}</h2>
-          <p className="text-xl text-black/80 leading-relaxed font-medium">
+        <div className="max-w-4xl mx-auto text-center mb-5 space-y-2">
+          <h2 className="text-2xl lg:text-4xl font-bold font-headline leading-tight text-black">{content.title}</h2>
+          <p className="text-sm text-black/80 font-medium">
             {content.subtitle}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
           {content.items.map((impact: any, i: number) => (
-            <div key={i} className="p-8 rounded-2xl bg-black/5 border border-black/10 backdrop-blur-sm space-y-6 hover:bg-black/10 transition-colors">
-              <div className="h-12 w-12 rounded-lg bg-black/10 flex items-center justify-center">
+            <div key={i} className="p-6 rounded-xl bg-black/5 border border-black/10 backdrop-blur-sm space-y-4">
+              <div className="h-10 w-10 rounded-lg bg-black/10 flex items-center justify-center">
                 {getIcon(impact.icon)}
               </div>
-              <div className="space-y-4">
-                <h4 className="text-xl font-bold font-headline text-black">{impact.title}</h4>
-                <ul className="space-y-3">
+              <div className="space-y-2">
+                <h4 className="text-lg font-bold font-headline text-black">{impact.title}</h4>
+                <ul className="space-y-1">
                   {impact.points?.map((point: string, pi: number) => (
-                    <li key={pi} className="text-sm text-black/70 leading-relaxed flex gap-3 font-medium">
-                      <div className="h-1.5 w-1.5 rounded-full bg-black mt-1.5 flex-shrink-0" />
+                    <li key={pi} className="text-xs text-black/70 leading-relaxed flex gap-2 font-medium">
+                      <div className="h-1 w-1 rounded-full bg-black mt-1.5 flex-shrink-0" />
                       {point}
                     </li>
                   ))}
@@ -92,16 +90,10 @@ export function ImpactDashboard() {
           ))}
         </div>
 
-        <div className="max-w-3xl mx-auto p-8 lg:p-12 rounded-3xl bg-black/10 border border-black/20 text-center relative overflow-hidden">
-          <Sparkles className="absolute top-4 right-4 h-12 w-12 opacity-10 text-black" />
-          <p className="text-lg lg:text-xl font-bold leading-relaxed italic mb-6 text-black">
-            SANEX Company Ltd is proud of these achievements and remains committed to driving further positive change in Rwanda's liquid waste management sector. Together, we are building a cleaner, healthier, and more sustainable future.
+        <div className="max-w-3xl mx-auto p-6 rounded-2xl bg-black/10 border border-black/20 text-center">
+          <p className="text-base font-bold leading-relaxed italic mb-2 text-black">
+            "Transforming Waste into Opportunity."
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <div className="h-0.5 w-8 bg-black" />
-            <span className="font-bold tracking-widest uppercase text-xs text-black">Transforming Waste into Opportunity</span>
-            <div className="h-0.5 w-8 bg-black" />
-          </div>
         </div>
       </div>
     </section>

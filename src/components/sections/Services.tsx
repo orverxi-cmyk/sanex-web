@@ -54,35 +54,35 @@ export function Services() {
     }
   };
 
-  if (loading) return <div className="py-24 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" /></div>;
+  if (loading) return <div className="py-5 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" /></div>;
 
   return (
-    <section id="services" className="py-24 bg-background">
+    <section id="services" className="py-5 bg-background">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-3xl lg:text-5xl font-bold font-headline">{content.title}</h2>
-          <p className="text-muted-foreground max-w-[800px] mx-auto text-lg">{content.subtitle}</p>
+        <div className="text-center mb-5 space-y-2">
+          <h2 className="text-2xl lg:text-4xl font-bold font-headline">{content.title}</h2>
+          <p className="text-sm text-muted-foreground max-w-[800px] mx-auto">{content.subtitle}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {content.items.map((service: any, i: number) => (
-            <Card key={i} className="group overflow-hidden border-none shadow-xl transition-all duration-300 hover:-translate-y-2">
-              <div className="relative h-64 overflow-hidden bg-muted">
+            <Card key={i} className="group overflow-hidden border-none shadow-md transition-all duration-300 hover:shadow-lg">
+              <div className="relative h-48 overflow-hidden bg-muted">
                 <Image
                   src={service.imageUrl}
                   alt={service.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute top-4 left-4 h-12 w-12 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <div className="absolute top-3 left-3 h-10 w-10 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
                   {getIcon(service.icon || 'users')}
                 </div>
               </div>
-              <CardHeader>
-                <CardTitle className="font-headline text-xl lg:text-2xl">{service.title}</CardTitle>
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="font-headline text-lg lg:text-xl leading-tight">{service.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm leading-relaxed">{service.description}</p>
+              <CardContent className="p-4 pt-0">
+                <p className="text-muted-foreground text-xs leading-relaxed">{service.description}</p>
               </CardContent>
             </Card>
           ))}
