@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -7,25 +8,27 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Gallery is public read, write only via Cloud Functions (Admin SDK)
+    // Public read collections
     match /gallery/{itemId} {
       allow read: if true;
       allow write: if false; 
     }
-
-    // Settings are public read, write only via Cloud Functions
+    match /articles/{articleId} {
+      allow read: if true;
+      allow write: if false; 
+    }
     match /settings/{docId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // User profiles: read by self/admin, write only via Admin SDK
+    // User profiles: read by self/admin
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow write: if false;
     }
 
-    // Bookings: Admin read, write only via Cloud Functions
+    // Bookings: Admin read
     match /bookings/{bookingId} {
       allow read: if isAdmin();
       allow write: if false;

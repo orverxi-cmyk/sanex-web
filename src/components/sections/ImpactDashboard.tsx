@@ -2,9 +2,11 @@
 "use client";
 
 import React from "react";
-import { CheckCircle, Leaf, Users, Globe, Building2, Sparkles, Heart, Scale } from "lucide-react";
+import { CheckCircle, Leaf, Users, Globe, Building2, Sparkles, Heart, Scale, ArrowRight } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function ImpactDashboard() {
   const db = useFirestore();
@@ -26,14 +28,6 @@ export function ImpactDashboard() {
         "Our awareness campaigns empowered local populations to adopt safer practices."
       ],
       icon: "check"
-    },
-    {
-      title: "Community Development",
-      points: [
-        "SANEX has directly created jobs for skilled and unskilled workers.",
-        "Our training programs enhanced capacities of local communities."
-      ],
-      icon: "users"
     }
   ];
 
@@ -90,10 +84,13 @@ export function ImpactDashboard() {
           ))}
         </div>
 
-        <div className="max-w-3xl mx-auto p-6 rounded-2xl bg-black/10 border border-black/20 text-center">
-          <p className="text-base font-bold leading-relaxed italic mb-2 text-black">
+        <div className="max-w-3xl mx-auto p-6 rounded-2xl bg-black/10 border border-black/20 text-center flex flex-col items-center gap-4">
+          <p className="text-base font-bold leading-relaxed italic text-black">
             "Transforming Waste into Opportunity."
           </p>
+          <Button asChild variant="secondary" className="gap-2 font-bold bg-black text-primary hover:bg-black/90">
+            <Link href="/articles">View Detailed Impact Articles <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
         </div>
       </div>
     </section>

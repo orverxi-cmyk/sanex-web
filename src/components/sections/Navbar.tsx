@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Droplets, Menu, X, LayoutDashboard, Calendar } from "lucide-react";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { UserNav } from "./UserNav";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -26,7 +27,7 @@ export function Navbar() {
     { name: "Home", href: "/" },
     { name: "About", href: "/#about" },
     { name: "Services", href: "/#services" },
-    { name: "Impact", href: "/#impact" },
+    { name: "Articles", href: "/articles" },
     { name: "Gallery", href: "/gallery" },
     { name: "Contact", href: "/#contact" },
   ];
@@ -66,13 +67,8 @@ export function Navbar() {
               </Link>
             ))}
             
-            {isAdmin && (
-              <Link href="/admin" className="text-sm font-bold text-secondary hover:underline flex items-center gap-2">
-                <LayoutDashboard className="h-4 w-4" /> Admin Portal
-              </Link>
-            )}
-            
             <div className="flex items-center gap-4 ml-4">
+              <UserNav />
               <Button asChild className="bg-secondary hover:bg-secondary/90 gap-2">
                 <Link href="/book"><Calendar className="h-4 w-4" /> Book a Service</Link>
               </Button>
@@ -81,6 +77,7 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-4 lg:hidden">
+            <UserNav />
             <button
               className="p-2"
               onClick={() => setIsOpen(!isOpen)}
@@ -106,11 +103,6 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            {isAdmin && (
-              <Link href="/admin" onClick={() => setIsOpen(false)} className="text-lg font-bold text-secondary flex items-center gap-2">
-                <LayoutDashboard className="h-5 w-5" /> Admin Portal
-              </Link>
-            )}
             <Button asChild className="w-full bg-secondary gap-2">
               <Link href="/book"><Calendar className="h-4 w-4" /> Book a Service</Link>
             </Button>
@@ -120,3 +112,4 @@ export function Navbar() {
     </nav>
   );
 }
+

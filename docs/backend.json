@@ -25,6 +25,22 @@
         "createdAt"
       ]
     },
+    "Article": {
+      "title": "Article",
+      "description": "A detailed impact story, news item, or case study.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "content", "createdAt"]
+    },
     "HeroSettings": {
       "type": "object",
       "properties": {
@@ -188,6 +204,10 @@
       "schema": "#/entities/GalleryItem",
       "description": "Collection of gallery photos."
     },
+    "/articles/{articleId}": {
+      "schema": "#/entities/Article",
+      "description": "Collection of impact stories and case studies."
+    },
     "/settings/{sectionId}": {
       "schema": "#/entities/SiteSettings",
       "description": "Site configuration sections (hero, services, highlights, general etc)."
@@ -202,3 +222,4 @@
     }
   }
 }
+

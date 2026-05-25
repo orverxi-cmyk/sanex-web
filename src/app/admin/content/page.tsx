@@ -36,7 +36,8 @@ import {
   Settings,
   Mail,
   Phone,
-  Layers
+  Layers,
+  FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -49,7 +50,6 @@ export default function ContentManagementPage() {
   
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Firestore Data
   const { data: userProfile, loading: profileLoading } = useDoc(
     db && user ? doc(db, "users", user.uid) : null
   );
@@ -61,7 +61,6 @@ export default function ContentManagementPage() {
   const { data: videoData } = useDoc(db ? doc(db, "settings", "video") : null);
   const { data: highlightsData } = useDoc(db ? doc(db, "settings", "highlights") : null);
   const { data: impactData } = useDoc(db ? doc(db, "settings", "impact") : null);
-  const { data: milestonesData } = useDoc(db ? doc(db, "settings", "milestones") : null);
   const { data: regionalData } = useDoc(db ? doc(db, "settings", "regional") : null);
 
   const galleryQuery = React.useMemo(() => {
@@ -69,6 +68,12 @@ export default function ContentManagementPage() {
     return query(collection(db, "gallery"), orderBy("createdAt", "desc"));
   }, [db]);
   const { data: photos, loading: photosLoading } = useCollection(galleryQuery);
+
+  const articlesQuery = React.useMemo(() => {
+    if (!db) return null;
+    return query(collection(db, "articles"), orderBy("createdAt", "desc"));
+  }, [db]);
+  const { data: articles, loading: articlesLoading } = useCollection(articlesQuery);
 
   const handleUpdateSection = async (sectionId: string, content: any) => {
     if (!functions) return;
@@ -127,33 +132,30 @@ export default function ContentManagementPage() {
               <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
                 <Layout className="h-8 w-8 text-primary" /> Site Content Manager
               </h1>
-              <p className="text-muted-foreground">Update text, images, and services across your homepage.</p>
+              <p className="text-muted-foreground">Update branding, pages, and case studies.</p>
             </div>
-            {isSubmitting && (
-              <div className="flex items-center gap-2 text-primary font-medium">
-                <Loader2 className="h-4 w-4 animate-spin" /> Saving Changes...
-              </div>
-            )}
           </div>
 
           <Tabs defaultValue="general" className="space-y-8">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
                 <TabsTrigger value="general" className="gap-2"><Settings className="h-4 w-4" /> Branding</TabsTrigger>
+                <TabsTrigger value="articles" className="gap-2"><FileText className="h-4 w-4" /> Articles</TabsTrigger>
                 <TabsTrigger value="slider" className="gap-2"><Layers className="h-4 w-4" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2"><Sparkles className="h-4 w-4" /> Hero</TabsTrigger>
-                <TabsTrigger value="highlights" className="gap-2"><Target className="h-4 w-4" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2"><List className="h-4 w-4" /> Services</TabsTrigger>
-                <TabsTrigger value="impact" className="gap-2"><RefreshCw className="h-4 w-4" /> Impact</TabsTrigger>
-                <TabsTrigger value="milestones" className="gap-2"><Milestone className="h-4 w-4" /> Milestones</TabsTrigger>
+                <TabsTrigger value="impact" className="gap-2"><RefreshCw className="h-4 w-4" /> Impact UI</TabsTrigger>
                 <TabsTrigger value="regional" className="gap-2"><Globe className="h-4 w-4" /> Regional</TabsTrigger>
-                <TabsTrigger value="video" className="gap-2"><Video className="h-4 w-4" /> Video</TabsTrigger>
                 <TabsTrigger value="gallery" className="gap-2"><ImageIcon className="h-4 w-4" /> Gallery</TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="general">
               <GeneralEditor initialData={generalData} onSave={(data) => handleUpdateSection('general', data)} />
+            </TabsContent>
+
+            <TabsContent value="articles">
+              <ArticleManager articles={articles} loading={articlesLoading} />
             </TabsContent>
 
             <TabsContent value="slider">
@@ -164,10 +166,6 @@ export default function ContentManagementPage() {
               <HeroEditor initialData={heroData} onSave={(data) => handleUpdateSection('hero', data)} />
             </TabsContent>
 
-            <TabsContent value="highlights">
-              <HighlightsEditor initialData={highlightsData} onSave={(data) => handleUpdateSection('highlights', data)} />
-            </TabsContent>
-
             <TabsContent value="services">
               <ServicesEditor initialData={servicesData} onSave={(data) => handleUpdateSection('services', data)} />
             </TabsContent>
@@ -176,16 +174,8 @@ export default function ContentManagementPage() {
               <ImpactEditor initialData={impactData} onSave={(data) => handleUpdateSection('impact', data)} />
             </TabsContent>
 
-            <TabsContent value="milestones">
-              <MilestonesEditor initialData={milestonesData} onSave={(data) => handleUpdateSection('milestones', data)} />
-            </TabsContent>
-
             <TabsContent value="regional">
               <RegionalEditor initialData={regionalData} onSave={(data) => handleUpdateSection('regional', data)} />
-            </TabsContent>
-
-            <TabsContent value="video">
-              <VideoEditor initialData={videoData} onSave={(data) => handleUpdateSection('video', data)} />
             </TabsContent>
 
             <TabsContent value="gallery">
@@ -199,18 +189,120 @@ export default function ContentManagementPage() {
   );
 }
 
-function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = [
-    { 
-      title: "Liquid Waste Collection", 
-      description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.", 
-      imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
-      link: "/#services",
-      buttonText: "Our Solutions"
-    }
-  ];
+function ArticleManager({ articles, loading }: { articles: any, loading: boolean }) {
+  const functions = useFunctions();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = React.useState<string | null>(null);
+  const [formData, setFormData] = React.useState({
+    title: "", excerpt: "", content: "", imageUrl: "", category: "Impact", author: "SANEX Team"
+  });
 
-  const [items, setItems] = React.useState<any[]>(initialData?.items || defaults);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!functions) return;
+    try {
+      if (isEditing) {
+        const updateFunc = httpsCallable(functions, 'adminUpdateArticle');
+        await updateFunc({ id: isEditing, ...formData });
+        toast({ title: "Updated", description: "Article saved successfully." });
+      } else {
+        const addFunc = httpsCallable(functions, 'adminAddArticle');
+        await addFunc(formData);
+        toast({ title: "Created", description: "Article published." });
+      }
+      setIsEditing(null);
+      setFormData({ title: "", excerpt: "", content: "", imageUrl: "", category: "Impact", author: "SANEX Team" });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    }
+  };
+
+  const handleEdit = (article: any) => {
+    setIsEditing(article.id);
+    setFormData({
+      title: article.title,
+      excerpt: article.excerpt,
+      content: article.content,
+      imageUrl: article.imageUrl,
+      category: article.category,
+      author: article.author
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!functions || !confirm("Delete this article?")) return;
+    try {
+      const delFunc = httpsCallable(functions, 'adminDeleteArticle');
+      await delFunc({ id });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Card className="lg:col-span-1 h-fit">
+        <CardHeader>
+          <CardTitle>{isEditing ? "Edit Article" : "New Article"}</CardTitle>
+          <CardDescription>Create impact stories and case studies.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Title</Label>
+              <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Input value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label>Excerpt</Label>
+              <Textarea value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label>Content (Full Details)</Label>
+              <Textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} className="min-h-[200px]" required />
+            </div>
+            <MediaPicker label="Featured Image" value={formData.imageUrl} onChange={url => setFormData({...formData, imageUrl: url})} />
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-grow">{isEditing ? "Save Changes" : "Publish Article"}</Button>
+              {isEditing && <Button type="button" variant="outline" onClick={() => setIsEditing(null)}>Cancel</Button>}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Existing Articles</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto" /> : articles?.map((a: any) => (
+              <div key={a.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/10">
+                <div className="relative h-20 w-20 flex-shrink-0 bg-muted rounded overflow-hidden">
+                  {a.imageUrl && <Image src={a.imageUrl} alt="" fill className="object-cover" />}
+                </div>
+                <div className="flex-grow">
+                  <h4 className="font-bold">{a.title}</h4>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{a.excerpt}</p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Button size="icon" variant="ghost" onClick={() => handleEdit(a)}><Settings className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDelete(a.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const [items, setItems] = React.useState<any[]>(initialData?.items || []);
 
   React.useEffect(() => {
     if (initialData?.items) setItems(initialData.items);
@@ -222,7 +314,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
     setItems(newItems);
   };
 
-  const addItem = () => setItems([...items, { title: "", description: "", imageUrl: "", link: "/#about", buttonText: "Learn More" }]);
+  const addItem = () => setItems([...items, { title: "", description: "", imageUrl: "", link: "/articles", buttonText: "Learn More" }]);
   const removeItem = (index: number) => setItems(items.filter((_, i) => i !== index));
 
   return (
@@ -230,7 +322,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Homepage Slider</CardTitle>
-          <CardDescription>Featured content carousel at the top of the home page.</CardDescription>
+          <CardDescription>Side-by-side featured carousel.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Slide</Button>
       </CardHeader>
@@ -238,54 +330,20 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
         <div className="grid grid-cols-1 gap-6">
           {items.map((item, i) => (
             <Card key={i} className="p-6 space-y-4 bg-muted/20 relative group">
-              <Button 
-                size="icon" 
-                variant="destructive" 
-                className="absolute top-4 right-4 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" 
-                onClick={() => removeItem(i)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <Button size="icon" variant="destructive" className="absolute top-4 right-4 h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-4 w-4" /></Button>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="space-y-1">
-                    <Label className="text-xs uppercase font-bold">Slide Title</Label>
-                    <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs uppercase font-bold">Description</Label>
-                    <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
-                  </div>
+                  <div className="space-y-1"><Label>Title</Label><Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} /></div>
+                  <div className="space-y-1"><Label>Description</Label><Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} /></div>
                   <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1"><Label>Btn Text</Label><Input value={item.buttonText} onChange={e => updateItem(i, 'buttonText', e.target.value)} /></div>
                     <div className="space-y-1">
-                      <Label className="text-xs uppercase font-bold">Button Text</Label>
-                      <Input value={item.buttonText} onChange={e => updateItem(i, 'buttonText', e.target.value)} />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs uppercase font-bold">Target Section</Label>
-                      <Select value={item.link} onValueChange={(val) => updateItem(i, 'link', val)}>
-                        <SelectTrigger className="h-10 text-xs">
-                          <SelectValue placeholder="Select section" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="/#about">About Us</SelectItem>
-                          <SelectItem value="/#services">Services</SelectItem>
-                          <SelectItem value="/#impact">Impact</SelectItem>
-                          <SelectItem value="/gallery">Gallery</SelectItem>
-                          <SelectItem value="/book">Booking</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label>Link Path</Label>
+                      <Input value={item.link} onChange={e => updateItem(i, 'link', e.target.value)} placeholder="/articles" />
                     </div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <MediaPicker 
-                    label="Slide Background" 
-                    folder="slider"
-                    value={item.imageUrl} 
-                    onChange={(url) => updateItem(i, 'imageUrl', url)} 
-                  />
-                </div>
+                <MediaPicker label="Slide Image" value={item.imageUrl} onChange={(url) => updateItem(i, 'imageUrl', url)} />
               </div>
             </Card>
           ))}
@@ -297,50 +355,22 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
 }
 
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    siteName: "SANEX Company Ltd",
-    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
-    phone: "+250 788 303 628",
-    email: "info@sanex.rw"
-  };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
+  const [formData, setFormData] = React.useState(initialData || { siteName: "SANEX Company Ltd", logoUrl: "", phone: "", email: "" });
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Branding & Identity</CardTitle>
-        <CardDescription>Global site identity settings and contact info.</CardDescription>
-      </CardHeader>
+      <CardHeader><CardTitle>Branding</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Site Name</Label>
-              <Input value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} />
-            </div>
-            <MediaPicker 
-              label="Company Logo" 
-              folder="branding"
-              value={formData.logoUrl} 
-              onChange={(url) => setFormData({...formData, logoUrl: url})} 
-            />
+            <div className="space-y-2"><Label>Site Name</Label><Input value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} /></div>
+            <MediaPicker label="Company Logo" value={formData.logoUrl} onChange={(url) => setFormData({...formData, logoUrl: url})} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Contact Phone</Label>
-              <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+250 000 000 000" />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Mail className="h-4 w-4" /> Contact Email</Label>
-              <Input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="info@example.rw" />
-            </div>
+            <div className="space-y-2"><Label>Phone</Label><Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
+            <div className="space-y-2"><Label>Email</Label><Input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
           </div>
-          <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Branding</Button>
+          <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save branding</Button>
         </form>
       </CardContent>
     </Card>
@@ -348,478 +378,101 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
 }
 
 function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    badge: "Leading Sanitation Partner in Rwanda",
-    title: "Transforming",
-    titleAccent: "Waste Into Opportunity",
-    description: "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
-    imageUrl: "https://picsum.photos/seed/sanex1/1200/800",
-    ctaText: "Book a Service",
-    ctaLink: "/book"
-  };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
+  const [formData, setFormData] = React.useState(initialData || {});
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Hero Section</CardTitle>
-        <CardDescription>Main headline and call-to-action on the home page.</CardDescription>
-      </CardHeader>
+      <CardHeader><CardTitle>Hero Section</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Badge Text</Label>
-              <Input value={formData.badge} onChange={e => setFormData({...formData, badge: e.target.value})} />
-            </div>
-            <div className="space-y-2">
-              <Label>Title (First Part)</Label>
-              <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-            </div>
-            <div className="space-y-2">
-              <Label>Title Accent (Second Part - Colored)</Label>
-              <Input value={formData.titleAccent} onChange={e => setFormData({...formData, titleAccent: e.target.value})} />
-            </div>
-            <MediaPicker 
-              label="Hero Image" 
-              folder="hero"
-              value={formData.imageUrl} 
-              onChange={(url) => setFormData({...formData, imageUrl: url})} 
-            />
+            <div className="space-y-2"><Label>Badge</Label><Input value={formData.badge} onChange={e => setFormData({...formData, badge: e.target.value})} /></div>
+            <div className="space-y-2"><Label>Title Part 1</Label><Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} /></div>
+            <div className="space-y-2"><Label>Title Accent</Label><Input value={formData.titleAccent} onChange={e => setFormData({...formData, titleAccent: e.target.value})} /></div>
+            <MediaPicker label="Hero Media" value={formData.imageUrl} onChange={url => setFormData({...formData, imageUrl: url})} />
           </div>
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="min-h-[100px]" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>CTA Button Text</Label>
-              <Input value={formData.ctaText} onChange={e => setFormData({...formData, ctaText: e.target.value})} />
-            </div>
-            <div className="space-y-2">
-              <Label>CTA Link Path</Label>
-              <Input value={formData.ctaLink} onChange={e => setFormData({...formData, ctaLink: e.target.value})} />
-            </div>
-          </div>
-          <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Hero Section</Button>
+          <div className="space-y-2"><Label>Description</Label><Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} /></div>
+          <Button type="submit"><Save className="h-4 w-4 mr-2" /> Save Hero</Button>
         </form>
       </CardContent>
     </Card>
   );
 }
 
-function HighlightsEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = [
-    { icon: "shield", title: "Licensed Since 2021", description: "Trusted by over 114 clients nationwide with verified operational standards." },
-    { icon: "cpu", title: "Advanced Technology", description: "Eco-friendly wastewater treatment systems using activated sludge technology." },
-    { icon: "globe", title: "Nationwide Coverage", description: "Serving urban and rural communities from Kigali to Musanze and Huye." }
-  ];
-
-  const [items, setItems] = React.useState<any[]>(initialData?.items || defaults);
-
-  React.useEffect(() => {
-    if (initialData?.items) setItems(initialData.items);
-  }, [initialData]);
-
-  const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setItems(newItems);
-  };
-
-  const addItem = () => setItems([...items, { icon: "shield", title: "", description: "" }]);
-  const removeItem = (index: number) => setItems(items.filter((_, i) => i !== index));
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Highlights Section</CardTitle>
-          <CardDescription>Key credentials shown below the hero.</CardDescription>
-        </div>
-        <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Item</Button>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {items.map((item, i) => (
-            <Card key={i} className="p-4 space-y-3 bg-muted/20 relative group">
-              <Button 
-                size="icon" 
-                variant="destructive" 
-                className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
-                onClick={() => removeItem(i)}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold">Icon (shield, cpu, globe, zap, award)</Label>
-                <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold">Title</Label>
-                <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold">Description</Label>
-                <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="h-20" />
-              </div>
-            </Card>
-          ))}
-        </div>
-        <Button onClick={() => onSave({ items })} className="gap-2"><Save className="h-4 w-4" /> Save Highlights</Button>
-      </CardContent>
-    </Card>
-  );
-}
-
 function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    title: "Comprehensive Liquid Waste Solutions",
-    subtitle: "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
-    items: [
-      { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600" },
-      { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600" },
-      { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" }
-    ]
+  const [formData, setFormData] = React.useState(initialData || { items: [] });
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
+  const updateItem = (i: number, f: string, v: string) => {
+    const ni = [...formData.items]; ni[i] = { ...ni[i], [f]: v }; setFormData({ ...formData, items: ni });
   };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
-  const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setFormData({ ...formData, items: newItems });
-  };
-
-  const addItem = () => setFormData({ ...formData, items: [...formData.items, { title: "", description: "", icon: "truck", imageUrl: "" }] });
-  const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Services Section</CardTitle>
-          <CardDescription>Core service offerings list.</CardDescription>
-        </div>
-        <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Service</Button>
+        <CardTitle>Services</CardTitle>
+        <Button size="sm" onClick={() => setFormData({...formData, items: [...formData.items, {title: "", description: "", icon: "truck", imageUrl: ""}]})}><Plus className="h-4 w-4" /></Button>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Section Title</Label>
-            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-          </div>
-          <div className="space-y-2">
-            <Label>Section Subtitle</Label>
-            <Input value={formData.subtitle} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {formData.items.map((item: any, i: number) => (
-            <Card key={i} className="bg-muted/30 p-4 space-y-4 relative group">
-              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Title</Label>
-                  <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Icon (truck, droplets, settings)</Label>
-                  <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Description</Label>
-                <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
-              </div>
-              <MediaPicker 
-                label="Service Image" 
-                folder="services"
-                value={item.imageUrl} 
-                onChange={(url) => updateItem(i, 'imageUrl', url)} 
-              />
+            <Card key={i} className="p-4 space-y-4">
+              <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+              <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Desc" />
+              <MediaPicker value={item.imageUrl} onChange={u => updateItem(i, 'imageUrl', u)} />
+              <Button size="icon" variant="destructive" onClick={() => setFormData({...formData, items: formData.items.filter((_:any, idx:number) => idx !== i)})}><Trash2 className="h-4 w-4" /></Button>
             </Card>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Services</Button>
+        <Button onClick={() => onSave(formData)}><Save className="h-4 w-4 mr-2" /> Save Services</Button>
       </CardContent>
     </Card>
   );
 }
 
 function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    title: "Impact Since Our Inception",
-    subtitle: "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
-    items: [
-      { title: "Environmental", icon: "leaf", points: ["Preventing pollutants from contaminating ecosystems", "Cleaner water sources via DWTS"] },
-      { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] }
-    ]
-  };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
-  const updateItem = (index: number, field: string, value: any) => {
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setFormData({ ...formData, items: newItems });
-  };
-
-  const addItem = () => setFormData({ ...formData, items: [...formData.items, { title: "", icon: "leaf", points: [""] }] });
-  const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
-
+  const [formData, setFormData] = React.useState(initialData || { items: [] });
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Impact Stats</CardTitle>
-          <CardDescription>Social and environmental impact metrics.</CardDescription>
-        </div>
-        <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Impact Area</Button>
-      </CardHeader>
+      <CardHeader><CardTitle>Impact UI Stats</CardTitle></CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Section Title</Label>
-            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-          </div>
-          <div className="space-y-2">
-            <Label>Section Subtitle</Label>
-            <Textarea value={formData.subtitle} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
-          </div>
-        </div>
-
         <div className="space-y-4">
           {formData.items.map((item: any, i: number) => (
-            <Card key={i} className="p-4 bg-muted/20 relative group">
-              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
-              <div className="grid grid-cols-2 gap-4 mb-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Title</Label>
-                  <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Icon (leaf, heart, users, scale)</Label>
-                  <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Bullet Points (One per line)</Label>
-                <Textarea 
-                  value={item.points?.join("\n") || ""} 
-                  onChange={e => updateItem(i, 'points', e.target.value.split("\n"))} 
-                  placeholder="Enter points here..."
-                  className="h-24"
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Impact Stats</Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    title: "Who We Are",
-    description: "SANEX Company Ltd is dedicated to delivering comprehensive liquid waste management solutions across Rwanda...",
-    items: [
-      { year: "2017", title: "Founding", description: "Established to address liquid waste challenges.", icon: "clock" },
-      { year: "2021", title: "Licensing", description: "Achieved official transport licensing.", icon: "shield" },
-      { year: "2024", title: "Expansion", description: "Launched DWTS services nationwide.", icon: "rocket" }
-    ]
-  };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
-  const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setFormData({ ...formData, items: newItems });
-  };
-
-  const addItem = () => setFormData({ ...formData, items: [...formData.items, { year: "2024", title: "", description: "", icon: "rocket" }] });
-  const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Milestone Timeline</CardTitle>
-          <CardDescription>Company history and future goals.</CardDescription>
-        </div>
-        <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Milestone</Button>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Section Title</Label>
-            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-          </div>
-          <div className="space-y-2">
-            <Label>Section Description</Label>
-            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {formData.items.map((item: any, i: number) => (
-            <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border rounded-lg bg-muted/10 relative group">
-              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
-              <div className="md:col-span-2 space-y-1">
-                <Label className="text-xs">Year</Label>
-                <Input value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} />
-              </div>
-              <div className="md:col-span-3 space-y-1">
-                <Label className="text-xs">Title</Label>
-                <Input value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} />
-              </div>
-              <div className="md:col-span-2 space-y-1">
-                <Label className="text-xs">Icon (clock, shield, rocket)</Label>
-                <Input value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} />
-              </div>
-              <div className="md:col-span-5 space-y-1">
-                <Label className="text-xs">Description</Label>
-                <Textarea value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="h-16" />
-              </div>
+            <div key={i} className="p-4 border rounded">
+              <Input value={item.title} onChange={e => {
+                const ni = [...formData.items]; ni[i].title = e.target.value; setFormData({...formData, items: ni});
+              }} className="mb-2" />
+              <Textarea value={item.points?.join("\n")} onChange={e => {
+                const ni = [...formData.items]; ni[i].points = e.target.value.split("\n"); setFormData({...formData, items: ni});
+              }} className="h-20" />
             </div>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Milestones</Button>
+        <Button onClick={() => onSave(formData)}><Save className="h-4 w-4 mr-2" /> Save Impact</Button>
       </CardContent>
     </Card>
   );
 }
 
 function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    title: "Regional Availability Portal",
-    description: "Establishing operational offices in key towns across Rwanda...",
-    items: [
-      { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },
-      { name: "Musanze", status: "Strategic Hub", capacity: "Service Center" },
-      { name: "Huye", status: "Planned Expansion", capacity: "Regional Office" }
-    ]
-  };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
-  const updateItem = (index: number, field: string, value: string) => {
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setFormData({ ...formData, items: newItems });
-  };
-
-  const addItem = () => setFormData({ ...formData, items: [...formData.items, { name: "", status: "", capacity: "" }] });
-  const removeItem = (index: number) => setFormData({ ...formData, items: formData.items.filter((_:any, i:number) => i !== index) });
-
+  const [formData, setFormData] = React.useState(initialData || { items: [] });
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Regional Portal</CardTitle>
-          <CardDescription>Locations where SANEX is active.</CardDescription>
-        </div>
-        <Button size="sm" onClick={addItem} className="gap-2"><Plus className="h-4 w-4" /> Add Region</Button>
-      </CardHeader>
+      <CardHeader><CardTitle>Regional Presence</CardTitle></CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Portal Title</Label>
-            <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-          </div>
-          <div className="space-y-2">
-            <Label>Portal Description</Label>
-            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {formData.items.map((item: any, i: number) => (
-            <Card key={i} className="p-4 space-y-3 bg-muted/20 relative group">
-              <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
-              <div className="space-y-1">
-                <Label className="text-[10px]">City/Region Name</Label>
-                <Input value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px]">Status</Label>
-                <Input value={item.status} onChange={e => updateItem(i, 'status', e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px]">Capacity info</Label>
-                <Input value={item.capacity} onChange={e => updateItem(i, 'capacity', e.target.value)} />
-              </div>
-            </Card>
+            <div key={i} className="p-4 border rounded">
+              <Input value={item.name} onChange={e => {
+                const ni = [...formData.items]; ni[i].name = e.target.value; setFormData({...formData, items: ni});
+              }} className="mb-2" />
+              <Input value={item.status} onChange={e => {
+                const ni = [...formData.items]; ni[i].status = e.target.value; setFormData({...formData, items: ni});
+              }} />
+            </div>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="gap-2"><Save className="h-4 w-4" /> Save Regions</Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function VideoEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const defaults = {
-    title: "SANEX in Action",
-    description: "Watch our specialized vacuum trucks and decentralized treatment systems in action across Rwanda.",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-  };
-
-  const [formData, setFormData] = React.useState(initialData || defaults);
-
-  React.useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Video Highlight</CardTitle>
-        <CardDescription>Featured YouTube video or uploaded file for the homepage.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label>Section Title</Label>
-          <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-        </div>
-        <div className="space-y-2">
-          <Label>Section Description</Label>
-          <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
-        </div>
-        <MediaPicker 
-          label="Highlight Video" 
-          folder="videos"
-          accept="video/*"
-          value={formData.videoUrl} 
-          onChange={(url) => setFormData({...formData, videoUrl: url})} 
-        />
-        <p className="text-[10px] text-muted-foreground italic">Supports YouTube embeds or uploaded video files (MP4/WebM).</p>
-        <Button onClick={() => onSave(formData)} className="gap-2 mt-4"><Save className="h-4 w-4" /> Save Video Info</Button>
+        <Button onClick={() => onSave(formData)}><Save className="h-4 w-4 mr-2" /> Save Regions</Button>
       </CardContent>
     </Card>
   );
@@ -830,29 +483,15 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
   const { toast } = useToast();
   const [photoUrl, setPhotoUrl] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!functions || !photoUrl) return;
-    setIsSubmitting(true);
     try {
       const addFunc = httpsCallable(functions, 'adminAddGalleryItem');
       await addFunc({ imageUrl: photoUrl, description });
       setPhotoUrl(""); setDescription("");
-      toast({ title: "Success", description: "Gallery item added." });
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!functions || !confirm("Delete this photo?")) return;
-    try {
-      const delFunc = httpsCallable(functions, 'adminDeleteGalleryItem');
-      await delFunc({ id });
+      toast({ title: "Success", description: "Photo added." });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -861,65 +500,25 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <Card className="lg:col-span-1 h-fit">
-        <CardHeader>
-          <CardTitle>Add to Gallery</CardTitle>
-          <CardDescription>Upload service operation photos.</CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle>Add to Gallery</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleAdd} className="space-y-4">
-            <MediaPicker 
-              label="Gallery Image" 
-              folder="gallery"
-              value={photoUrl} 
-              onChange={setPhotoUrl} 
-            />
-            <div className="space-y-2 pt-2">
-              <Label>Caption</Label>
-              <Input value={description} onChange={e => setDescription(e.target.value)} required placeholder="Site maintenance in Kigali..." />
-            </div>
-            <Button className="w-full h-12" disabled={isSubmitting || !photoUrl}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />} Add Photo
-            </Button>
+            <MediaPicker value={photoUrl} onChange={setPhotoUrl} />
+            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Caption" />
+            <Button className="w-full">Add Photo</Button>
           </form>
         </CardContent>
       </Card>
-      
       <Card className="lg:col-span-2">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Photo Management</CardTitle>
-            <CardDescription>Manage your visual portfolio.</CardDescription>
-          </div>
-          <Badge variant="secondary">{photos?.length || 0} Total</Badge>
-        </CardHeader>
+        <CardHeader><CardTitle>Photos</CardTitle></CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {photos?.map((p: any) => (
-                <div key={p.id} className="group relative rounded-lg overflow-hidden border bg-white shadow-sm">
-                  <div className="relative h-40 w-full bg-muted">
-                    <Image src={p.imageUrl} alt="" fill className="object-cover" />
-                    <Button 
-                      size="icon" 
-                      variant="destructive" 
-                      className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="p-3 text-sm font-medium truncate">{p.description}</div>
-                </div>
-              ))}
-              {(!photos || photos.length === 0) && (
-                <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed rounded-lg">
-                  No photos uploaded to gallery.
-                </div>
-              )}
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-4">
+            {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : photos?.map((p: any) => (
+              <div key={p.id} className="relative aspect-video rounded-lg overflow-hidden border">
+                <Image src={p.imageUrl} alt="" fill className="object-cover" />
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
