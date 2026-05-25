@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -47,7 +46,7 @@ export function UserNav() {
   }
 
   // If not logged in, we return null to hide the "Sign In" link from the public front end.
-  // Sign in is now initiated exclusively on the /admin route.
+  // Administrative login is handled exclusively on the /admin route.
   if (!user) {
     return null;
   }
