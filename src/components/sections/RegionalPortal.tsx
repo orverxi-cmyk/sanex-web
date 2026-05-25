@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -35,7 +35,7 @@ export function RegionalPortal() {
             </p>
             <div className="p-6 rounded-2xl bg-secondary/5 border border-secondary/20">
               <div className="flex gap-4 items-center">
-                <div className="h-10 w-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
+                <div className="h-10 w-10 rounded-full bg-secondary/20 flex items-center justify-center text-primary">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>

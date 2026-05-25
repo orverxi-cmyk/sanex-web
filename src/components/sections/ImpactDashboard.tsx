@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle, Leaf, Users, Globe, Building2, Sparkles, Loader2, Heart, Scale } from "lucide-react";
+import { CheckCircle, Leaf, Users, Globe, Building2, Sparkles, Heart, Scale } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -44,15 +44,16 @@ export function ImpactDashboard() {
   };
 
   const getIcon = (name: string) => {
+    const iconClass = "h-6 w-6 text-black"; // Black icons on green background
     switch (name.toLowerCase()) {
-      case 'leaf': return <Leaf className="h-6 w-6 text-secondary" />;
-      case 'check': return <CheckCircle className="h-6 w-6 text-primary" />;
-      case 'users': return <Users className="h-6 w-6 text-secondary" />;
-      case 'globe': return <Globe className="h-6 w-6 text-primary" />;
-      case 'building': return <Building2 className="h-6 w-6 text-secondary" />;
-      case 'heart': return <Heart className="h-6 w-6 text-primary" />;
-      case 'scale': return <Scale className="h-6 w-6 text-secondary" />;
-      default: return <Sparkles className="h-6 w-6 text-primary" />;
+      case 'leaf': return <Leaf className={iconClass} />;
+      case 'check': return <CheckCircle className={iconClass} />;
+      case 'users': return <Users className={iconClass} />;
+      case 'globe': return <Globe className={iconClass} />;
+      case 'building': return <Building2 className={iconClass} />;
+      case 'heart': return <Heart className={iconClass} />;
+      case 'scale': return <Scale className={iconClass} />;
+      default: return <Sparkles className={iconClass} />;
     }
   };
 
@@ -60,28 +61,28 @@ export function ImpactDashboard() {
 
   return (
     <section id="impact" className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-black/5 rounded-full -translate-y-1/2 translate-x-1/3" />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center mb-16 space-y-6">
-          <h2 className="text-4xl lg:text-5xl font-bold font-headline leading-tight">{content.title}</h2>
-          <p className="text-xl text-primary-foreground/80 leading-relaxed">
+          <h2 className="text-4xl lg:text-5xl font-bold font-headline leading-tight text-black">{content.title}</h2>
+          <p className="text-xl text-black/80 leading-relaxed font-medium">
             {content.subtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {content.items.map((impact: any, i: number) => (
-            <div key={i} className="p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm space-y-6 hover:bg-white/10 transition-colors">
-              <div className="h-12 w-12 rounded-lg bg-white/10 flex items-center justify-center">
+            <div key={i} className="p-8 rounded-2xl bg-black/5 border border-black/10 backdrop-blur-sm space-y-6 hover:bg-black/10 transition-colors">
+              <div className="h-12 w-12 rounded-lg bg-black/10 flex items-center justify-center">
                 {getIcon(impact.icon)}
               </div>
               <div className="space-y-4">
-                <h4 className="text-xl font-bold font-headline">{impact.title}</h4>
+                <h4 className="text-xl font-bold font-headline text-black">{impact.title}</h4>
                 <ul className="space-y-3">
                   {impact.points?.map((point: string, pi: number) => (
-                    <li key={pi} className="text-sm text-primary-foreground/70 leading-relaxed flex gap-3">
-                      <div className="h-1.5 w-1.5 rounded-full bg-secondary mt-1.5 flex-shrink-0" />
+                    <li key={pi} className="text-sm text-black/70 leading-relaxed flex gap-3 font-medium">
+                      <div className="h-1.5 w-1.5 rounded-full bg-black mt-1.5 flex-shrink-0" />
                       {point}
                     </li>
                   ))}
@@ -91,15 +92,15 @@ export function ImpactDashboard() {
           ))}
         </div>
 
-        <div className="max-w-3xl mx-auto p-8 lg:p-12 rounded-3xl bg-white/10 border border-white/20 text-center relative overflow-hidden">
-          <Sparkles className="absolute top-4 right-4 h-12 w-12 opacity-10" />
-          <p className="text-lg lg:text-xl font-medium leading-relaxed italic mb-6">
+        <div className="max-w-3xl mx-auto p-8 lg:p-12 rounded-3xl bg-black/10 border border-black/20 text-center relative overflow-hidden">
+          <Sparkles className="absolute top-4 right-4 h-12 w-12 opacity-10 text-black" />
+          <p className="text-lg lg:text-xl font-bold leading-relaxed italic mb-6 text-black">
             SANEX Company Ltd is proud of these achievements and remains committed to driving further positive change in Rwanda's liquid waste management sector. Together, we are building a cleaner, healthier, and more sustainable future.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <div className="h-0.5 w-8 bg-secondary" />
-            <span className="font-bold tracking-widest uppercase text-xs">Transforming Waste into Opportunity</span>
-            <div className="h-0.5 w-8 bg-secondary" />
+            <div className="h-0.5 w-8 bg-black" />
+            <span className="font-bold tracking-widest uppercase text-xs text-black">Transforming Waste into Opportunity</span>
+            <div className="h-0.5 w-8 bg-black" />
           </div>
         </div>
       </div>

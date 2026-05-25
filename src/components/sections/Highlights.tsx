@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { ShieldCheck, Cpu, Globe, Loader2, Zap, Award, Target, HardHat } from "lucide-react";
+import { ShieldCheck, Cpu, Globe, Zap, Award, Target, HardHat } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -31,15 +31,16 @@ export function Highlights() {
   const items = highlightsData?.items?.length ? highlightsData.items : defaultHighlights;
 
   const getIcon = (name: string) => {
+    const iconClass = "h-8 w-8 text-primary";
     switch (name.toLowerCase()) {
-      case 'shield': return <ShieldCheck className="h-8 w-8 text-primary" />;
-      case 'cpu': return <Cpu className="h-8 w-8 text-secondary" />;
-      case 'globe': return <Globe className="h-8 w-8 text-primary" />;
-      case 'zap': return <Zap className="h-8 w-8 text-secondary" />;
-      case 'award': return <Award className="h-8 w-8 text-primary" />;
-      case 'target': return <Target className="h-8 w-8 text-secondary" />;
-      case 'hardhat': return <HardHat className="h-8 w-8 text-primary" />;
-      default: return <ShieldCheck className="h-8 w-8 text-primary" />;
+      case 'shield': return <ShieldCheck className={iconClass} />;
+      case 'cpu': return <Cpu className={iconClass} />;
+      case 'globe': return <Globe className={iconClass} />;
+      case 'zap': return <Zap className={iconClass} />;
+      case 'award': return <Award className={iconClass} />;
+      case 'target': return <Target className={iconClass} />;
+      case 'hardhat': return <HardHat className={iconClass} />;
+      default: return <ShieldCheck className={iconClass} />;
     }
   };
 

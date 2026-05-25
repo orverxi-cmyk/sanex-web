@@ -18,16 +18,16 @@
     --popover-foreground: 0 0% 0%;
     
     --primary: 79 51% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 0%; /* Black text on green background */
     
     --secondary: 0 0% 0%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 79 51% 55%; /* Green text on black background */
     
     --muted: 79 20% 92%;
     --muted-foreground: 0 0% 30%;
     
     --accent: 79 51% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 0 0% 0%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;

@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Clock, Rocket, Shield, Globe, Target, Eye, Loader2, Award, Zap, Building } from "lucide-react";
+import { Clock, Rocket, Shield, Globe, Target, Eye, Award, Zap, Building } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -38,15 +38,16 @@ export function MilestoneTracker() {
   };
 
   const getIcon = (name: string) => {
+    const iconClass = "h-6 w-6 text-black"; // On green circles, icon should be black
     switch (name.toLowerCase()) {
-      case 'clock': return <Clock className="h-6 w-6" />;
-      case 'shield': return <Shield className="h-6 w-6" />;
-      case 'rocket': return <Rocket className="h-6 w-6" />;
-      case 'globe': return <Globe className="h-6 w-6" />;
-      case 'award': return <Award className="h-6 w-6" />;
-      case 'zap': return <Zap className="h-6 w-6" />;
-      case 'building': return <Building className="h-6 w-6" />;
-      default: return <Target className="h-6 w-6" />;
+      case 'clock': return <Clock className={iconClass} />;
+      case 'shield': return <Shield className={iconClass} />;
+      case 'rocket': return <Rocket className={iconClass} />;
+      case 'globe': return <Globe className={iconClass} />;
+      case 'award': return <Award className={iconClass} />;
+      case 'zap': return <Zap className={iconClass} />;
+      case 'building': return <Building className={iconClass} />;
+      default: return <Target className={iconClass} />;
     }
   };
 
@@ -66,7 +67,7 @@ export function MilestoneTracker() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 space-y-3">
-                <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-black">
                   <Eye className="h-5 w-5" />
                 </div>
                 <h4 className="text-xl font-bold font-headline">Our Vision</h4>
@@ -75,7 +76,7 @@ export function MilestoneTracker() {
                 </p>
               </div>
               <div className="p-6 rounded-2xl bg-secondary/5 border border-secondary/10 space-y-3">
-                <div className="h-10 w-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center">
                   <Target className="h-5 w-5" />
                 </div>
                 <h4 className="text-xl font-bold font-headline">Our Mission</h4>
@@ -96,7 +97,7 @@ export function MilestoneTracker() {
                     {i !== content.items.length - 1 && (
                       <div className="absolute left-6 top-12 bottom-[-40px] w-0.5 bg-border" />
                     )}
-                    <div className="h-12 w-12 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white shadow-sm relative z-10">
+                    <div className="h-12 w-12 rounded-full bg-primary flex-shrink-0 flex items-center justify-center shadow-sm relative z-10">
                       {getIcon(milestone.icon)}
                     </div>
                     <div className="space-y-1">

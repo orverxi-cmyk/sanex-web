@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { Truck, Settings, Droplets, Users, ShieldCheck, Leaf, Globe, Sparkles, Loader2 } from "lucide-react";
+import { Truck, Settings, Droplets, Users, Loader2 } from "lucide-react";
 
 export function Services() {
   const db = useFirestore();
@@ -45,11 +45,12 @@ export function Services() {
   };
 
   const getIcon = (name: string) => {
+    const iconClass = "h-6 w-6 text-primary";
     switch (name.toLowerCase()) {
-      case 'truck': return <Truck className="h-6 w-6" />;
-      case 'droplets': return <Droplets className="h-6 w-6" />;
-      case 'settings': return <Settings className="h-6 w-6" />;
-      default: return <Users className="h-6 w-6" />;
+      case 'truck': return <Truck className={iconClass} />;
+      case 'droplets': return <Droplets className={iconClass} />;
+      case 'settings': return <Settings className={iconClass} />;
+      default: return <Users className={iconClass} />;
     }
   };
 
@@ -73,7 +74,7 @@ export function Services() {
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute top-4 left-4 h-12 w-12 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-lg">
+                <div className="absolute top-4 left-4 h-12 w-12 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
                   {getIcon(service.icon || 'users')}
                 </div>
               </div>
