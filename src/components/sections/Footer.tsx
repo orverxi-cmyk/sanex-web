@@ -18,6 +18,7 @@ export function Footer() {
   const logoUrl = generalData?.logoUrl;
   const logoWidth = (generalData?.logoWidth || 160) * 0.8; // Slightly smaller for footer
   const logoHeight = (generalData?.logoHeight || 40) * 0.8;
+  const logoSpacing = (generalData?.logoSpacing ?? 8) * 0.8;
   const phone = generalData?.phone || "+250 788303628";
   const email = generalData?.email || "info@sanex.rw";
 
@@ -26,7 +27,7 @@ export function Footer() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center" style={{ gap: `${logoSpacing}px` }}>
               {logoUrl ? (
                 <div 
                   className="relative overflow-hidden bg-white p-1 rounded-lg"

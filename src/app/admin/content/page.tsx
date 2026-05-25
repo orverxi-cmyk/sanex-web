@@ -378,7 +378,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
 }
 
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { siteName: "SANEX Company Ltd", logoUrl: "", logoWidth: 160, logoHeight: 40, phone: "", email: "" });
+  const [formData, setFormData] = React.useState(initialData || { siteName: "SANEX Company Ltd", logoUrl: "", logoWidth: 160, logoHeight: 40, logoSpacing: 8, phone: "", email: "" });
   
   React.useEffect(() => { 
     if (initialData) setFormData(initialData); 
@@ -397,7 +397,7 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
             <MediaPicker label="Company Logo" value={formData.logoUrl} onChange={(url) => setFormData({...formData, logoUrl: url})} />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Width (px)</Label>
               <Input type="number" className="h-9 text-xs" value={formData.logoWidth} onChange={e => setFormData({...formData, logoWidth: Number(e.target.value)})} />
@@ -405,6 +405,10 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Height (px)</Label>
               <Input type="number" className="h-9 text-xs" value={formData.logoHeight} onChange={e => setFormData({...formData, logoHeight: Number(e.target.value)})} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Spacing (px)</Label>
+              <Input type="number" className="h-9 text-xs" value={formData.logoSpacing} onChange={e => setFormData({...formData, logoSpacing: Number(e.target.value)})} />
             </div>
           </div>
 

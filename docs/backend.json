@@ -84,6 +84,7 @@
         "logoUrl": { "type": "string" },
         "logoWidth": { "type": "number" },
         "logoHeight": { "type": "number" },
+        "logoSpacing": { "type": "number" },
         "phone": { "type": "string" },
         "email": { "type": "string" }
       }
