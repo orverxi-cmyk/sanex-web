@@ -1,9 +1,14 @@
-const CACHE_NAME = 'sanex-cache-v1';
+const CACHE_NAME = 'sanex-v1';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [
-  OFFLINE_URL,
   '/',
+  '/offline',
+  '/about',
+  '/services',
+  '/articles',
+  '/gallery',
+  '/contact',
   '/globals.css',
 ];
 
@@ -20,11 +25,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
       );
     })
   );
@@ -42,16 +43,17 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request).then((response) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, networkResponse.clone());
+            cache.put(event.request, responseToCache);
           });
         }
         return networkResponse;
       });
-      return cachedResponse || fetchPromise;
+      return response || fetchPromise;
     })
   );
 });
