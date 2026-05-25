@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/sections/Navbar";
 import { HomeSlider } from "@/components/sections/HomeSlider";
 import { Hero } from "@/components/sections/Hero";

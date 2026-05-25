@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -14,7 +13,7 @@ import { doc } from "firebase/firestore";
 export default function ContactPage() {
   const db = useFirestore();
   const { data: generalData } = useDoc(
-    db ? doc(db, "settings", "general") : null
+    React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db])
   );
 
   const phone = generalData?.phone || "+250 788303628";

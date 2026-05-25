@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -11,7 +10,7 @@ import { doc } from "firebase/firestore";
 export function Footer() {
   const db = useFirestore();
   const { data: generalData } = useDoc(
-    db ? doc(db, "settings", "general") : null
+    React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db])
   );
 
   const siteName = generalData?.siteName || "SANEX Company Ltd";
