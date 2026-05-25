@@ -32,8 +32,19 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminUpdateBookingStatus = exports.createBooking = exports.adminUpdateSiteSection = exports.adminUpdateGalleryItem = exports.adminDeleteGalleryItem = exports.adminAddGalleryItem = exports.adminSeedInitialData = void 0;
+exports.adminUpdateBookingStatus = exports.createBooking = exports.adminUpdateSiteSection = exports.adminDeleteGalleryItem = exports.adminAddGalleryItem = exports.adminUpdateArticle = exports.adminDeleteArticle = exports.adminAddArticle = exports.adminSeedInitialData = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
@@ -57,6 +68,44 @@ async function assertAdmin(request) {
 exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
     await assertAdmin(request);
     const batch = db.batch();
+    // General Settings
+    batch.set(db.collection('settings').doc('general'), {
+        siteName: "SANEX Company Ltd",
+        logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
+        phone: "+250 788 303 628",
+        email: "info@sanex.rw"
+    });
+    // Articles Seeding (Impact Stories)
+    const articleRef = db.collection('articles').doc('kigali-waste-management-2024');
+    batch.set(articleRef, {
+        title: "Revolutionizing Waste Management in Kigali",
+        excerpt: "How SANEX transformed liquid waste collection for over 50 schools in the capital.",
+        content: "Detailed story about our 2024 project in Kigali... [More content here]",
+        imageUrl: "https://picsum.photos/seed/impact1/1200/600",
+        category: "Impact",
+        author: "SANEX Editorial",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    });
+    // Slider Section
+    batch.set(db.collection('settings').doc('slider'), {
+        items: [
+            {
+                title: "Liquid Waste Collection",
+                description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.",
+                imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+                link: "/services",
+                buttonText: "Our Solutions"
+            },
+            {
+                title: "Clean Water Reuse",
+                description: "Advanced DWTS systems using activated sludge technology for irrigation.",
+                imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
+                link: "/articles",
+                buttonText: "Environmental Impact"
+            }
+        ]
+    });
     // Hero Section
     batch.set(db.collection('settings').doc('hero'), {
         badge: "Leading Sanitation Partner in Rwanda",
@@ -82,8 +131,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
         items: [
             { title: "Liquid Waste Collection", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, and hotels.", icon: "truck", imageUrl: "https://picsum.photos/seed/sanex2/800/600" },
             { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", icon: "droplets", imageUrl: "https://picsum.photos/seed/sanex3/800/600" },
-            { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" },
-            { title: "Sanitation Projects", description: "Collaborating with government and private organizations to promote public health.", icon: "users", imageUrl: "https://picsum.photos/seed/sanex6/800/600" }
+            { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", icon: "settings", imageUrl: "https://picsum.photos/seed/sanex4/800/600" }
         ]
     });
     // Impact Section
@@ -92,18 +140,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
         subtitle: "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
         items: [
             { title: "Environmental", icon: "leaf", points: ["Preventing pollutants from contaminating ecosystems", "Cleaner water sources via DWTS"] },
-            { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] },
-            { title: "Community", icon: "users", points: ["Directly created jobs for skilled workers", "Local capacity training programs"] }
-        ]
-    });
-    // Milestones Section
-    batch.set(db.collection('settings').doc('milestones'), {
-        title: "Who We Are",
-        description: "SANEX Company Ltd is dedicated to delivering comprehensive liquid waste management solutions across Rwanda...",
-        items: [
-            { year: "2017", title: "Founding", description: "Established to address liquid waste challenges.", icon: "clock" },
-            { year: "2021", title: "Licensing", description: "Achieved official transport licensing.", icon: "shield" },
-            { year: "2024", title: "Expansion", description: "Launched DWTS services nationwide.", icon: "rocket" }
+            { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] }
         ]
     });
     // Regional Section
@@ -116,14 +153,43 @@ exports.adminSeedInitialData = (0, https_1.onCall)(async (request) => {
             { name: "Huye", status: "Planned Expansion", capacity: "Regional Office" }
         ]
     });
-    // Video Section
-    batch.set(db.collection('settings').doc('video'), {
-        title: "SANEX in Action",
-        description: "Watch our specialized vacuum trucks and decentralized treatment systems in action across Rwanda.",
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-    });
     await batch.commit();
     return { success: true };
+});
+exports.adminAddArticle = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { title, content, excerpt, imageUrl, category, author } = request.data;
+    if (!title || !content)
+        throw new https_1.HttpsError('invalid-argument', 'Title and content are required.');
+    const newItem = {
+        title,
+        content,
+        excerpt: excerpt || '',
+        imageUrl: imageUrl || '',
+        category: category || 'General',
+        author: author || 'Admin',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    };
+    const ref = await db.collection('articles').add(newItem);
+    return Object.assign({ id: ref.id }, newItem);
+});
+exports.adminDeleteArticle = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const { id } = request.data;
+    if (!id)
+        throw new https_1.HttpsError('invalid-argument', 'Missing id.');
+    await db.collection('articles').doc(id).delete();
+    return { success: true };
+});
+exports.adminUpdateArticle = (0, https_1.onCall)(async (request) => {
+    await assertAdmin(request);
+    const _a = request.data, { id } = _a, data = __rest(_a, ["id"]);
+    if (!id)
+        throw new https_1.HttpsError('invalid-argument', 'Missing id.');
+    const updateData = Object.assign(Object.assign({}, data), { updatedAt: Date.now() });
+    await db.collection('articles').doc(id).update(updateData);
+    return Object.assign({ id }, updateData);
 });
 exports.adminAddGalleryItem = (0, https_1.onCall)(async (request) => {
     await assertAdmin(request);
@@ -145,19 +211,6 @@ exports.adminDeleteGalleryItem = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('invalid-argument', 'Missing id.');
     await db.collection('gallery').doc(id).delete();
     return { success: true };
-});
-exports.adminUpdateGalleryItem = (0, https_1.onCall)(async (request) => {
-    await assertAdmin(request);
-    const { id, imageUrl, description } = request.data;
-    if (!id || !imageUrl || !description)
-        throw new https_1.HttpsError('invalid-argument', 'Missing fields.');
-    const updateData = {
-        imageUrl,
-        description: description.trim(),
-        updatedAt: Date.now(),
-    };
-    await db.collection('gallery').doc(id).update(updateData);
-    return Object.assign({ id }, updateData);
 });
 exports.adminUpdateSiteSection = (0, https_1.onCall)(async (request) => {
     await assertAdmin(request);

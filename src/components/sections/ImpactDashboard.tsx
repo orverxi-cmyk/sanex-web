@@ -54,7 +54,7 @@ export function ImpactDashboard() {
   if (loading) return null;
 
   return (
-    <section id="impact" className="py-5 bg-primary text-primary-foreground relative overflow-hidden">
+    <section className="py-5 bg-primary text-primary-foreground relative overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center mb-5 space-y-2">
           <h2 className="text-2xl lg:text-4xl font-bold font-headline leading-tight text-black">{content.title}</h2>
@@ -89,7 +89,7 @@ export function ImpactDashboard() {
             "Transforming Waste into Opportunity."
           </p>
           <Button asChild variant="secondary" className="gap-2 font-bold bg-black text-primary hover:bg-black/90">
-            <Link href="/articles">View Detailed Impact Articles <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/articles">View Detailed Impact Articles <ArrowRight className="h-4 w-4 text-primary" /></Link>
           </Button>
         </div>
       </div>
