@@ -17,9 +17,8 @@ export default function ArticleDetailPage() {
   const articleId = params.articleId as string;
   const db = useFirestore();
 
-  const { data: article, loading } = useDoc(
-    db ? doc(db, "articles", articleId) : null
-  );
+  const articleRef = React.useMemo(() => (db && articleId ? doc(db, "articles", articleId) : null), [db, articleId]);
+  const { data: article, loading } = useDoc(articleRef);
 
   if (loading) {
     return (
@@ -39,7 +38,7 @@ export default function ArticleDetailPage() {
         <Navbar />
         <main className="flex-grow flex flex-col items-center justify-center p-4">
           <h1 className="text-2xl font-bold mb-4">Article Not Found</h1>
-          <Button asChild>
+          <Button asChild className="bg-primary text-black font-bold">
             <Link href="/articles">Back to Articles</Link>
           </Button>
         </main>
@@ -51,45 +50,45 @@ export default function ArticleDetailPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-12">
+      <main className="flex-grow py-5">
         <div className="container mx-auto px-4 max-w-4xl">
-          <Button asChild variant="ghost" className="mb-8 -ml-4 gap-2">
+          <Button asChild variant="ghost" className="mb-5 -ml-4 gap-2 text-primary font-bold">
             <Link href="/articles"><ChevronLeft className="h-4 w-4" /> Back to Articles</Link>
           </Button>
 
-          <header className="mb-10 space-y-6">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {new Date(article.createdAt).toLocaleDateString()}</span>
-              <span className="flex items-center gap-1"><User className="h-4 w-4" /> {article.author || 'SANEX Team'}</span>
-              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-[10px] uppercase">{article.category}</span>
+          <header className="mb-5 space-y-4">
+            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              <span className="flex items-center gap-1"><Calendar className="h-3 w-3 text-primary" /> {new Date(article.createdAt).toLocaleDateString()}</span>
+              <span className="flex items-center gap-1"><User className="h-3 w-3 text-primary" /> {article.author || 'SANEX Team'}</span>
+              <span className="px-2 py-0.5 rounded bg-primary text-black">{article.category}</span>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-bold font-headline leading-tight">
+            <h1 className="text-3xl lg:text-5xl font-bold font-headline leading-tight">
               {article.title}
             </h1>
-            <p className="text-xl text-muted-foreground italic">
+            <p className="text-lg text-muted-foreground italic leading-relaxed">
               {article.excerpt}
             </p>
           </header>
 
           {article.imageUrl && (
-            <div className="relative aspect-video rounded-3xl overflow-hidden mb-12 shadow-xl">
+            <div className="relative aspect-video rounded-2xl overflow-hidden mb-5 shadow-xl border border-primary/10">
               <Image src={article.imageUrl} alt={article.title} fill className="object-cover" />
             </div>
           )}
 
-          <article className="prose prose-lg max-w-none prose-headings:font-headline prose-primary">
-            <div className="whitespace-pre-wrap leading-relaxed text-foreground/80">
+          <article className="prose prose-sm lg:prose-lg max-w-none prose-headings:font-headline prose-primary">
+            <div className="whitespace-pre-wrap leading-relaxed text-foreground/80 font-medium">
               {article.content}
             </div>
           </article>
 
-          <div className="mt-20 pt-10 border-t">
-            <h3 className="text-2xl font-bold font-headline mb-6">Want to learn more?</h3>
+          <div className="mt-10 pt-5 border-t border-primary/20">
+            <h3 className="text-xl font-bold font-headline mb-4">Want to learn more?</h3>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild className="h-12 px-8">
+              <Button asChild className="h-12 px-8 bg-primary text-black font-bold text-base rounded-full">
                 <Link href="/book">Schedule a Consultation</Link>
               </Button>
-              <Button asChild variant="outline" className="h-12 px-8">
+              <Button asChild variant="outline" className="h-12 px-8 border-primary text-primary font-bold text-base rounded-full">
                 <Link href="/articles">Browse Other Stories</Link>
               </Button>
             </div>

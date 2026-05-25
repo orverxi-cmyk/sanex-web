@@ -18,7 +18,8 @@ import { Loader2, ArrowRight } from "lucide-react";
 
 export function HomeSlider() {
   const db = useFirestore();
-  const { data: sliderData, loading } = useDoc(db ? doc(db, "settings", "slider") : null);
+  const sliderRef = React.useMemo(() => (db ? doc(db, "settings", "slider") : null), [db]);
+  const { data: sliderData, loading } = useDoc(sliderRef);
 
   const defaultItems = [
     { 
@@ -54,26 +55,26 @@ export function HomeSlider() {
               <CarouselItem key={i}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[400px] lg:min-h-[500px]">
                   {/* Text Content Area - Left Side (Desktop) */}
-                  <div className="flex flex-col justify-center p-8 lg:p-16 space-y-6 order-2 lg:order-1">
+                  <div className="flex flex-col justify-center p-8 lg:p-12 space-y-6 order-2 lg:order-1">
                     <div className="space-y-4">
                       <h2 className="text-3xl lg:text-5xl font-bold font-headline text-primary tracking-tight leading-tight">
                         {slide.title}
                       </h2>
-                      <p className="text-muted-foreground text-sm lg:text-lg max-w-xl leading-relaxed">
+                      <p className="text-muted-foreground text-sm lg:text-lg max-w-xl leading-relaxed font-medium">
                         {slide.description}
                       </p>
                     </div>
-                    <div className="pt-4">
-                      <Button asChild size="lg" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 h-12 px-8">
+                    <div className="pt-2">
+                      <Button asChild size="lg" className="rounded-full bg-primary text-black font-bold uppercase tracking-widest hover:bg-primary/90 gap-2 h-11 px-8 text-xs">
                         <Link href={slide.link || "#"}>
-                          {slide.buttonText || "Learn More"} <ArrowRight className="h-5 w-5 text-black" />
+                          {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-black" />
                         </Link>
                       </Button>
                     </div>
                   </div>
 
                   {/* Media Area - Right Side (Desktop) */}
-                  <div className="relative h-[300px] lg:h-auto w-full bg-muted order-1 lg:order-2">
+                  <div className="relative h-[300px] lg:h-auto w-full bg-muted order-1 lg:order-2 border-l border-primary/10">
                     <Image
                       src={slide.imageUrl}
                       alt={slide.title}

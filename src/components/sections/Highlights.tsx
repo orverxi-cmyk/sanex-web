@@ -8,7 +8,8 @@ import { doc } from "firebase/firestore";
 
 export function Highlights() {
   const db = useFirestore();
-  const { data: highlightsData, loading } = useDoc(db ? doc(db, "settings", "highlights") : null);
+  const highlightsRef = React.useMemo(() => (db ? doc(db, "settings", "highlights") : null), [db]);
+  const { data: highlightsData, loading } = useDoc(highlightsRef);
 
   const defaultHighlights = [
     {
@@ -31,7 +32,7 @@ export function Highlights() {
   const items = highlightsData?.items?.length ? highlightsData.items : defaultHighlights;
 
   const getIcon = (name: string) => {
-    const iconClass = "h-8 w-8 text-primary";
+    const iconClass = "h-7 w-7 text-primary";
     switch (name.toLowerCase()) {
       case 'shield': return <ShieldCheck className={iconClass} />;
       case 'cpu': return <Cpu className={iconClass} />;
@@ -47,17 +48,17 @@ export function Highlights() {
   if (loading) return null;
 
   return (
-    <section className="py-5 border-y bg-white/50">
+    <section className="py-5 border-y bg-muted/30">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {items.map((item: any, i: number) => (
-            <div key={i} className="flex gap-5 animate-in fade-in slide-in-from-bottom duration-500" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className="flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-xl bg-background border border-border shadow-sm">
+            <div key={i} className="flex gap-4 items-center animate-in fade-in slide-in-from-bottom duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-white border border-primary/20 shadow-sm">
                 {getIcon(item.icon)}
               </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold font-headline">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-snug">{item.description}</p>
+              <div className="space-y-0.5">
+                <h3 className="text-base font-bold font-headline leading-tight">{item.title}</h3>
+                <p className="text-[11px] text-muted-foreground leading-snug font-medium">{item.description}</p>
               </div>
             </div>
           ))}

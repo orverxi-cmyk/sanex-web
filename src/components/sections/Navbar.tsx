@@ -15,13 +15,11 @@ export function Navbar() {
   const { user } = useUser();
   const db = useFirestore();
 
-  const { data: userProfile } = useDoc(
-    db && user ? doc(db, "users", user.uid) : null
-  );
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const generalRef = React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]);
 
-  const { data: generalData } = useDoc(
-    db ? doc(db, "settings", "general") : null
-  );
+  const { data: userProfile } = useDoc(userDocRef);
+  const { data: generalData } = useDoc(generalRef);
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -45,8 +43,8 @@ export function Navbar() {
                 <Image src={logoUrl} alt={siteName} fill className="object-contain" />
               </div>
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Droplets className="h-6 w-6 text-black" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-black">
+                <Droplets className="h-6 w-6" />
               </div>
             )}
             <span className="text-xl font-bold tracking-tight font-headline text-primary">
@@ -60,7 +58,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors"
               >
                 {link.name}
               </Link>
@@ -68,7 +66,7 @@ export function Navbar() {
             
             <div className="flex items-center gap-4 ml-4">
               <UserNav />
-              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-[10px] gap-2">
                 <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
               </Button>
             </div>
@@ -78,11 +76,11 @@ export function Navbar() {
           <div className="flex items-center gap-4 lg:hidden">
             <UserNav />
             <button
-              className="p-2"
+              className="p-2 text-primary"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
             >
-              {isOpen ? <X /> : <Menu />}
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -97,12 +95,12 @@ export function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="text-lg font-medium"
+                className="text-sm font-bold uppercase tracking-widest"
               >
                 {link.name}
               </Link>
             ))}
-            <Button asChild className="w-full bg-primary text-primary-foreground gap-2">
+            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-xs uppercase tracking-widest gap-2">
               <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
             </Button>
           </div>
