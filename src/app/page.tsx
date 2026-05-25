@@ -9,7 +9,6 @@ import { MilestoneTracker } from "@/components/sections/MilestoneTracker";
 import { RegionalPortal } from "@/components/sections/RegionalPortal";
 import { VideoHighlight } from "@/components/sections/VideoHighlight";
 import { Footer } from "@/components/sections/Footer";
-import { AIArchitectTool } from "@/components/sections/AIArchitectTool";
 
 export default function Home() {
   return (
@@ -19,7 +18,6 @@ export default function Home() {
         <HomeSlider />
         <Hero />
         <Highlights />
-        <AIArchitectTool />
         <VideoHighlight />
         <Services />
         <ImpactDashboard />
