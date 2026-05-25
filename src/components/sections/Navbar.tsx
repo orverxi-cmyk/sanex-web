@@ -46,7 +46,7 @@ export function Navbar() {
               </div>
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Droplets className="h-6 w-6" />
+                <Droplets className="h-6 w-6 text-black" />
               </div>
             )}
             <span className="text-xl font-bold tracking-tight font-headline text-primary">
@@ -68,8 +68,8 @@ export function Navbar() {
             
             <div className="flex items-center gap-4 ml-4">
               <UserNav />
-              <Button asChild className="bg-secondary hover:bg-secondary/90 gap-2">
-                <Link href="/book"><Calendar className="h-4 w-4" /> Book a Service</Link>
+              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
+                <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
               </Button>
             </div>
           </div>
@@ -102,8 +102,8 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            <Button asChild className="w-full bg-secondary gap-2">
-              <Link href="/book"><Calendar className="h-4 w-4" /> Book a Service</Link>
+            <Button asChild className="w-full bg-primary text-primary-foreground gap-2">
+              <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
             </Button>
           </div>
         </div>

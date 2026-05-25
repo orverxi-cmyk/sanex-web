@@ -53,7 +53,7 @@ export function HomeSlider() {
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[400px] lg:min-h-[500px]">
-                  {/* Media Area - Now on the Left */}
+                  {/* Media Area - Left Side */}
                   <div className="relative h-[300px] lg:h-auto w-full bg-muted">
                     <Image
                       src={slide.imageUrl}
@@ -63,7 +63,7 @@ export function HomeSlider() {
                     />
                   </div>
 
-                  {/* Text Content Area - Now on the Right */}
+                  {/* Text Content Area - Right Side */}
                   <div className="flex flex-col justify-center p-8 lg:p-16 space-y-6">
                     <div className="space-y-4">
                       <h2 className="text-3xl lg:text-5xl font-bold font-headline text-primary tracking-tight leading-tight">
@@ -74,9 +74,9 @@ export function HomeSlider() {
                       </p>
                     </div>
                     <div className="pt-4">
-                      <Button asChild size="lg" className="rounded-full bg-secondary text-primary hover:bg-secondary/90 gap-2 h-12 px-8">
+                      <Button asChild size="lg" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 h-12 px-8">
                         <Link href={slide.link || "#"}>
-                          {slide.buttonText || "Learn More"} <ArrowRight className="h-5 w-5" />
+                          {slide.buttonText || "Learn More"} <ArrowRight className="h-5 w-5 text-black" />
                         </Link>
                       </Button>
                     </div>
