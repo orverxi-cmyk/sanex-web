@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -91,17 +90,17 @@ export function HomeSlider() {
                   </div>
 
                   {/* Content Section (1/4) - Green background with black text */}
-                  <div className="flex flex-col justify-center p-6 lg:p-8 space-y-6 lg:col-span-1 bg-primary text-black">
+                  <div className="flex flex-col justify-center p-6 lg:p-10 space-y-6 lg:col-span-1 bg-primary text-black">
                     <div className="space-y-4">
                       <h2 className="text-2xl lg:text-3xl font-bold font-headline text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
-                      <p className="text-black/80 text-xs lg:text-sm leading-relaxed font-medium">
+                      <p className="text-black/90 text-sm leading-relaxed font-medium">
                         {slide.description}
                       </p>
                     </div>
                     <div className="pt-2">
-                      <Button asChild size="lg" className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-11 px-6 text-[10px]">
+                      <Button asChild size="lg" className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-12 px-6 text-[10px]">
                         <Link href={slide.link || "#"}>
                           {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-primary" />
                         </Link>
@@ -112,11 +111,11 @@ export function HomeSlider() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <CarouselPrevious className="relative left-0 bg-background/80 hover:bg-primary border-primary text-foreground" />
+          <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <CarouselPrevious className="relative left-0 h-10 w-10 bg-background/80 hover:bg-primary border-primary text-foreground" />
           </div>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <CarouselNext className="relative right-0 bg-background/80 hover:bg-primary border-primary text-foreground" />
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <CarouselNext className="relative right-0 h-10 w-10 bg-background/80 hover:bg-primary border-primary text-foreground" />
           </div>
         </Carousel>
       </div>
