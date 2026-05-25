@@ -32,6 +32,8 @@ export function Navbar() {
 
   const siteName = generalData?.siteName || "SANEX Company Ltd";
   const logoUrl = generalData?.logoUrl;
+  const logoWidth = generalData?.logoWidth || 160;
+  const logoHeight = generalData?.logoHeight || 40;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
@@ -39,8 +41,17 @@ export function Navbar() {
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             {logoUrl ? (
-              <div className="relative h-10 w-10 overflow-hidden rounded-lg">
-                <Image src={logoUrl} alt={siteName} fill className="object-contain" />
+              <div 
+                className="relative overflow-hidden"
+                style={{ width: logoWidth, height: logoHeight }}
+              >
+                <Image 
+                  src={logoUrl} 
+                  alt={siteName} 
+                  width={logoWidth} 
+                  height={logoHeight} 
+                  className="object-contain w-full h-full" 
+                />
               </div>
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-black">

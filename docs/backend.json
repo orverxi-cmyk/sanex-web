@@ -82,6 +82,8 @@
       "properties": {
         "siteName": { "type": "string" },
         "logoUrl": { "type": "string" },
+        "logoWidth": { "type": "number" },
+        "logoHeight": { "type": "number" },
         "phone": { "type": "string" },
         "email": { "type": "string" }
       }

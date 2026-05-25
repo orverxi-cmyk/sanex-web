@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -15,6 +16,8 @@ export function Footer() {
 
   const siteName = generalData?.siteName || "SANEX Company Ltd";
   const logoUrl = generalData?.logoUrl;
+  const logoWidth = (generalData?.logoWidth || 160) * 0.8; // Slightly smaller for footer
+  const logoHeight = (generalData?.logoHeight || 40) * 0.8;
   const phone = generalData?.phone || "+250 788303628";
   const email = generalData?.email || "info@sanex.rw";
 
@@ -25,8 +28,17 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
               {logoUrl ? (
-                <div className="relative h-8 w-8 overflow-hidden rounded-lg bg-white">
-                  <Image src={logoUrl} alt={siteName} fill className="object-contain p-1" />
+                <div 
+                  className="relative overflow-hidden bg-white p-1 rounded-lg"
+                  style={{ width: logoWidth, height: logoHeight }}
+                >
+                  <Image 
+                    src={logoUrl} 
+                    alt={siteName} 
+                    width={logoWidth} 
+                    height={logoHeight} 
+                    className="object-contain w-full h-full" 
+                  />
                 </div>
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-primary">
