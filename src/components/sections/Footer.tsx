@@ -4,7 +4,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Droplets, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Droplets, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -52,18 +52,19 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-bold font-headline uppercase tracking-wider text-black">Links</h4>
             <ul className="space-y-2 text-xs">
-              <li><Link href="#about" className="text-black/70 hover:text-black font-medium transition-colors">About Us</Link></li>
-              <li><Link href="#services" className="text-black/70 hover:text-black font-medium transition-colors">Solutions</Link></li>
-              <li><Link href="#impact" className="text-black/70 hover:text-black font-medium transition-colors">Impact</Link></li>
+              <li><Link href="/about" className="text-black/70 hover:text-black font-medium transition-colors">About Us</Link></li>
+              <li><Link href="/services" className="text-black/70 hover:text-black font-medium transition-colors">Solutions</Link></li>
+              <li><Link href="/articles" className="text-black/70 hover:text-black font-medium transition-colors">Impact</Link></li>
+              <li><Link href="/contact" className="text-black/70 hover:text-black font-medium transition-colors">Contact</Link></li>
             </ul>
           </div>
 
           <div className="space-y-4">
             <h4 className="text-sm font-bold font-headline uppercase tracking-wider text-black">Services</h4>
             <ul className="space-y-2 text-xs font-medium">
-              <li><span className="text-black/70">Waste Collection</span></li>
-              <li><span className="text-black/70">DWTS Installation</span></li>
-              <li><span className="text-black/70">Maintenance</span></li>
+              <li><Link href="/services" className="text-black/70 hover:text-black">Waste Collection</Link></li>
+              <li><Link href="/services" className="text-black/70 hover:text-black">DWTS Installation</Link></li>
+              <li><Link href="/services" className="text-black/70 hover:text-black">Maintenance</Link></li>
             </ul>
           </div>
 

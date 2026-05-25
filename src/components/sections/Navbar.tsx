@@ -5,7 +5,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Droplets, Menu, X, LayoutDashboard, Calendar } from "lucide-react";
+import { Droplets, Menu, X, Calendar } from "lucide-react";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { UserNav } from "./UserNav";
@@ -25,14 +25,13 @@ export function Navbar() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "About", href: "/#about" },
-    { name: "Services", href: "/#services" },
+    { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
     { name: "Articles", href: "/articles" },
     { name: "Gallery", href: "/gallery" },
-    { name: "Contact", href: "/#contact" },
+    { name: "Contact", href: "/contact" },
   ];
 
-  const isAdmin = userProfile?.role === "admin";
   const siteName = generalData?.siteName || "SANEX Company Ltd";
   const logoUrl = generalData?.logoUrl;
 
@@ -112,4 +111,3 @@ export function Navbar() {
     </nav>
   );
 }
-

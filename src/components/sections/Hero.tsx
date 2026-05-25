@@ -52,7 +52,7 @@ export function Hero() {
                 <Link href={content.ctaLink}><Calendar className="h-5 w-5" /> {content.ctaText}</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 px-6 text-base rounded-full border-primary text-primary hover:bg-primary/5">
-                <Link href="/#about">Learn More <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                <Link href="/about">Learn More <ArrowRight className="ml-2 h-5 w-5" /></Link>
               </Button>
             </div>
           </div>
