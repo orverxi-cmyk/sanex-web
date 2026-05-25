@@ -21,7 +21,7 @@ async function assertAdmin(request: CallableRequest) {
   return userId;
 }
 
-export const adminUpdateUserRole = onCall(async (request) => {
+export const adminUpdateUserRole = onCall({ cors: true }, async (request: CallableRequest) => {
   const callerUid = await assertAdmin(request);
   const { targetUserId, newRole } = request.data;
   if (!targetUserId || !newRole) throw new HttpsError('invalid-argument', 'Missing userId or role.');
@@ -45,7 +45,7 @@ export const adminUpdateUserRole = onCall(async (request) => {
   return { success: true };
 });
 
-export const adminBootstrapMaster = onCall(async (request) => {
+export const adminBootstrapMaster = onCall({ cors: true }, async (request: CallableRequest) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Must be logged in.');
   
   const uid = request.auth.uid;

@@ -1,4 +1,3 @@
-
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
@@ -22,7 +21,7 @@ async function assertAdmin(request: CallableRequest) {
   return userId;
 }
 
-export const adminSeedInitialData = onCall(async (request: CallableRequest) => {
+export const adminSeedInitialData = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
 
   const batch = db.batch();
@@ -124,7 +123,7 @@ export const adminSeedInitialData = onCall(async (request: CallableRequest) => {
   return { success: true };
 });
 
-export const adminAddArticle = onCall(async (request: CallableRequest) => {
+export const adminAddArticle = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { title, content, excerpt, imageUrl, category, author } = request.data;
   if (!title || !content) throw new HttpsError('invalid-argument', 'Title and content are required.');
@@ -143,7 +142,7 @@ export const adminAddArticle = onCall(async (request: CallableRequest) => {
   return { id: ref.id, ...newItem };
 });
 
-export const adminDeleteArticle = onCall(async (request: CallableRequest) => {
+export const adminDeleteArticle = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { id } = request.data;
   if (!id) throw new HttpsError('invalid-argument', 'Missing id.');
@@ -151,7 +150,7 @@ export const adminDeleteArticle = onCall(async (request: CallableRequest) => {
   return { success: true };
 });
 
-export const adminUpdateArticle = onCall(async (request: CallableRequest) => {
+export const adminUpdateArticle = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { id, ...data } = request.data;
   if (!id) throw new HttpsError('invalid-argument', 'Missing id.');
@@ -164,7 +163,7 @@ export const adminUpdateArticle = onCall(async (request: CallableRequest) => {
   return { id, ...updateData };
 });
 
-export const adminAddGalleryItem = onCall(async (request: CallableRequest) => {
+export const adminAddGalleryItem = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { imageUrl, description } = request.data;
   if (!imageUrl || !description) throw new HttpsError('invalid-argument', 'Missing fields.');
@@ -178,7 +177,7 @@ export const adminAddGalleryItem = onCall(async (request: CallableRequest) => {
   return { id: ref.id, ...newItem };
 });
 
-export const adminDeleteGalleryItem = onCall(async (request: CallableRequest) => {
+export const adminDeleteGalleryItem = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { id } = request.data;
   if (!id) throw new HttpsError('invalid-argument', 'Missing id.');
@@ -186,7 +185,7 @@ export const adminDeleteGalleryItem = onCall(async (request: CallableRequest) =>
   return { success: true };
 });
 
-export const adminUpdateSiteSection = onCall(async (request: CallableRequest) => {
+export const adminUpdateSiteSection = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { sectionId, content } = request.data;
   if (!sectionId || !content) throw new HttpsError('invalid-argument', 'Missing sectionId or content.');
@@ -195,7 +194,7 @@ export const adminUpdateSiteSection = onCall(async (request: CallableRequest) =>
   return { success: true };
 });
 
-export const createBooking = onCall(async (request: CallableRequest) => {
+export const createBooking = onCall({ cors: true }, async (request: CallableRequest) => {
   const { customerName, email, phone, serviceType, locationUrl, description } = request.data;
   if (!customerName || !email || !phone || !serviceType || !locationUrl) {
     throw new HttpsError('invalid-argument', 'Missing required booking fields.');
@@ -216,7 +215,7 @@ export const createBooking = onCall(async (request: CallableRequest) => {
   return { id: ref.id };
 });
 
-export const adminUpdateBookingStatus = onCall(async (request: CallableRequest) => {
+export const adminUpdateBookingStatus = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { bookingId, status } = request.data;
   if (!bookingId || !status) throw new HttpsError('invalid-argument', 'Missing bookingId or status.');

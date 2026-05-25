@@ -17,7 +17,8 @@ export function initializeFirebase(): {
   
   const firestore = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
-  const functions = getFunctions(firebaseApp);
+  // Explicitly set the region to match the deployed cloud functions
+  const functions = getFunctions(firebaseApp, 'us-central1');
   const storage = getStorage(firebaseApp);
 
   return { firebaseApp, firestore, auth, functions, storage };
