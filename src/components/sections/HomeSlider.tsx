@@ -47,7 +47,7 @@ export function HomeSlider() {
   const isVideo = (url: string) => {
     if (!url) return false;
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || url.includes('firebasestorage') && url.toLowerCase().includes('.mp4');
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || (url.includes('firebasestorage') && url.toLowerCase().includes('.mp4'));
   };
 
   if (loading) return (
@@ -63,50 +63,49 @@ export function HomeSlider() {
           <CarouselContent>
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i}>
-                <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[400px] lg:min-h-[500px]">
-                  <div className="flex flex-col justify-center p-8 lg:p-12 space-y-6 order-2 lg:order-1">
+                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[500px] lg:h-[600px]">
+                  {/* Media Section (3/4) */}
+                  <div className="relative w-full h-[300px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
+                    {slide.imageUrl && isVideo(slide.imageUrl) ? (
+                      <video 
+                        src={slide.imageUrl} 
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    ) : slide.imageUrl ? (
+                      <Image
+                        src={slide.imageUrl}
+                        alt={slide.title || "Slide media"}
+                        fill
+                        className="object-cover"
+                        priority={i === 0}
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-xs uppercase font-bold">
+                        Media Pending
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content Section (1/4) */}
+                  <div className="flex flex-col justify-center p-6 lg:p-8 space-y-6 lg:col-span-1">
                     <div className="space-y-4">
-                      <h2 className="text-3xl lg:text-5xl font-bold font-headline text-primary tracking-tight leading-tight">
+                      <h2 className="text-2xl lg:text-3xl font-bold font-headline text-primary tracking-tight leading-tight">
                         {slide.title}
                       </h2>
-                      <p className="text-muted-foreground text-sm lg:text-lg max-w-xl leading-relaxed font-medium">
+                      <p className="text-muted-foreground text-xs lg:text-sm leading-relaxed font-medium">
                         {slide.description}
                       </p>
                     </div>
                     <div className="pt-2">
-                      <Button asChild size="lg" className="rounded-full bg-primary text-black font-bold uppercase tracking-widest hover:bg-primary/90 gap-2 h-11 px-8 text-xs">
+                      <Button asChild size="lg" className="w-full rounded-full bg-primary text-black font-bold uppercase tracking-widest hover:bg-primary/90 gap-2 h-11 px-6 text-[10px]">
                         <Link href={slide.link || "#"}>
                           {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-black" />
                         </Link>
                       </Button>
-                    </div>
-                  </div>
-
-                  <div className="relative w-full bg-muted order-1 lg:order-2 border-l border-primary/10 flex items-center justify-center p-4">
-                    <div className="relative w-full h-full flex items-center justify-center" style={{ maxWidth: slide.width || 800 }}>
-                      {slide.imageUrl && isVideo(slide.imageUrl) ? (
-                        <video 
-                          src={slide.imageUrl} 
-                          controls 
-                          autoPlay 
-                          muted 
-                          loop 
-                          className="w-full h-auto rounded-lg shadow-sm max-h-[450px] object-contain"
-                        />
-                      ) : slide.imageUrl ? (
-                        <Image
-                          src={slide.imageUrl}
-                          alt={slide.title || "Slide media"}
-                          width={slide.width || 1200}
-                          height={slide.height || 600}
-                          className="object-contain w-full h-auto rounded-lg shadow-sm"
-                          priority={i === 0}
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-xs uppercase font-bold">
-                          Media Pending
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
