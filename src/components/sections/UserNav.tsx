@@ -3,12 +3,9 @@
 
 import React from "react";
 import { 
-  signInWithPopup, 
-  GoogleAuthProvider, 
   signOut 
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { useAuth, useUser, useFirestore } from "@/firebase";
+import { useAuth, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,42 +16,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, User as UserIcon, LayoutDashboard, Loader2 } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboard, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
 export function UserNav() {
   const { auth } = useAuth();
   const { user, loading } = useUser();
-  const db = useFirestore();
   const { toast } = useToast();
-
-  const handleSignIn = async () => {
-    if (!auth || !db) return;
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      // Update or create user profile in Firestore
-      const userRef = doc(db, "users", result.user.uid);
-      await setDoc(userRef, {
-        email: result.user.email,
-        displayName: result.user.displayName,
-        lastLogin: Date.now(),
-      }, { merge: true });
-
-      toast({
-        title: "Welcome back!",
-        description: `Signed in as ${result.user.displayName}`,
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Failed",
-        description: error.message,
-      });
-    }
-  };
 
   const handleSignOut = async () => {
     if (!auth) return;
@@ -77,12 +46,10 @@ export function UserNav() {
     return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
   }
 
+  // If not logged in, we return null to hide the "Sign In" link from the public front end.
+  // Sign in is now initiated exclusively on the /admin route.
   if (!user) {
-    return (
-      <Button variant="ghost" size="sm" onClick={handleSignIn} className="gap-2">
-        <LogIn className="h-4 w-4" /> Sign In
-      </Button>
-    );
+    return null;
   }
 
   return (
