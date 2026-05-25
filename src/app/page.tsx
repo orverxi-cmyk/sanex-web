@@ -16,10 +16,10 @@ export default function Home() {
       <Navbar />
       <main className="flex-grow">
         <HomeSlider />
+        <Services />
         <Hero />
         <Highlights />
         <VideoHighlight />
-        <Services />
         <ImpactDashboard />
         <MilestoneTracker />
         <RegionalPortal />
