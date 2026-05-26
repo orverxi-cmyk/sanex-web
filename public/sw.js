@@ -2,18 +2,15 @@
 const CACHE_NAME = 'sanex-pwa-cache-v1';
 const OFFLINE_URL = '/offline';
 
-const ASSETS_TO_CACHE = [
-  '/',
+const PRECACHE_ASSETS = [
   OFFLINE_URL,
-  '/globals.css',
   '/manifest.webmanifest',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
   );
   self.skipWaiting();
 });
@@ -34,28 +31,27 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          return cache.match(OFFLINE_URL);
-        });
-      })
-    );
-    return;
-  }
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
 
-  // Stale-While-Revalidate strategy: cache-first with network update
+  // Stale-While-Revalidate strategy
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+        const fetchedResponse = fetch(event.request).then((networkResponse) => {
+          // Update cache with new version
+          if (networkResponse.ok) {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
+        }).catch(() => {
+          // If network fails and no cache, return offline page for navigations
+          if (event.request.mode === 'navigate') {
+            return caches.match(OFFLINE_URL);
+          }
         });
-        return cachedResponse || fetchPromise;
+
+        return cachedResponse || fetchedResponse;
       });
     })
   );
