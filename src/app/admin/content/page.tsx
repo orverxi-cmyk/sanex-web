@@ -31,7 +31,8 @@ import {
   RefreshCw,
   Settings,
   Layers,
-  FileText
+  FileText,
+  Navigation as NavigationIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -140,6 +141,7 @@ export default function ContentManagementPage() {
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
                 <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding</TabsTrigger>
+                <TabsTrigger value="navigation" className="gap-2 text-[10px] font-bold uppercase"><NavigationIcon className="h-3 w-3 text-primary" /> Menu</TabsTrigger>
                 <TabsTrigger value="articles" className="gap-2 text-[10px] font-bold uppercase"><FileText className="h-3 w-3 text-primary" /> Articles</TabsTrigger>
                 <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
@@ -152,6 +154,10 @@ export default function ContentManagementPage() {
 
             <TabsContent value="general">
               <GeneralEditor initialData={generalData} onSave={(data) => handleUpdateSection('general', data)} />
+            </TabsContent>
+
+            <TabsContent value="navigation">
+              <NavigationEditor initialData={generalData} onSave={(data) => handleUpdateSection('general', data)} />
             </TabsContent>
 
             <TabsContent value="articles">
@@ -186,6 +192,82 @@ export default function ContentManagementPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function NavigationEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const [navLinks, setNavLinks] = React.useState<any[]>(initialData?.navLinks || []);
+
+  React.useEffect(() => {
+    if (initialData?.navLinks) setNavLinks(initialData.navLinks);
+  }, [initialData]);
+
+  const addLink = () => {
+    setNavLinks([...navLinks, { name: "New Page", href: "/" }]);
+  };
+
+  const removeLink = (index: number) => {
+    setNavLinks(navLinks.filter((_, i) => i !== index));
+  };
+
+  const updateLink = (index: number, field: string, value: string) => {
+    const newLinks = [...navLinks];
+    newLinks[index] = { ...newLinks[index], [field]: value };
+    setNavLinks(newLinks);
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-xl">Navigation Menu</CardTitle>
+          <CardDescription className="text-xs">Manage links in the top header and footer.</CardDescription>
+        </div>
+        <Button size="sm" onClick={addLink} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest"><Plus className="h-4 w-4" /> Add Link</Button>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {navLinks.map((link, i) => (
+            <div key={i} className="flex gap-2 p-3 border rounded-lg bg-muted/20 relative group">
+              <div className="flex-grow space-y-2">
+                <div className="space-y-1">
+                  <Label className="text-[8px] font-bold uppercase text-muted-foreground">Label Name</Label>
+                  <Input 
+                    className="h-8 text-xs" 
+                    value={link.name} 
+                    onChange={e => updateLink(i, 'name', e.target.value)} 
+                    placeholder="e.g. Services"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[8px] font-bold uppercase text-muted-foreground">URL Path</Label>
+                  <Input 
+                    className="h-8 text-xs font-mono" 
+                    value={link.href} 
+                    onChange={e => updateLink(i, 'href', e.target.value)} 
+                    placeholder="e.g. /services"
+                  />
+                </div>
+              </div>
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                className="h-7 w-7 mt-5" 
+                onClick={() => removeLink(i)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+        </div>
+        <Button 
+          onClick={() => onSave({ ...initialData, navLinks })} 
+          className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"
+        >
+          <Save className="h-4 w-4" /> Save Navigation Menu
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

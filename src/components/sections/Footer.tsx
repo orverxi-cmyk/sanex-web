@@ -22,6 +22,15 @@ export function Footer() {
   const phone = generalData?.phone || "+250 788303628";
   const email = generalData?.email || "info@sanex.rw";
 
+  const defaultNavLinks = [
+    { name: "About Us", href: "/about" },
+    { name: "Solutions", href: "/services" },
+    { name: "Impact", href: "/articles" },
+    { name: "Contact", href: "/contact" },
+  ];
+
+  const navLinks = generalData?.navLinks || defaultNavLinks;
+
   return (
     <footer id="contact" className="bg-primary text-black py-5">
       <div className="container mx-auto px-4 md:px-6">
@@ -64,10 +73,13 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-bold font-headline uppercase tracking-wider text-black">Links</h4>
             <ul className="space-y-2 text-xs">
-              <li><Link href="/about" className="text-black/70 hover:text-black font-medium transition-colors">About Us</Link></li>
-              <li><Link href="/services" className="text-black/70 hover:text-black font-medium transition-colors">Solutions</Link></li>
-              <li><Link href="/articles" className="text-black/70 hover:text-black font-medium transition-colors">Impact</Link></li>
-              <li><Link href="/contact" className="text-black/70 hover:text-black font-medium transition-colors">Contact</Link></li>
+              {navLinks.map((link: any) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-black/70 hover:text-black font-medium transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

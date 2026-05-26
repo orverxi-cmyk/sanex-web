@@ -86,7 +86,17 @@
         "logoHeight": { "type": "number" },
         "logoSpacing": { "type": "number" },
         "phone": { "type": "string" },
-        "email": { "type": "string" }
+        "email": { "type": "string" },
+        "navLinks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "href": { "type": "string" }
+            }
+          }
+        }
       }
     },
     "HighlightItem": {

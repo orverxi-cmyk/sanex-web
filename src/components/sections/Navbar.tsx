@@ -21,7 +21,7 @@ export function Navbar() {
   const { data: userProfile } = useDoc(userDocRef);
   const { data: generalData } = useDoc(generalRef);
 
-  const navLinks = [
+  const defaultNavLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "Services", href: "/services" },
@@ -29,6 +29,8 @@ export function Navbar() {
     { name: "Gallery", href: "/gallery" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const navLinks = generalData?.navLinks || defaultNavLinks;
 
   const siteName = generalData?.siteName || "SANEX Company Ltd";
   const logoUrl = generalData?.logoUrl;
@@ -66,7 +68,7 @@ export function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center gap-6">
-            {navLinks.map((link) => (
+            {navLinks.map((link: any) => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -102,7 +104,7 @@ export function Navbar() {
       {isOpen && (
         <div className="lg:hidden border-t bg-background animate-in slide-in-from-top duration-300">
           <div className="flex flex-col space-y-4 p-6">
-            {navLinks.map((link) => (
+            {navLinks.map((link: any) => (
               <Link
                 key={link.name}
                 href={link.href}
