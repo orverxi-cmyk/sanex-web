@@ -1,8 +1,30 @@
-
 "use client";
 
 import React from "react";
-import { ShieldCheck, Cpu, Globe, Zap, Award, Target, HardHat } from "lucide-react";
+import { 
+  ShieldCheck, 
+  Cpu, 
+  Globe, 
+  Zap, 
+  Award, 
+  Target, 
+  HardHat, 
+  Activity,
+  Droplets,
+  Truck,
+  Users,
+  Leaf,
+  Heart,
+  Scale,
+  Sparkles,
+  Clock,
+  Rocket,
+  Building,
+  CheckCircle,
+  Lightbulb,
+  Microscope,
+  Stethoscope
+} from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -33,14 +55,31 @@ export function Highlights() {
 
   const getIcon = (name: string) => {
     const iconClass = "h-7 w-7 text-primary";
-    switch (name.toLowerCase()) {
-      case 'shield': return <ShieldCheck className={iconClass} />;
+    const normalized = name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'shield';
+    
+    switch (normalized) {
+      case 'shield': case 'shieldcheck': return <ShieldCheck className={iconClass} />;
       case 'cpu': return <Cpu className={iconClass} />;
       case 'globe': return <Globe className={iconClass} />;
-      case 'zap': return <Zap className={iconClass} />;
+      case 'zap': case 'energy': return <Zap className={iconClass} />;
       case 'award': return <Award className={iconClass} />;
       case 'target': return <Target className={iconClass} />;
       case 'hardhat': return <HardHat className={iconClass} />;
+      case 'activity': return <Activity className={iconClass} />;
+      case 'droplets': return <Droplets className={iconClass} />;
+      case 'truck': return <Truck className={iconClass} />;
+      case 'users': return <Users className={iconClass} />;
+      case 'leaf': return <Leaf className={iconClass} />;
+      case 'heart': return <Heart className={iconClass} />;
+      case 'scale': return <Scale className={iconClass} />;
+      case 'sparkles': return <Sparkles className={iconClass} />;
+      case 'clock': return <Clock className={iconClass} />;
+      case 'rocket': return <Rocket className={iconClass} />;
+      case 'building': return <Building className={iconClass} />;
+      case 'check': case 'checkcircle': return <CheckCircle className={iconClass} />;
+      case 'lightbulb': return <Lightbulb className={iconClass} />;
+      case 'microscope': return <Microscope className={iconClass} />;
+      case 'stethoscope': return <Stethoscope className={iconClass} />;
       default: return <ShieldCheck className={iconClass} />;
     }
   };

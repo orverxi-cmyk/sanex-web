@@ -1,8 +1,30 @@
-
 "use client";
 
 import React from "react";
-import { Clock, Rocket, Shield, Globe, Target, Eye, Award, Zap, Building } from "lucide-react";
+import { 
+  Clock, 
+  Rocket, 
+  Shield, 
+  Globe, 
+  Target, 
+  Eye, 
+  Award, 
+  Zap, 
+  Building,
+  ShieldCheck,
+  Cpu,
+  HardHat,
+  Activity,
+  Droplets,
+  Truck,
+  Users,
+  Leaf,
+  Heart,
+  Scale,
+  Sparkles,
+  CheckCircle,
+  Stethoscope
+} from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -39,14 +61,28 @@ export function MilestoneTracker() {
 
   const getIcon = (name: string) => {
     const iconClass = "h-5 w-5 text-black";
-    switch (name.toLowerCase()) {
-      case 'clock': return <Clock className={iconClass} />;
-      case 'shield': return <Shield className={iconClass} />;
-      case 'rocket': return <Rocket className={iconClass} />;
+    const normalized = name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'target';
+    
+    switch (normalized) {
+      case 'clock': case 'time': return <Clock className={iconClass} />;
+      case 'shield': case 'shieldcheck': return <Shield className={iconClass} />;
+      case 'rocket': case 'launch': return <Rocket className={iconClass} />;
       case 'globe': return <Globe className={iconClass} />;
-      case 'award': return <Award className={iconClass} />;
-      case 'zap': return <Zap className={iconClass} />;
-      case 'building': return <Building className={iconClass} />;
+      case 'award': case 'medal': return <Award className={iconClass} />;
+      case 'zap': case 'energy': return <Zap className={iconClass} />;
+      case 'building': case 'company': return <Building className={iconClass} />;
+      case 'cpu': return <Cpu className={iconClass} />;
+      case 'hardhat': return <HardHat className={iconClass} />;
+      case 'activity': return <Activity className={iconClass} />;
+      case 'droplets': return <Droplets className={iconClass} />;
+      case 'truck': return <Truck className={iconClass} />;
+      case 'users': return <Users className={iconClass} />;
+      case 'leaf': return <Leaf className={iconClass} />;
+      case 'heart': return <Heart className={iconClass} />;
+      case 'scale': return <Scale className={iconClass} />;
+      case 'sparkles': return <Sparkles className={iconClass} />;
+      case 'check': case 'checkcircle': return <CheckCircle className={iconClass} />;
+      case 'stethoscope': return <Stethoscope className={iconClass} />;
       default: return <Target className={iconClass} />;
     }
   };

@@ -33,7 +33,9 @@ import {
   Layers,
   FileText,
   Navigation as NavigationIcon,
-  Clock
+  Clock,
+  Zap,
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -136,7 +138,7 @@ export default function ContentManagementPage() {
               <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
                 <Layout className="h-8 w-8 text-primary" /> Site Content Manager
               </h1>
-              <p className="text-muted-foreground">Update branding, pages, and styled case studies.</p>
+              <p className="text-muted-foreground">Update branding, pages, and dynamic site sections.</p>
             </div>
           </div>
 
@@ -148,6 +150,7 @@ export default function ContentManagementPage() {
                 <TabsTrigger value="articles" className="gap-2 text-[10px] font-bold uppercase"><FileText className="h-3 w-3 text-primary" /> Articles</TabsTrigger>
                 <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
+                <TabsTrigger value="highlights" className="gap-2 text-[10px] font-bold uppercase"><Shield className="h-3 w-3 text-primary" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2 text-[10px] font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
                 <TabsTrigger value="impact" className="gap-2 text-[10px] font-bold uppercase"><RefreshCw className="h-3 w-3 text-primary" /> Impact UI</TabsTrigger>
                 <TabsTrigger value="milestones" className="gap-2 text-[10px] font-bold uppercase"><Clock className="h-3 w-3 text-primary" /> Milestones</TabsTrigger>
@@ -174,6 +177,10 @@ export default function ContentManagementPage() {
 
             <TabsContent value="hero">
               <HeroEditor initialData={heroData} onSave={(data) => handleUpdateSection('hero', data)} />
+            </TabsContent>
+
+            <TabsContent value="highlights">
+              <HighlightsEditor initialData={highlightsData} onSave={(data) => handleUpdateSection('highlights', data)} />
             </TabsContent>
 
             <TabsContent value="services">
@@ -554,6 +561,46 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
   );
 }
 
+function HighlightsEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const [formData, setFormData] = React.useState(initialData || { items: [] });
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
+
+  const updateItem = (i: number, f: string, v: any) => {
+    const ni = [...formData.items]; ni[i] = { ...ni[i], [f]: v }; setFormData({ ...formData, items: ni });
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-xl">Value Highlights</CardTitle>
+        <Button size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest" onClick={() => setFormData({...formData, items: [...formData.items, {title: "", description: "", icon: "shield"}]})}><Plus className="h-4 w-4" /> Add Highlight</Button>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {formData.items.map((item: any, i: number) => (
+            <Card key={i} className="p-4 space-y-3 relative border-primary/20 bg-muted/5">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
+                <Input className="h-9 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="e.g. Nationwide Coverage" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Icon Identifier</Label>
+                <Input className="h-9 text-xs" value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} placeholder="e.g. shield, globe, zap" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label>
+                <Textarea className="min-h-[60px] text-xs" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
+              </div>
+              <Button size="icon" variant="destructive" className="h-7 w-7 absolute top-2 right-2" onClick={() => setFormData({...formData, items: formData.items.filter((_:any, idx:number) => idx !== i)})}><Trash2 className="h-3 w-3" /></Button>
+            </Card>
+          ))}
+        </div>
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Highlights</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState(initialData || { items: [] });
   React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
@@ -570,7 +617,14 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {formData.items.map((item: any, i: number) => (
             <Card key={i} className="p-4 space-y-3 relative border-primary/20">
-              <Input className="h-9 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Service Title</Label>
+                <Input className="h-9 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Icon Identifier</Label>
+                <Input className="h-9 text-xs" value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} placeholder="e.g. truck, droplets, settings" />
+              </div>
               <RichTextEditor 
                 label="Description" 
                 value={item.description} 
@@ -578,8 +632,14 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
               />
               <MediaPicker value={item.imageUrl} onChange={u => updateItem(i, 'imageUrl', u)} />
               <div className="grid grid-cols-2 gap-2">
-                <Input type="number" className="h-8 text-[10px]" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} placeholder="Width" />
-                <Input type="number" className="h-8 text-[10px]" value={item.height} onChange={e => updateItem(i, 'height', Number(e.target.value))} placeholder="Height" />
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Width</Label>
+                  <Input type="number" className="h-8 text-[10px]" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Height</Label>
+                  <Input type="number" className="h-8 text-[10px]" value={item.height} onChange={e => updateItem(i, 'height', Number(e.target.value))} />
+                </div>
               </div>
               <Button size="icon" variant="destructive" className="h-8 w-8 absolute top-2 right-2" onClick={() => setFormData({...formData, items: formData.items.filter((_:any, idx:number) => idx !== i)})}><Trash2 className="h-4 w-4" /></Button>
             </Card>
@@ -652,7 +712,7 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
                     className="h-9 text-xs" 
                     value={item.icon} 
                     onChange={e => updateItem(i, 'icon', e.target.value)} 
-                    placeholder="e.g. leaf, check, heart" 
+                    placeholder="e.g. leaf, check, heart, scale" 
                   />
                 </div>
               </div>
@@ -697,9 +757,19 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
         <div className="grid grid-cols-1 gap-5">
           {formData.items.map((item: any, i: number) => (
             <div key={i} className="p-4 border rounded relative bg-muted/5">
-              <div className="grid grid-cols-2 gap-2 mb-2">
-                <Input className="h-8 text-xs" value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} placeholder="Year" />
-                <Input className="h-8 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Year</Label>
+                  <Input className="h-8 text-xs" value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} placeholder="Year" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
+                  <Input className="h-8 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Icon</Label>
+                  <Input className="h-8 text-xs" value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} placeholder="e.g. clock, rocket, shield" />
+                </div>
               </div>
               <RichTextEditor 
                 value={item.description} 
@@ -825,5 +895,57 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const [formData, setFormData] = React.useState(initialData || { siteName: "SANEX Company Ltd", logoUrl: "", logoWidth: 160, logoHeight: 40, logoSpacing: 8, phone: "", email: "" });
+  
+  React.useEffect(() => { 
+    if (initialData) setFormData(initialData); 
+  }, [initialData]);
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-xl">Branding</CardTitle></CardHeader>
+      <CardContent>
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Site Name</Label>
+              <Input className="h-9 text-xs" value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} />
+            </div>
+            <MediaPicker label="Company Logo" value={formData.logoUrl} onChange={(url) => setFormData({...formData, logoUrl: url})} />
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Width (px)</Label>
+              <Input type="number" className="h-9 text-xs" value={formData.logoWidth} onChange={e => setFormData({...formData, logoWidth: Number(e.target.value)})} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Height (px)</Label>
+              <Input type="number" className="h-9 text-xs" value={formData.logoHeight} onChange={e => setFormData({...formData, logoHeight: Number(e.target.value)})} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Spacing (px)</Label>
+              <Input type="number" className="h-9 text-xs" value={formData.logoSpacing} onChange={e => setFormData({...formData, logoSpacing: Number(e.target.value)})} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</Label>
+              <Input className="h-9 text-xs" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Email</Label>
+              <Input className="h-9 text-xs" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+            </div>
+          </div>
+          <Button type="submit" className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4" /> Save branding</Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
