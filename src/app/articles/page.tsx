@@ -30,7 +30,7 @@ export default function ArticlesPage() {
               <FileText className="h-6 w-6" />
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold font-headline">Impact & Case Studies</h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm lg:text-base">
               Read about how SANEX is transforming waste management and protecting the environment across Rwanda.
             </p>
           </div>
@@ -40,37 +40,42 @@ export default function ArticlesPage() {
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
           ) : articles && articles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {articles.map((article: any) => (
                 <div key={article.id} className="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all flex flex-col">
-                  <div className="relative h-56 w-full bg-muted">
+                  <div className="relative h-48 w-full bg-muted">
                     {article.imageUrl ? (
-                      <Image src={article.imageUrl} alt={article.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image 
+                        src={article.imageUrl} 
+                        alt={article.title} 
+                        fill 
+                        className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                      />
                     ) : (
-                      <div className="h-full w-full bg-muted flex items-center justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      <div className="h-full w-full bg-muted flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                         No Image
                       </div>
                     )}
                   </div>
-                  <div className="p-6 flex-grow flex flex-col">
+                  <div className="p-5 flex-grow flex flex-col">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-primary/10 text-primary">
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-primary/10 text-primary">
                         {article.category || 'Impact'}
                       </span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-medium">
                         <Calendar className="h-3 w-3" />
                         {new Date(article.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <h2 className="text-xl font-bold font-headline mb-3 group-hover:text-primary transition-colors">
+                    <h2 className="text-lg font-bold font-headline mb-3 group-hover:text-primary transition-colors line-clamp-2">
                       {article.title}
                     </h2>
-                    <p className="text-sm text-muted-foreground mb-6 line-clamp-3">
+                    <p className="text-xs text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
                       {article.excerpt}
                     </p>
                     <div className="mt-auto">
-                      <Button asChild variant="ghost" className="p-0 h-auto hover:bg-transparent text-primary gap-2 font-bold">
-                        <Link href={`/articles/${article.id}`}>Read Full Article <ArrowRight className="h-4 w-4" /></Link>
+                      <Button asChild variant="ghost" className="p-0 h-auto hover:bg-transparent text-primary gap-2 font-bold text-xs uppercase tracking-widest">
+                        <Link href={`/articles/${article.id}`}>Read Full Story <ArrowRight className="h-3 w-3" /></Link>
                       </Button>
                     </div>
                   </div>
