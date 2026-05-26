@@ -1,43 +1,52 @@
-
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  
+  outputFileTracingExcludes: {
+    '*': ['./functions/**/*'],
+  },
+  
+  // ✅ Explicitly allow the workstation origins to prevent cross-origin errors in preview
+  allowedDevOrigins: [
+    '6000-firebase-studio-1779604763538.cluster-ikslh4rdsnbqsvu5nw3v4dqjj2.cloudworkstations.dev',
+    '9000-firebase-studio-1779604763538.cluster-ikslh4rdsnbqsvu5nw3v4dqjj2.cloudworkstations.dev'
+  ],
+  
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [320, 640, 960, 1280, 1600],
+    imageSizes: [16, 32, 48, 64, 96],
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
+        hostname: 'firebasestorage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.firebasestorage.app',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.appspot.com',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatar.vercel.sh',
       },
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
-        port: '',
-        pathname: '/**',
-      },
+      }
     ],
   },
-  experimental: {
-    allowedDevOrigins: [
-      '*.cloudworkstations.dev',
-      'localhost:9002',
-      '0.0.0.0:9002'
-    ]
-  }
+  
+  // Removed the redirects block that was pointing to a non-existent /home directory
 };
 
 export default nextConfig;
