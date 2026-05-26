@@ -1,17 +1,17 @@
-
-const CACHE_NAME = 'sanex-cache-v1';
+const CACHE_NAME = 'sanex-pwa-cache-v1';
 const OFFLINE_URL = '/offline';
 
-const PRECACHE_ASSETS = [
+const STATIC_ASSETS = [
+  '/',
   OFFLINE_URL,
   '/globals.css',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap'
+  '/manifest.webmanifest'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
+      return cache.addAll(STATIC_ASSETS);
     })
   );
   self.skipWaiting();
@@ -33,30 +33,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(OFFLINE_URL);
+      })
+    );
+    return;
+  }
 
-  // Stale-While-Revalidate strategy
+  // Stale-While-Revalidate Strategy
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request)
-          .then((networkResponse) => {
-            // Only cache successful local or specific external responses
-            if (networkResponse.ok) {
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            // If network fails and no cache, return offline page for navigation requests
-            if (event.request.mode === 'navigate') {
-              return cache.match(OFFLINE_URL);
-            }
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
           });
-
-        return cachedResponse || fetchPromise;
+        }
+        return networkResponse;
       });
+      return cachedResponse || fetchPromise;
     })
   );
 });

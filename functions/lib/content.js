@@ -76,7 +76,15 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         logoHeight: 40,
         logoSpacing: 8,
         phone: "+250 788303628",
-        email: "info@sanex.rw"
+        email: "info@sanex.rw",
+        navLinks: [
+            { name: "Home", href: "/" },
+            { name: "About", href: "/about" },
+            { name: "Services", href: "/services" },
+            { name: "Articles", href: "/articles" },
+            { name: "Gallery", href: "/gallery" },
+            { name: "Contact", href: "/contact" },
+        ]
     });
     // Articles Seeding (Impact Stories)
     const articleRef = db.collection('articles').doc('kigali-waste-management-2024');

@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
     '*': ['./functions/**/*'],
   },
   
-  // ✅ Explicitly allow the workstation origins to prevent cross-origin errors in preview
   allowedDevOrigins: [
     '6000-firebase-studio-1779604763538.cluster-ikslh4rdsnbqsvu5nw3v4dqjj2.cloudworkstations.dev',
     '9000-firebase-studio-1779604763538.cluster-ikslh4rdsnbqsvu5nw3v4dqjj2.cloudworkstations.dev'
@@ -45,8 +44,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  
-  // Removed the redirects block that was pointing to a non-existent /home directory
 };
 
 export default nextConfig;
