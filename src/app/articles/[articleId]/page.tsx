@@ -83,9 +83,10 @@ export default function ArticleDetailPage() {
           )}
 
           <article className="prose prose-sm lg:prose-lg max-w-none prose-headings:font-headline prose-primary">
-            <div className="whitespace-pre-wrap leading-relaxed text-foreground/80 font-medium">
-              {article.content}
-            </div>
+            <div 
+              className="text-foreground/80 font-medium" 
+              dangerouslySetInnerHTML={{ __html: article.content }} 
+            />
           </article>
 
           <div className="mt-10 pt-5 border-t border-primary/20">

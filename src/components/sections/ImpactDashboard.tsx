@@ -16,16 +16,14 @@ export function ImpactDashboard() {
     {
       title: "Environmental Preservation",
       points: [
-        "We have successfully treated and managed thousands of cubic meters of liquid waste.",
-        "Our systems have contributed to cleaner water sources, promoting biodiversity."
+        "<p>We have successfully treated and managed thousands of cubic meters of liquid waste.</p><p>Our systems have contributed to cleaner water sources, promoting biodiversity.</p>"
       ],
       icon: "leaf"
     },
     {
       title: "Public Health Improvement",
       points: [
-        "Helping to mitigate waterborne diseases and improving overall community health.",
-        "Our awareness campaigns empowered local populations to adopt safer practices."
+        "<p>Helping to mitigate waterborne diseases and improving overall community health.</p><p>Our awareness campaigns empowered local populations to adopt safer practices.</p>"
       ],
       icon: "check"
     }
@@ -71,14 +69,11 @@ export function ImpactDashboard() {
               </div>
               <div className="space-y-2">
                 <h4 className="text-lg font-bold font-headline text-black">{impact.title}</h4>
-                <ul className="space-y-1">
+                <div className="prose prose-sm prose-black">
                   {impact.points?.map((point: string, pi: number) => (
-                    <li key={pi} className="text-xs text-black/70 leading-relaxed flex gap-2 font-medium">
-                      <div className="h-1 w-1 rounded-full bg-black mt-1.5 flex-shrink-0" />
-                      {point}
-                    </li>
+                    <div key={pi} dangerouslySetInnerHTML={{ __html: point }} />
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           ))}

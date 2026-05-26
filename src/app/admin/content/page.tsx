@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/components/MediaPicker";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import Link from "next/link";
 import { 
   ChevronLeft, 
@@ -32,7 +33,8 @@ import {
   Settings,
   Layers,
   FileText,
-  Navigation as NavigationIcon
+  Navigation as NavigationIcon,
+  Clock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -55,6 +57,7 @@ export default function ContentManagementPage() {
   const highlightsRef = React.useMemo(() => (db ? doc(db, "settings", "highlights") : null), [db]);
   const impactRef = React.useMemo(() => (db ? doc(db, "settings", "impact") : null), [db]);
   const regionalRef = React.useMemo(() => (db ? doc(db, "settings", "regional") : null), [db]);
+  const milestonesRef = React.useMemo(() => (db ? doc(db, "settings", "milestones") : null), [db]);
 
   const { data: generalData } = useDoc(generalRef);
   const { data: heroData } = useDoc(heroRef);
@@ -63,6 +66,7 @@ export default function ContentManagementPage() {
   const { data: highlightsData } = useDoc(highlightsRef);
   const { data: impactData } = useDoc(impactRef);
   const { data: regionalData } = useDoc(regionalRef);
+  const { data: milestonesData } = useDoc(milestonesRef);
 
   const galleryQuery = React.useMemo(() => {
     if (!db) return null;
@@ -133,7 +137,7 @@ export default function ContentManagementPage() {
               <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
                 <Layout className="h-8 w-8 text-primary" /> Site Content Manager
               </h1>
-              <p className="text-muted-foreground">Update branding, pages, and case studies.</p>
+              <p className="text-muted-foreground">Update branding, pages, and styled case studies.</p>
             </div>
           </div>
 
@@ -147,6 +151,7 @@ export default function ContentManagementPage() {
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2 text-[10px] font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
                 <TabsTrigger value="impact" className="gap-2 text-[10px] font-bold uppercase"><RefreshCw className="h-3 w-3 text-primary" /> Impact UI</TabsTrigger>
+                <TabsTrigger value="milestones" className="gap-2 text-[10px] font-bold uppercase"><Clock className="h-3 w-3 text-primary" /> Milestones</TabsTrigger>
                 <TabsTrigger value="regional" className="gap-2 text-[10px] font-bold uppercase"><Globe className="h-3 w-3 text-primary" /> Regional</TabsTrigger>
                 <TabsTrigger value="gallery" className="gap-2 text-[10px] font-bold uppercase"><ImageIcon className="h-3 w-3 text-primary" /> Gallery</TabsTrigger>
               </TabsList>
@@ -178,6 +183,10 @@ export default function ContentManagementPage() {
 
             <TabsContent value="impact">
               <ImpactEditor initialData={impactData} onSave={(data) => handleUpdateSection('impact', data)} />
+            </TabsContent>
+
+            <TabsContent value="milestones">
+              <MilestonesEditor initialData={milestonesData} onSave={(data) => handleUpdateSection('milestones', data)} />
             </TabsContent>
 
             <TabsContent value="regional">
@@ -328,7 +337,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
       <Card className="lg:col-span-1 h-fit">
         <CardHeader>
           <CardTitle className="text-xl">{isEditing ? "Edit Article" : "New Article"}</CardTitle>
-          <CardDescription className="text-xs">Create impact stories and case studies.</CardDescription>
+          <CardDescription className="text-xs">Create styled impact stories and case studies.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSave} className="space-y-4">
@@ -350,10 +359,11 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Excerpt</Label>
               <Textarea className="min-h-[60px] text-xs" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Content</Label>
-              <Textarea className="min-h-[150px] text-xs" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required />
-            </div>
+            <RichTextEditor 
+              label="Content" 
+              value={formData.content} 
+              onChange={content => setFormData({...formData, content})} 
+            />
             <MediaPicker label="Featured Image" value={formData.imageUrl} onChange={url => setFormData({...formData, imageUrl: url})} />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -438,7 +448,11 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-4">
                   <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label><Input className="h-9 text-xs" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} /></div>
-                  <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Textarea className="min-h-[60px] text-xs" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} /></div>
+                  <RichTextEditor 
+                    label="Description" 
+                    value={item.description} 
+                    onChange={val => updateItem(i, 'description', val)} 
+                  />
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label><Input type="number" className="h-9 text-xs" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} /></div>
                     <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label><Input type="number" className="h-9 text-xs" value={item.height} onChange={e => updateItem(i, 'height', Number(e.target.value))} /></div>
@@ -529,7 +543,11 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
             <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label><Input type="number" className="h-9 text-xs" value={formData.imageWidth} onChange={e => setFormData({...formData, imageWidth: Number(e.target.value)})} /></div>
             <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label><Input type="number" className="h-9 text-xs" value={formData.imageHeight} onChange={e => setFormData({...formData, imageHeight: Number(e.target.value)})} /></div>
           </div>
-          <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Textarea className="min-h-[80px] text-xs" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} /></div>
+          <RichTextEditor 
+            label="Description" 
+            value={formData.description} 
+            onChange={val => setFormData({...formData, description: val})} 
+          />
           <Button type="submit" className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Hero</Button>
         </form>
       </CardContent>
@@ -554,7 +572,11 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
           {formData.items.map((item: any, i: number) => (
             <Card key={i} className="p-4 space-y-3 relative border-primary/20">
               <Input className="h-9 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
-              <Textarea className="min-h-[60px] text-xs" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Description" />
+              <RichTextEditor 
+                label="Description" 
+                value={item.description} 
+                onChange={val => updateItem(i, 'description', val)} 
+              />
               <MediaPicker value={item.imageUrl} onChange={u => updateItem(i, 'imageUrl', u)} />
               <div className="grid grid-cols-2 gap-2">
                 <Input type="number" className="h-8 text-[10px]" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} placeholder="Width" />
@@ -583,13 +605,56 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
               <Input className="h-9 text-xs font-bold mb-2" value={item.title} onChange={e => {
                 const ni = [...formData.items]; ni[i].title = e.target.value; setFormData({...formData, items: ni});
               }} placeholder="Impact Category Title" />
-              <Textarea className="min-h-[80px] text-xs" value={item.points?.join("\n")} onChange={e => {
-                const ni = [...formData.items]; ni[i].points = e.target.value.split("\n"); setFormData({...formData, items: ni});
-              }} placeholder="Impact Points (one per line)" />
+              <RichTextEditor 
+                label="Impact Points" 
+                value={item.points?.join("")} 
+                onChange={html => {
+                  const ni = [...formData.items]; 
+                  ni[i].points = [html]; // Store as single HTML block
+                  setFormData({...formData, items: ni});
+                }} 
+              />
             </div>
           ))}
         </div>
         <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Impact</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const [formData, setFormData] = React.useState(initialData || { items: [] });
+  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
+  
+  const updateItem = (i: number, f: string, v: any) => {
+    const ni = [...formData.items]; ni[i] = { ...ni[i], [f]: v }; setFormData({ ...formData, items: ni });
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-xl">Milestones</CardTitle>
+        <Button size="sm" onClick={() => setFormData({...formData, items: [...formData.items, {year: "", title: "", description: "", icon: "clock"}]})}><Plus className="h-4 w-4" /> Add</Button>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className="grid grid-cols-1 gap-5">
+          {formData.items.map((item: any, i: number) => (
+            <div key={i} className="p-4 border rounded relative bg-muted/5">
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <Input className="h-8 text-xs" value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} placeholder="Year" />
+                <Input className="h-8 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+              </div>
+              <RichTextEditor 
+                value={item.description} 
+                onChange={val => updateItem(i, 'description', val)} 
+                placeholder="Description"
+              />
+              <Button size="icon" variant="destructive" className="h-6 w-6 absolute -top-2 -right-2" onClick={() => setFormData({...formData, items: formData.items.filter((_:any, idx:number) => idx !== i)})}><Trash2 className="h-3 w-3" /></Button>
+            </div>
+          ))}
+        </div>
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Milestones</Button>
       </CardContent>
     </Card>
   );

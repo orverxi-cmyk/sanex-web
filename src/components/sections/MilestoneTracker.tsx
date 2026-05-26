@@ -14,19 +14,19 @@ export function MilestoneTracker() {
     {
       year: "2017",
       title: "Founding",
-      description: "Established to address Rwanda's liquid waste challenges.",
+      description: "<p>Established to address Rwanda's liquid waste challenges.</p>",
       icon: "clock"
     },
     {
       year: "2021",
       title: "Licensing",
-      description: "Achieved official licensing for waste collection.",
+      description: "<p>Achieved official licensing for waste collection.</p>",
       icon: "shield"
     },
     {
       year: "2024",
       title: "Expansion",
-      description: "Expanded services to decentralized treatment systems.",
+      description: "<p>Expanded services to decentralized treatment systems.</p>",
       icon: "rocket"
     }
   ];
@@ -60,8 +60,8 @@ export function MilestoneTracker() {
           <div className="space-y-5">
             <div className="space-y-2">
               <h2 className="text-2xl lg:text-4xl font-bold font-headline">{content.title}</h2>
-              <div className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                {content.description}
+              <div className="text-muted-foreground text-sm leading-relaxed prose prose-sm max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: content.description }} />
               </div>
             </div>
             
@@ -97,7 +97,9 @@ export function MilestoneTracker() {
                   <div className="space-y-0.5">
                     <span className="text-primary font-bold text-[10px] uppercase tracking-wider">{milestone.year}</span>
                     <h4 className="text-base font-bold font-headline">{milestone.title}</h4>
-                    <p className="text-xs text-muted-foreground leading-snug">{milestone.description}</p>
+                    <div className="text-xs text-muted-foreground leading-snug prose prose-xs">
+                      <div dangerouslySetInnerHTML={{ __html: milestone.description }} />
+                    </div>
                   </div>
                 </div>
               ))}

@@ -48,9 +48,9 @@ export function Hero() {
             <h1 className="text-3xl lg:text-5xl font-bold font-headline tracking-tighter leading-[1.1]">
               {content.title} <span className="text-primary">{content.titleAccent}</span>
             </h1>
-            <p className="text-base text-muted-foreground max-w-[600px] leading-relaxed font-medium">
-              {content.description}
-            </p>
+            <div className="text-base text-muted-foreground max-w-[600px] leading-relaxed font-medium prose prose-sm prose-primary">
+              <div dangerouslySetInnerHTML={{ __html: content.description }} />
+            </div>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="h-11 px-6 text-sm font-bold uppercase tracking-widest bg-primary text-black rounded-full gap-2 hover:bg-primary/90">
                 <Link href={content.ctaLink}><Calendar className="h-4 w-4 text-black" /> {content.ctaText}</Link>
