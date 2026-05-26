@@ -1,17 +1,18 @@
+
 const CACHE_NAME = 'sanex-pwa-cache-v1';
 const OFFLINE_URL = '/offline';
 
-const STATIC_ASSETS = [
+const ASSETS_TO_CACHE = [
   '/',
   OFFLINE_URL,
   '/globals.css',
-  '/manifest.webmanifest'
+  '/manifest.webmanifest',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
   self.skipWaiting();
@@ -36,25 +37,26 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return caches.match(OFFLINE_URL);
+        return caches.open(CACHE_NAME).then((cache) => {
+          return cache.match(OFFLINE_URL);
+        });
       })
     );
     return;
   }
 
-  // Stale-While-Revalidate Strategy
+  // Stale-While-Revalidate strategy: cache-first with network update
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        });
+        return cachedResponse || fetchPromise;
       });
-      return cachedResponse || fetchPromise;
     })
   );
 });
