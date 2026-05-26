@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -7,6 +6,7 @@ import { Footer } from "@/components/sections/Footer";
 import { Services } from "@/components/sections/Services";
 import { RegionalPortal } from "@/components/sections/RegionalPortal";
 import { VideoHighlight } from "@/components/sections/VideoHighlight";
+import { Hero } from "@/components/sections/Hero";
 
 export default function ServicesPage() {
   return (
@@ -21,6 +21,7 @@ export default function ServicesPage() {
             </p>
           </div>
         </div>
+        <Hero />
         <Services />
         <VideoHighlight />
         <RegionalPortal />

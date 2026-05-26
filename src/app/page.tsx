@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/sections/Navbar";
 import { HomeSlider } from "@/components/sections/HomeSlider";
-import { Hero } from "@/components/sections/Hero";
 import { Highlights } from "@/components/sections/Highlights";
 import { Services } from "@/components/sections/Services";
 import { ImpactDashboard } from "@/components/sections/ImpactDashboard";
@@ -17,7 +16,6 @@ export default function Home() {
         <HomeSlider />
         <Highlights />
         <Services />
-        <Hero />
         <VideoHighlight />
         <ImpactDashboard />
         <MilestoneTracker />
