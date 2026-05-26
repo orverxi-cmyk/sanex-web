@@ -1,11 +1,51 @@
 
-import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, HttpsError, CallableRequest, onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
 const db = admin.firestore();
 
 /**
- * Helper to verify admin privileges.
+ * Helper to verify admin privileges for v2 onRequest functions.
+ */
+async function verifyAdminToken(authHeader: string | undefined) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('No auth token provided');
+  }
+  
+  const token = authHeader.split('Bearer ')[1];
+  const decodedToken = await admin.auth().verifyIdToken(token);
+  const userId = decodedToken.uid;
+  
+  const userDoc = await db.collection('users').doc(userId).get();
+  const isAdmin = userDoc.exists && userDoc.data()?.role === 'admin';
+  const hasAdminClaim = decodedToken.admin === true;
+  
+  if (!isAdmin && !hasAdminClaim) {
+    throw new Error('Admin permission required');
+  }
+  return userId;
+}
+
+/**
+ * CORS helper for v2 onRequest functions.
+ */
+function setCorsHeaders(req: any, res: any) {
+  const origin = req.headers.origin;
+  // Allow the hosted app and workstation origins
+  if (origin && (
+    origin.includes('cloudworkstations.dev') || 
+    origin.includes('hosted.app') || 
+    origin.includes('localhost')
+  )) {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Max-Age', '3600');
+}
+
+/**
+ * Existing Callable assertAdmin
  */
 async function assertAdmin(request: CallableRequest) {
   if (!request.auth) {
@@ -46,7 +86,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     ]
   });
 
-  // Articles Seeding (Impact Stories)
+  // Articles Seeding
   const articleRef = db.collection('articles').doc('kigali-waste-management-2024');
   batch.set(articleRef, {
     title: "Revolutionizing Waste Management in Kigali",
@@ -187,20 +227,38 @@ export const adminUpdateArticle = onCall({ cors: true }, async (request: Callabl
   return { id, ...updateData };
 });
 
-export const adminAddGalleryItem = onCall({ cors: true }, async (request: CallableRequest) => {
-  await assertAdmin(request);
-  const { imageUrl, description, width, height } = request.data;
-  if (!imageUrl || !description) throw new HttpsError('invalid-argument', 'Missing fields.');
+/**
+ * HTTP Replacement for adminAddGalleryItem
+ */
+export const adminAddGalleryItem = onRequest(async (req, res) => {
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
   
-  const newItem = {
-    imageUrl,
-    description: description.trim(),
-    width: Number(width) || 800,
-    height: Number(height) || 600,
-    createdAt: Date.now(),
-  };
-  const ref = await db.collection('gallery').add(newItem);
-  return { id: ref.id, ...newItem };
+  try {
+    await verifyAdminToken(req.headers.authorization);
+    const { imageUrl, description, width, height } = req.body;
+    if (!imageUrl || !description) {
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+    
+    const newItem = {
+      imageUrl,
+      description: description.trim(),
+      width: Number(width) || 800,
+      height: Number(height) || 600,
+      createdAt: Date.now(),
+    };
+    
+    const ref = await db.collection('gallery').add(newItem);
+    res.status(200).json({ id: ref.id, ...newItem });
+  } catch (error: any) {
+    console.error('Error:', error);
+    res.status(401).json({ error: error.message });
+  }
 });
 
 export const adminDeleteGalleryItem = onCall({ cors: true }, async (request: CallableRequest) => {
@@ -220,25 +278,40 @@ export const adminUpdateSiteSection = onCall({ cors: true }, async (request: Cal
   return { success: true };
 });
 
-export const createBooking = onCall({ cors: true }, async (request: CallableRequest) => {
-  const { customerName, email, phone, serviceType, locationUrl, description } = request.data;
-  if (!customerName || !email || !phone || !serviceType || !locationUrl) {
-    throw new HttpsError('invalid-argument', 'Missing required booking fields.');
+/**
+ * HTTP Replacement for createBooking
+ */
+export const createBooking = onRequest(async (req, res) => {
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
   }
-
-  const booking = {
-    customerName,
-    email,
-    phone,
-    serviceType,
-    locationUrl,
-    description: description || '',
-    status: 'pending',
-    createdAt: Date.now(),
-  };
-
-  const ref = await db.collection('bookings').add(booking);
-  return { id: ref.id };
+  
+  try {
+    const { customerName, email, phone, serviceType, locationUrl, description } = req.body;
+    if (!customerName || !email || !phone || !serviceType || !locationUrl) {
+      res.status(400).json({ error: 'Missing required booking fields' });
+      return;
+    }
+    
+    const booking = {
+      customerName,
+      email,
+      phone,
+      serviceType,
+      locationUrl,
+      description: description || '',
+      status: 'pending',
+      createdAt: Date.now(),
+    };
+    
+    const ref = await db.collection('bookings').add(booking);
+    res.status(200).json({ id: ref.id });
+  } catch (error: any) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export const adminUpdateBookingStatus = onCall({ cors: true }, async (request: CallableRequest) => {

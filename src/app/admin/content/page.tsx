@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -34,7 +35,6 @@ import {
   FileText,
   Navigation as NavigationIcon,
   Clock,
-  Zap,
   Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -815,23 +815,47 @@ function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (da
 }
 
 function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) {
+  const { user } = useUser();
   const functions = useFunctions();
   const { toast } = useToast();
   const [photoUrl, setPhotoUrl] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [width, setWidth] = React.useState(800);
   const [height, setHeight] = React.useState(600);
+  const [isAdding, setIsAdding] = React.useState(false);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!functions || !photoUrl) return;
+    if (!user || !photoUrl) return;
+    setIsAdding(true);
     try {
-      const addFunc = httpsCallable(functions, 'adminAddGalleryItem');
-      await addFunc({ imageUrl: photoUrl, description, width, height });
+      const token = await user.getIdToken();
+      
+      const response = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/adminAddGalleryItem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          imageUrl: photoUrl,
+          description: description.trim(),
+          width: width,
+          height: height
+        })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+      
       setPhotoUrl(""); setDescription("");
-      toast({ title: "Success", description: "Photo added." });
+      toast({ title: "Success", description: "Photo added to gallery." });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -867,7 +891,10 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                 <Input type="number" className="h-9 text-xs" value={height} onChange={e => setHeight(Number(e.target.value))} />
               </div>
             </div>
-            <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-black">Add Photo</Button>
+            <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-black" disabled={isAdding}>
+              {isAdding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Add Photo
+            </Button>
           </form>
         </CardContent>
       </Card>
