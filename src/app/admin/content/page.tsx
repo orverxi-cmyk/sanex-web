@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -595,29 +594,86 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
 function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState(initialData || { items: [] });
   React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
+
+  const addItem = () => {
+    setFormData({
+      ...formData,
+      items: [...formData.items, { title: "New Impact", icon: "sparkles", points: ["<p>Describe impact point here.</p>"] }]
+    });
+  };
+
+  const removeItem = (index: number) => {
+    const newItems = formData.items.filter((_: any, i: number) => i !== index);
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const updateItem = (index: number, field: string, value: any) => {
+    const newItems = [...formData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setFormData({ ...formData, items: newItems });
+  };
+
   return (
     <Card>
-      <CardHeader><CardTitle className="text-xl">Impact UI Stats</CardTitle></CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-xl">Impact UI Stats</CardTitle>
+          <CardDescription className="text-xs">Manage dynamic impact categories and points.</CardDescription>
+        </div>
+        <Button size="sm" onClick={addItem} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest">
+          <Plus className="h-4 w-4" /> Add Impact Category
+        </Button>
+      </CardHeader>
       <CardContent className="space-y-5">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {formData.items.map((item: any, i: number) => (
-            <div key={i} className="p-4 border rounded border-primary/20 bg-muted/5">
-              <Input className="h-9 text-xs font-bold mb-2" value={item.title} onChange={e => {
-                const ni = [...formData.items]; ni[i].title = e.target.value; setFormData({...formData, items: ni});
-              }} placeholder="Impact Category Title" />
+            <div key={i} className="p-4 border rounded-xl border-primary/20 bg-muted/5 relative group">
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removeItem(i)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Category Title</Label>
+                  <Input 
+                    className="h-9 text-xs font-bold" 
+                    value={item.title} 
+                    onChange={e => updateItem(i, 'title', e.target.value)} 
+                    placeholder="Impact Category Title" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Icon Identifier</Label>
+                  <Input 
+                    className="h-9 text-xs" 
+                    value={item.icon} 
+                    onChange={e => updateItem(i, 'icon', e.target.value)} 
+                    placeholder="e.g. leaf, check, heart" 
+                  />
+                </div>
+              </div>
               <RichTextEditor 
                 label="Impact Points" 
                 value={item.points?.join("")} 
                 onChange={html => {
-                  const ni = [...formData.items]; 
-                  ni[i].points = [html]; // Store as single HTML block
-                  setFormData({...formData, items: ni});
+                  updateItem(i, 'points', [html]); // Store as single HTML block in array
                 }} 
               />
             </div>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Impact</Button>
+        {formData.items.length === 0 && (
+          <div className="text-center py-10 border-2 border-dashed rounded-xl">
+            <p className="text-muted-foreground text-sm">No impact items configured. Click 'Add Impact Category' to start.</p>
+          </div>
+        )}
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black">
+          <Save className="h-4 w-4 mr-2" /> Save Impact Configuration
+        </Button>
       </CardContent>
     </Card>
   );
