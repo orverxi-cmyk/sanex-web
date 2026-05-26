@@ -32,10 +32,9 @@ export function RichTextEditor({ value, onChange, label, placeholder }: RichText
               ["link", "clean"],
             ],
           },
-          placeholder: placeholder,
+          placeholder: placeholder || "Write something...",
         });
 
-        // Set initial value
         if (value) {
           quillRef.current.root.innerHTML = value;
         }
@@ -43,7 +42,6 @@ export function RichTextEditor({ value, onChange, label, placeholder }: RichText
         quillRef.current.on("text-change", () => {
           if (!isUpdatingRef.current) {
             const html = quillRef.current.root.innerHTML;
-            // Only trigger onChange if the content actually changed and isn't just empty Quill boilerplate
             if (html === "<p><br></p>" && !value) return;
             onChange(html);
           }
@@ -54,7 +52,6 @@ export function RichTextEditor({ value, onChange, label, placeholder }: RichText
     }
   }, []);
 
-  // Sync external value changes into the editor
   useEffect(() => {
     if (quillRef.current && value !== quillRef.current.root.innerHTML) {
       isUpdatingRef.current = true;
