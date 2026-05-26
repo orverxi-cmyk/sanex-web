@@ -10,7 +10,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "build:functions": "cd functions && npm install && npm run build",
-    "deploy:functions": "npm run build:functions && firebase deploy --only functions --project studio-9595184890-5bb3c"
+    "deploy:functions": "npm run build:functions && firebase deploy --only functions"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.2",
@@ -64,7 +64,6 @@
   },
   "overrides": {
     "react": "$react",
-    "react-dom": "$react-dom",
-    "uuid": "^11.1.1"
+    "react-dom": "$react-dom"
   }
 }

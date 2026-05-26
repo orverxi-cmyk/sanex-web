@@ -1,10 +1,10 @@
 
-const CACHE_NAME = 'sanex-pwa-cache-v1';
+const CACHE_NAME = 'sanex-cache-v1';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [
   '/',
-  OFFLINE_URL,
+  '/offline',
   '/globals.css',
   '/manifest.webmanifest'
 ];
@@ -30,33 +30,40 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  // Stale-While-Revalidate Strategy
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(OFFLINE_URL);
-      })
-    );
-    return;
-  }
+  // Only cache GET requests
+  if (event.request.method !== 'GET') return;
+
+  // Skip browser extensions and non-http(s) requests
+  if (!event.request.url.startsWith('http')) return;
+
+  // Skip Firebase Functions and Auth calls to avoid CORS/intercept issues
+  if (event.request.url.includes('cloudfunctions.net') || event.request.url.includes('identitytoolkit')) return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchedResponse = fetch(event.request).then((networkResponse) => {
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // If network fails and no cache, show offline page
+          if (event.request.mode === 'navigate') {
+            return caches.match(OFFLINE_URL);
+          }
         });
-        return networkResponse;
-      });
 
-      return cachedResponse || fetchedResponse;
-    }).catch(() => {
-      if (event.request.destination === 'image') {
-        return caches.match('/offline');
-      }
+      // Stale-While-Revalidate: Return cache immediately if available, update in background
+      return cachedResponse || fetchPromise;
     })
   );
 });
