@@ -27,13 +27,7 @@ export function Footer() {
   return (
     <footer id="contact" className="bg-primary text-black py-2.5">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-5 text-center md:text-left">
-          <div className="space-y-3 flex flex-col items-center md:items-start">
-            <p className="text-[11px] text-black/70 leading-relaxed font-medium">
-              Transforming Waste into Opportunity since 2017.
-            </p>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5 text-center md:text-left">
           <div className="space-y-3">
             <h4 className="text-[10px] font-bold font-headline uppercase tracking-wider text-black">Links</h4>
             <ul className="space-y-1.5 text-[10px]">

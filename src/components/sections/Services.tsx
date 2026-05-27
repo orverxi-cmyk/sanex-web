@@ -128,7 +128,7 @@ export function Services() {
                 <CardTitle className="font-headline text-base lg:text-lg leading-tight group-hover:text-primary transition-colors">{service.title}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-0">
-                <div className="text-muted-foreground text-[10px] leading-relaxed font-medium prose prose-invert prose-xs">
+                <div className="text-muted-foreground text-[10px] leading-relaxed font-medium prose prose-sm max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: service.description }} />
                 </div>
               </CardContent>

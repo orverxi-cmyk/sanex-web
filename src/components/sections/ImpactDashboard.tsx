@@ -84,7 +84,10 @@ export function ImpactDashboard() {
                   {impact.points?.map((point: string, pi: number) => (
                     <li key={pi} className="text-sm text-white/60 leading-relaxed flex gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                      <div dangerouslySetInnerHTML={{ __html: point }} />
+                      <div 
+                        className="prose prose-invert prose-sm max-w-none" 
+                        dangerouslySetInnerHTML={{ __html: point }} 
+                      />
                     </li>
                   ))}
                 </ul>
