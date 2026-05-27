@@ -58,7 +58,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-[16px] font-bold uppercase tracking-widest hover:text-primary transition-colors"
+                className="text-[14px] font-bold uppercase tracking-widest hover:text-primary transition-colors"
               >
                 {link.name}
               </Link>
@@ -66,7 +66,7 @@ export function Navbar() {
             
             <div className="flex items-center gap-4 ml-4">
               <UserNav />
-              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-[16px] gap-2">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-[14px] gap-2">
                 <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
               </Button>
             </div>
@@ -85,11 +85,11 @@ export function Navbar() {
         <div className="lg:hidden border-t bg-background animate-in slide-in-from-top duration-300">
           <div className="flex flex-col space-y-4 p-6">
             {navLinks.map((link: any) => (
-              <Link key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-[16px] font-bold uppercase tracking-widest">
+              <Link key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-[14px] font-bold uppercase tracking-widest">
                 {link.name}
               </Link>
             ))}
-            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-[16px] uppercase tracking-widest gap-2">
+            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-[14px] uppercase tracking-widest gap-2">
               <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
             </Button>
           </div>

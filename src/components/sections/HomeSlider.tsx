@@ -72,7 +72,7 @@ export function HomeSlider() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-12 lg:px-16">
+      <div className="container mx-auto px-4 md:px-16">
         <Carousel className="w-full relative overflow-visible" opts={{ loop: true }}>
           <CarouselContent>
             {items.map((slide: any, i: number) => (
@@ -101,7 +101,7 @@ export function HomeSlider() {
                       />
                     </div>
                     <div className="pt-1">
-                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-[16px]">
+                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-[14px]">
                         <Link href={slide.link || "#"}>
                           {slide.buttonText || "Learn More"} <ArrowRight className="h-3.5 w-3.5 text-primary" />
                         </Link>
@@ -112,8 +112,8 @@ export function HomeSlider() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-6 lg:-left-12 border-primary bg-background text-primary hover:bg-primary hover:text-black" />
-          <CarouselNext className="hidden md:flex -right-6 lg:-right-12 border-primary bg-background text-primary hover:bg-primary hover:text-black" />
+          <CarouselPrevious className="hidden md:flex -left-12 border-primary bg-background text-primary hover:bg-primary hover:text-black z-30" />
+          <CarouselNext className="hidden md:flex -right-12 border-primary bg-background text-primary hover:bg-primary hover:text-black z-30" />
         </Carousel>
       </div>
     </section>
