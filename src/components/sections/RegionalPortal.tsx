@@ -27,17 +27,17 @@ export function RegionalPortal() {
     <section className="py-2.5 bg-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-5 items-center">
-          <div className="lg:w-1/3 space-y-3">
+          <div className="lg:w-1/3 space-y-3 text-center lg:text-left">
             <h2 className="text-2xl lg:text-3xl font-bold font-headline leading-tight">{content.title}</h2>
             <p className="text-[11px] text-muted-foreground">
               {content.description}
             </p>
-            <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/20">
+            <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/20 inline-block lg:block">
               <div className="flex gap-2.5 items-center">
                 <div className="h-7 w-7 rounded-full bg-secondary/20 flex items-center justify-center text-primary">
                   <MapPin className="h-3.5 w-3.5" />
                 </div>
-                <div>
+                <div className="text-left">
                   <div className="text-xs font-bold">Rwanda Nationwide</div>
                   <div className="text-[10px] text-muted-foreground">Urban & Rural Connectivity</div>
                 </div>

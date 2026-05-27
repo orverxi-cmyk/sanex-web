@@ -73,7 +73,7 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-black/10 pt-2.5 flex flex-col md:flex-row items-center justify-between gap-4 text-[9px] text-black/50 font-bold uppercase tracking-widest">
+        <div className="border-t border-black/10 pt-2.5 flex items-center justify-between gap-4 text-[9px] text-black/50 font-bold uppercase tracking-widest">
           <span>© {new Date().getFullYear()}. All rights reserved.</span>
           <div className="flex gap-2">
             <Link href="#" className="h-7 w-7 rounded-full bg-black/10 flex items-center justify-center hover:bg-black hover:text-primary transition-colors text-black">

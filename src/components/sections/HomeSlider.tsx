@@ -23,7 +23,7 @@ export function HomeSlider() {
   const defaultItems = [
     { 
       title: "Liquid Waste Collection", 
-      description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda. We ensure efficient and hygienic collection processes tailored to your needs.", 
+      description: "<p>Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda. We ensure efficient and hygienic collection processes tailored to your needs.</p>", 
       imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
       width: 1200,
       height: 600,
@@ -32,7 +32,7 @@ export function HomeSlider() {
     },
     { 
       title: "Clean Water Reuse", 
-      description: "Advanced DWTS systems using activated sludge technology for irrigation and flushing. Transform your waste into a sustainable resource for the future.", 
+      description: "<p>Advanced DWTS systems using activated sludge technology for irrigation and flushing. Transform your waste into a sustainable resource for the future.</p>", 
       imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
       width: 1200,
       height: 600,
@@ -62,7 +62,7 @@ export function HomeSlider() {
           <CarouselContent>
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full">
-                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-[350px] lg:h-[500px]">
+                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-0 lg:h-[500px]">
                   <div className="relative w-full h-[200px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
                       <video 
@@ -92,7 +92,7 @@ export function HomeSlider() {
                         {slide.title}
                       </h2>
                       <div 
-                        className="text-black text-[11px] lg:text-xs leading-relaxed font-medium line-clamp-3 lg:line-clamp-none prose prose-sm max-w-none prose-p:leading-relaxed"
+                        className="text-black text-[11px] lg:text-xs leading-relaxed font-medium line-clamp-4 lg:line-clamp-none prose prose-sm max-w-none prose-p:leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: slide.description }}
                       />
                     </div>

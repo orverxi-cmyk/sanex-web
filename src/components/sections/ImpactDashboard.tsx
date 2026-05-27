@@ -18,24 +18,24 @@ export function ImpactDashboard() {
     {
       title: "Environmental Preservation",
       points: [
-        "We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.",
-        "Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation."
+        "<p>We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.</p>",
+        "<p>Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation.</p>"
       ],
       icon: "leaf"
     },
     {
       title: "Public Health Improvement",
       points: [
-        "By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.",
-        "Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living."
+        "<p>By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.</p>",
+        "<p>Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living.</p>"
       ],
       icon: "heart"
     },
     {
       title: "Job Creation",
       points: [
-        "SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.",
-        "Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices."
+        "<p>SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.</p>",
+        "<p>Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices.</p>"
       ],
       icon: "briefcase"
     }
@@ -80,17 +80,17 @@ export function ImpactDashboard() {
               </div>
               <div className="space-y-3">
                 <h4 className="text-xl font-bold font-headline text-white">{impact.title}</h4>
-                <ul className="space-y-2">
+                <div className="space-y-3">
                   {impact.points?.map((point: string, pi: number) => (
-                    <li key={pi} className="text-sm text-white/60 leading-relaxed flex gap-2">
+                    <div key={pi} className="flex gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                       <div 
-                        className="prose prose-invert prose-sm max-w-none" 
+                        className="prose prose-invert prose-xs lg:prose-sm max-w-none text-white/60 leading-relaxed" 
                         dangerouslySetInnerHTML={{ __html: point }} 
                       />
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           ))}

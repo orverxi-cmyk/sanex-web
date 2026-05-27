@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -740,47 +739,87 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
 }
 
 function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { items: [] });
-  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
+  const [formData, setFormData] = React.useState({ items: initialData?.items || [] });
+
+  React.useEffect(() => { 
+    if (initialData?.items) {
+      setFormData({ items: initialData.items });
+    }
+  }, [initialData]);
   
   const updateItem = (i: number, f: string, v: any) => {
-    const ni = [...formData.items]; ni[i] = { ...ni[i], [f]: v }; setFormData({ ...formData, items: ni });
+    const ni = [...formData.items]; 
+    ni[i] = { ...ni[i], [f]: v }; 
+    setFormData({ ...formData, items: ni });
+  };
+
+  const removeItem = (index: number) => {
+    const ni = formData.items.filter((_: any, i: number) => i !== index);
+    setFormData({ ...formData, items: ni });
+  };
+
+  const addItem = () => {
+    setFormData({
+      ...formData,
+      items: [...formData.items, { year: "202X", title: "New Milestone", description: "<p></p>", icon: "clock" }]
+    });
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">Milestones</CardTitle>
-        <Button size="sm" onClick={() => setFormData({...formData, items: [...formData.items, {year: "", title: "", description: "", icon: "clock"}]})}><Plus className="h-4 w-4" /> Add</Button>
+        <div>
+          <CardTitle className="text-xl">Evolution Milestones</CardTitle>
+          <CardDescription className="text-xs">Timeline of company growth and achievements.</CardDescription>
+        </div>
+        <Button size="sm" onClick={addItem} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest">
+          <Plus className="h-4 w-4" /> Add Milestone
+        </Button>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-1 gap-5">
           {formData.items.map((item: any, i: number) => (
-            <div key={i} className="p-4 border rounded relative bg-muted/5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+            <div key={i} className="p-4 border rounded-xl relative bg-muted/5 group border-primary/10">
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                className="absolute -top-2 -right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" 
+                onClick={() => removeItem(i)}
+                title="Remove Milestone"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                 <div className="space-y-1">
                   <Label className="text-[10px] font-bold uppercase text-muted-foreground">Year</Label>
-                  <Input className="h-8 text-xs" value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} placeholder="Year" />
+                  <Input className="h-9 text-xs" value={item.year} onChange={e => updateItem(i, 'year', e.target.value)} placeholder="Year" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
-                  <Input className="h-8 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Title" />
+                  <Input className="h-9 text-xs font-bold" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} placeholder="Milestone Title" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Icon</Label>
-                  <Input className="h-8 text-xs" value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} placeholder="e.g. clock, rocket, shield" />
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Icon Identifier</Label>
+                  <Input className="h-9 text-xs" value={item.icon} onChange={e => updateItem(i, 'icon', e.target.value)} placeholder="e.g. clock, rocket, shield" />
                 </div>
               </div>
               <RichTextEditor 
+                label="Description"
                 value={item.description} 
                 onChange={val => updateItem(i, 'description', val)} 
-                placeholder="Description"
+                placeholder="Describe the milestone event..."
               />
-              <Button size="icon" variant="destructive" className="h-6 w-6 absolute -top-2 -right-2" onClick={() => setFormData({...formData, items: formData.items.filter((_:any, idx:number) => idx !== i)})}><Trash2 className="h-3 w-3" /></Button>
             </div>
           ))}
+          {formData.items.length === 0 && (
+            <div className="text-center py-10 border-2 border-dashed rounded-xl">
+              <p className="text-muted-foreground text-sm">No milestones listed. Click 'Add Milestone' to begin.</p>
+            </div>
+          )}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Milestones</Button>
+        <Button onClick={() => onSave(formData)} className="h-11 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black mt-4">
+          <Save className="h-4 w-4 mr-2" /> Save Milestones Configuration
+        </Button>
       </CardContent>
     </Card>
   );
