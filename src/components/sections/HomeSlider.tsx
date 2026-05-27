@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -8,7 +9,9 @@ import { doc } from "firebase/firestore";
 import { 
   Carousel, 
   CarouselContent, 
-  CarouselItem 
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, Edit3 } from "lucide-react";
@@ -59,18 +62,18 @@ export function HomeSlider() {
   );
 
   return (
-    <section className="py-2.5 bg-background overflow-hidden relative group">
+    <section className="py-2.5 bg-background overflow-hidden relative group font-arial">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
             <Link href="/admin/content?tab=slider">
               <Edit3 className="h-4 w-4" /> Edit Slider
             </Link>
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-6">
-        <Carousel className="w-full relative" opts={{ loop: true }}>
+      <div className="container mx-auto px-4 md:px-12 lg:px-16">
+        <Carousel className="w-full relative overflow-visible" opts={{ loop: true }}>
           <CarouselContent>
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full">
@@ -88,12 +91,12 @@ export function HomeSlider() {
                   </div>
 
                   <div className="flex flex-col justify-center p-5 lg:p-8 space-y-4 lg:col-span-1 bg-primary text-black">
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-left">
                       <h2 className="text-[16px] font-bold text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
                       <div 
-                        className="text-black text-[14px] font-normal leading-relaxed prose prose-sm max-w-none"
+                        className="text-black text-[14px] font-normal leading-relaxed prose prose-sm max-w-none prose-p:leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: slide.description }}
                       />
                     </div>
@@ -109,6 +112,8 @@ export function HomeSlider() {
               </CarouselItem>
             ))}
           </CarouselContent>
+          <CarouselPrevious className="hidden md:flex -left-6 lg:-left-12 border-primary bg-background text-primary hover:bg-primary hover:text-black" />
+          <CarouselNext className="hidden md:flex -right-6 lg:-right-12 border-primary bg-background text-primary hover:bg-primary hover:text-black" />
         </Carousel>
       </div>
     </section>
