@@ -23,9 +23,9 @@ export default function ArticlesPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-12 bg-muted/10">
+      <main className="flex-grow py-5 bg-muted/10">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 space-y-4">
+          <div className="text-center mb-5 space-y-4">
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
               <FileText className="h-6 w-6" />
             </div>
@@ -36,11 +36,11 @@ export default function ArticlesPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-20">
+            <div className="flex justify-center py-10">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
           ) : articles && articles.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {articles.map((article: any) => (
                 <div key={article.id} className="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all flex flex-col">
                   <div className="relative h-48 w-full bg-muted">
@@ -83,7 +83,7 @@ export default function ArticlesPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed">
+            <div className="text-center py-10 bg-white rounded-2xl border-2 border-dashed">
               <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />
               <h3 className="text-xl font-bold">No Articles Found</h3>
               <p className="text-muted-foreground">Detailed impact stories will appear here soon.</p>

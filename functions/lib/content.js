@@ -49,7 +49,41 @@ const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
 /**
- * Helper to verify admin privileges.
+ * Helper to verify admin privileges for v2 onRequest functions.
+ */
+async function verifyAdminToken(authHeader) {
+    var _a;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new Error('No auth token provided');
+    }
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    const userDoc = await db.collection('users').doc(userId).get();
+    const isAdmin = userDoc.exists && ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role) === 'admin';
+    const hasAdminClaim = decodedToken.admin === true;
+    if (!isAdmin && !hasAdminClaim) {
+        throw new Error('Admin permission required');
+    }
+    return userId;
+}
+/**
+ * CORS helper for v2 onRequest functions.
+ */
+function setCorsHeaders(req, res) {
+    const origin = req.headers.origin;
+    // Allow the hosted app and workstation origins
+    if (origin && (origin.includes('cloudworkstations.dev') ||
+        origin.includes('hosted.app') ||
+        origin.includes('localhost'))) {
+        res.set('Access-Control-Allow-Origin', origin);
+    }
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.set('Access-Control-Max-Age', '3600');
+}
+/**
+ * Existing Callable assertAdmin
  */
 async function assertAdmin(request) {
     var _a;
@@ -86,7 +120,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
             { name: "Contact", href: "/contact" },
         ]
     });
-    // Articles Seeding (Impact Stories)
+    // Articles Seeding
     const articleRef = db.collection('articles').doc('kigali-waste-management-2024');
     batch.set(articleRef, {
         title: "Revolutionizing Waste Management in Kigali",
@@ -212,20 +246,36 @@ exports.adminUpdateArticle = (0, https_1.onCall)({ cors: true }, async (request)
     await db.collection('articles').doc(id).update(updateData);
     return Object.assign({ id }, updateData);
 });
-exports.adminAddGalleryItem = (0, https_1.onCall)({ cors: true }, async (request) => {
-    await assertAdmin(request);
-    const { imageUrl, description, width, height } = request.data;
-    if (!imageUrl || !description)
-        throw new https_1.HttpsError('invalid-argument', 'Missing fields.');
-    const newItem = {
-        imageUrl,
-        description: description.trim(),
-        width: Number(width) || 800,
-        height: Number(height) || 600,
-        createdAt: Date.now(),
-    };
-    const ref = await db.collection('gallery').add(newItem);
-    return Object.assign({ id: ref.id }, newItem);
+/**
+ * HTTP Replacement for adminAddGalleryItem
+ */
+exports.adminAddGalleryItem = (0, https_1.onRequest)(async (req, res) => {
+    setCorsHeaders(req, res);
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
+    try {
+        await verifyAdminToken(req.headers.authorization);
+        const { imageUrl, description, width, height } = req.body;
+        if (!imageUrl || !description) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+        const newItem = {
+            imageUrl,
+            description: description.trim(),
+            width: Number(width) || 800,
+            height: Number(height) || 600,
+            createdAt: Date.now(),
+        };
+        const ref = await db.collection('gallery').add(newItem);
+        res.status(200).json(Object.assign({ id: ref.id }, newItem));
+    }
+    catch (error) {
+        console.error('Error:', error);
+        res.status(401).json({ error: error.message });
+    }
 });
 exports.adminDeleteGalleryItem = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
@@ -243,23 +293,38 @@ exports.adminUpdateSiteSection = (0, https_1.onCall)({ cors: true }, async (requ
     await db.collection('settings').doc(sectionId).set(content, { merge: true });
     return { success: true };
 });
-exports.createBooking = (0, https_1.onCall)({ cors: true }, async (request) => {
-    const { customerName, email, phone, serviceType, locationUrl, description } = request.data;
-    if (!customerName || !email || !phone || !serviceType || !locationUrl) {
-        throw new https_1.HttpsError('invalid-argument', 'Missing required booking fields.');
+/**
+ * HTTP Replacement for createBooking
+ */
+exports.createBooking = (0, https_1.onRequest)(async (req, res) => {
+    setCorsHeaders(req, res);
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
     }
-    const booking = {
-        customerName,
-        email,
-        phone,
-        serviceType,
-        locationUrl,
-        description: description || '',
-        status: 'pending',
-        createdAt: Date.now(),
-    };
-    const ref = await db.collection('bookings').add(booking);
-    return { id: ref.id };
+    try {
+        const { customerName, email, phone, serviceType, locationUrl, description } = req.body;
+        if (!customerName || !email || !phone || !serviceType || !locationUrl) {
+            res.status(400).json({ error: 'Missing required booking fields' });
+            return;
+        }
+        const booking = {
+            customerName,
+            email,
+            phone,
+            serviceType,
+            locationUrl,
+            description: description || '',
+            status: 'pending',
+            createdAt: Date.now(),
+        };
+        const ref = await db.collection('bookings').add(booking);
+        res.status(200).json({ id: ref.id });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 exports.adminUpdateBookingStatus = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);

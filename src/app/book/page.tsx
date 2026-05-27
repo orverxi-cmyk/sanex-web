@@ -4,7 +4,6 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useFirebaseConfig } from "@/firebase/config"; // Assuming config is accessible or use a hardcoded fallback for dev
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,7 +74,6 @@ export default function BookingPage() {
 
     setIsSubmitting(true);
     try {
-      // Use standard fetch to the HTTP onRequest endpoint
       const response = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/createBooking', {
         method: 'POST',
         headers: {
@@ -107,7 +105,7 @@ export default function BookingPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5">
-          <Card className="w-full max-w-md text-center py-8">
+          <Card className="w-full max-w-md text-center py-5">
             <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
@@ -126,9 +124,9 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-8 bg-muted/10">
+      <main className="flex-grow py-5 bg-muted/10">
         <div className="container mx-auto px-4">
-          <div className="max-w-xl mx-auto space-y-6">
+          <div className="max-w-xl mx-auto space-y-5">
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-bold font-headline">Book a Service</h1>
               <p className="text-muted-foreground text-sm">
@@ -141,7 +139,7 @@ export default function BookingPage() {
                 <CardTitle className="text-lg">Request Form</CardTitle>
                 <CardDescription className="text-black/70">Please fill in your details</CardDescription>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-5 space-y-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">

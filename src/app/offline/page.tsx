@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -14,7 +15,7 @@ export default function OfflinePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-20 text-center">
+      <main className="flex-grow flex flex-col items-center justify-center px-4 py-5 text-center">
         <div className="h-24 w-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
           <WifiOff className="h-12 w-12 text-primary" />
         </div>

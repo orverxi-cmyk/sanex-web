@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -22,15 +23,15 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow bg-muted/10 py-12">
+      <main className="flex-grow bg-muted/10 py-5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
+            <div className="text-center mb-5">
               <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-4">Get in Touch</h1>
               <p className="text-muted-foreground">We're here to solve your liquid waste management challenges.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Card className="border-none shadow-lg">
                 <CardHeader className="bg-primary text-black">
                   <CardTitle className="text-xl">Contact Information</CardTitle>
@@ -72,9 +73,9 @@ export default function ContactPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex flex-col justify-center space-y-6">
+              <div className="flex flex-col justify-center space-y-5">
                 <Card className="border-primary border-2 bg-primary/5">
-                  <CardContent className="p-8 text-center space-y-6">
+                  <CardContent className="p-8 text-center space-y-5">
                     <Calendar className="h-12 w-12 mx-auto text-primary" />
                     <h3 className="text-2xl font-bold font-headline">Need a Service?</h3>
                     <p className="text-muted-foreground">Book a liquid waste collection or consultancy directly through our booking portal.</p>

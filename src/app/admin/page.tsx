@@ -99,7 +99,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4">
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5">
           <Card className="w-full max-w-md shadow-xl">
             <CardHeader className="text-center">
               <LayoutDashboard className="mx-auto h-12 w-12 text-primary mb-2" />
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4">
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5">
           <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive">
             <CardHeader className="text-center">
               <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-2" />
@@ -155,9 +155,9 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-12 bg-muted/10">
+      <main className="flex-grow py-5 bg-muted/10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
               <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
               <p className="text-muted-foreground">Welcome back, {user.displayName}. Control center is active.</p>
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <Card className="group hover:shadow-lg transition-all border-l-4 border-l-primary">
               <CardHeader>
                 <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">

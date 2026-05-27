@@ -82,7 +82,7 @@ export default function UserManagementPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow flex items-center justify-center px-4">
-          <Card className="w-full max-w-md text-center py-12">
+          <Card className="w-full max-w-md text-center py-5">
             <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
             <CardTitle>Unauthorized Access</CardTitle>
             <p className="mt-2 text-muted-foreground">You do not have permission to view this page.</p>
@@ -99,9 +99,9 @@ export default function UserManagementPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-12 bg-muted/10">
+      <main className="flex-grow py-5 bg-muted/10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
               <Button asChild variant="ghost" className="mb-2 -ml-2">
                 <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
