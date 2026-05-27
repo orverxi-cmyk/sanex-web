@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -64,7 +63,6 @@ export function HomeSlider() {
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full">
                 <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-[350px] lg:h-[500px]">
-                  {/* Media Section */}
                   <div className="relative w-full h-[200px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
                       <video 
@@ -88,15 +86,15 @@ export function HomeSlider() {
                     )}
                   </div>
 
-                  {/* Content Section */}
                   <div className="flex flex-col justify-center p-5 lg:p-8 space-y-4 lg:col-span-1 bg-primary text-black">
                     <div className="space-y-2">
                       <h2 className="text-lg lg:text-2xl font-bold font-headline text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
-                      <p className="text-black text-[11px] lg:text-xs leading-relaxed font-medium line-clamp-3 lg:line-clamp-none">
-                        {slide.description}
-                      </p>
+                      <div 
+                        className="text-black text-[11px] lg:text-xs leading-relaxed font-medium line-clamp-3 lg:line-clamp-none prose prose-sm max-w-none prose-p:leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: slide.description }}
+                      />
                     </div>
                     <div className="pt-1">
                       <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-9 lg:h-10 px-6 text-[9px]">
