@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -95,9 +96,9 @@ export function MilestoneTracker() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
           <div className="space-y-4">
             <div className="space-y-1">
-              <h2 className="text-2xl lg:text-3xl font-bold font-headline">{content.title}</h2>
+              <h2 className="text-base font-bold font-headline">{content.title}</h2>
               <div 
-                className="text-muted-foreground text-[11px] leading-relaxed prose prose-sm max-w-none prose-p:leading-relaxed"
+                className="text-sm font-normal text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: content.description }}
               />
             </div>
@@ -107,21 +108,21 @@ export function MilestoneTracker() {
                 <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-black">
                   <Eye className="h-3.5 w-3.5" />
                 </div>
-                <h4 className="text-sm font-bold font-headline">Vision</h4>
-                <p className="text-[10px] text-muted-foreground">Leading provider of sustainable waste solutions.</p>
+                <h4 className="text-base font-bold font-headline">Vision</h4>
+                <p className="text-sm font-normal text-muted-foreground">Leading provider of sustainable waste solutions.</p>
               </div>
-              <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/10 space-y-1">
+              <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/20 space-y-1">
                 <div className="h-7 w-7 rounded-full bg-secondary text-primary flex items-center justify-center">
                   <Target className="h-3.5 w-3.5" />
                 </div>
-                <h4 className="text-sm font-bold font-headline">Mission</h4>
-                <p className="text-[10px] text-muted-foreground">Efficient, eco-friendly, and cost-effective sanitation.</p>
+                <h4 className="text-base font-bold font-headline">Mission</h4>
+                <p className="text-sm font-normal text-muted-foreground">Efficient, eco-friendly, and cost-effective sanitation.</p>
               </div>
             </div>
           </div>
           
           <div className="relative p-5 bg-muted/5 rounded-xl border shadow-sm">
-            <h3 className="text-lg font-bold font-headline mb-4 text-center">Our Evolution</h3>
+            <h3 className="text-base font-bold font-headline mb-4 text-center">Our Evolution</h3>
             <div className="space-y-4">
               {content.items.map((milestone: any, i: number) => (
                 <div key={i} className="flex gap-3 items-start relative">
@@ -132,10 +133,10 @@ export function MilestoneTracker() {
                     {getIcon(milestone.icon)}
                   </div>
                   <div className="space-y-0">
-                    <span className="text-primary font-bold text-[9px] uppercase tracking-wider">{milestone.year}</span>
-                    <h4 className="text-sm font-bold font-headline leading-tight">{milestone.title}</h4>
+                    <span className="text-primary font-bold text-[10px] uppercase tracking-wider">{milestone.year}</span>
+                    <h4 className="text-base font-bold font-headline leading-tight">{milestone.title}</h4>
                     <div 
-                      className="text-[10px] text-muted-foreground leading-snug prose prose-xs"
+                      className="text-sm font-normal text-muted-foreground leading-snug prose prose-xs"
                       dangerouslySetInnerHTML={{ __html: milestone.description }}
                     />
                   </div>

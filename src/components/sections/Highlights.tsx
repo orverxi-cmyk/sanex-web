@@ -97,8 +97,8 @@ export function Highlights() {
                 {getIcon(item.icon)}
               </div>
               <div className="space-y-0">
-                <h3 className="text-sm font-bold font-headline leading-tight">{item.title}</h3>
-                <p className="text-[10px] text-muted-foreground leading-snug font-medium">{item.description}</p>
+                <h3 className="text-base font-bold font-headline leading-tight">{item.title}</h3>
+                <p className="text-sm font-normal text-muted-foreground leading-snug">{item.description}</p>
               </div>
             </div>
           ))}

@@ -61,7 +61,7 @@ export function Navbar() {
                 <Droplets className="h-6 w-6" />
               </div>
             )}
-            <span className="text-xl font-bold tracking-tight font-headline text-primary">
+            <span className="text-base font-bold tracking-tight font-headline text-primary">
               {siteName.split(' ')[0]} <span className="text-foreground">{siteName.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
@@ -72,7 +72,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors"
+                className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors"
               >
                 {link.name}
               </Link>
@@ -80,7 +80,7 @@ export function Navbar() {
             
             <div className="flex items-center gap-4 ml-4">
               <UserNav />
-              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-[10px] gap-2">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-base gap-2">
                 <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
               </Button>
             </div>
@@ -109,12 +109,12 @@ export function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="text-sm font-bold uppercase tracking-widest"
+                className="text-base font-bold uppercase tracking-widest"
               >
                 {link.name}
               </Link>
             ))}
-            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-xs uppercase tracking-widest gap-2">
+            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-base uppercase tracking-widest gap-2">
               <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
             </Button>
           </div>

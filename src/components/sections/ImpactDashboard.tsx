@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -66,8 +67,8 @@ export function ImpactDashboard() {
     <section className="py-2.5 bg-primary text-black relative overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center mb-5 space-y-4">
-          <h2 className="text-3xl lg:text-4xl font-bold font-headline leading-tight">{content.title}</h2>
-          <p className="text-sm lg:text-base text-black/70 font-medium max-w-3xl mx-auto">
+          <h2 className="text-base font-bold font-headline leading-tight">{content.title}</h2>
+          <p className="text-[15px] font-bold text-black/70 max-w-3xl mx-auto">
             {content.subtitle}
           </p>
         </div>
@@ -79,13 +80,13 @@ export function ImpactDashboard() {
                 {getIcon(impact.icon)}
               </div>
               <div className="space-y-3">
-                <h4 className="text-xl font-bold font-headline">{impact.title}</h4>
+                <h4 className="text-base font-bold font-headline">{impact.title}</h4>
                 <div className="space-y-3">
                   {impact.points?.map((point: string, pi: number) => (
                     <div key={pi} className="flex gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-black mt-2 flex-shrink-0" />
                       <div 
-                        className="prose prose-xs lg:prose-sm max-w-none text-black/70 leading-relaxed font-medium" 
+                        className="prose prose-xs lg:prose-sm max-w-none text-sm font-normal text-black/70 leading-relaxed" 
                         dangerouslySetInnerHTML={{ __html: point }} 
                       />
                     </div>
