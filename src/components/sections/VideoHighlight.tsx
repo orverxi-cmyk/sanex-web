@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -30,11 +29,7 @@ export function VideoHighlight() {
     return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0` : url;
   };
 
-  if (loading) return (
-    <div className="h-20 flex items-center justify-center">
-      <Loader2 className="h-5 w-5 animate-spin text-primary" />
-    </div>
-  );
+  if (loading) return null;
   
   if (!content.videoUrl) return null;
 
@@ -42,17 +37,17 @@ export function VideoHighlight() {
   const embedUrl = isYouTube ? getYouTubeEmbedUrl(content.videoUrl) : content.videoUrl;
 
   return (
-    <section className="py-5 bg-muted/20">
+    <section className="py-2.5 bg-muted/20">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col items-center text-center mb-5 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest">
-            <Activity className="h-3 w-3" /> Operational Highlights
+        <div className="flex flex-col items-center text-center mb-5 space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-[9px] font-bold uppercase tracking-widest">
+            <Activity className="h-2.5 w-2.5" /> Operational Highlights
           </div>
-          <h2 className="text-2xl lg:text-4xl font-bold font-headline">{content.title}</h2>
-          <p className="text-sm text-muted-foreground max-w-2xl">{content.description}</p>
+          <h2 className="text-2xl lg:text-3xl font-bold font-headline">{content.title}</h2>
+          <p className="text-[11px] text-muted-foreground max-w-2xl">{content.description}</p>
         </div>
 
-        <div className="max-w-4xl mx-auto aspect-video rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-black relative">
+        <div className="max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg border-2 border-white bg-black relative">
           {isYouTube ? (
             <iframe
               src={embedUrl}

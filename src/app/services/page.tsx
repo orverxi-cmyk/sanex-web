@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -14,10 +13,10 @@ export default function ServicesPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
-        <div className="bg-primary py-5">
+        <div className="bg-primary py-2.5">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl lg:text-6xl font-bold font-headline text-black">Our Solutions</h1>
-            <p className="mt-4 text-black/80 max-w-2xl mx-auto font-medium">
+            <h1 className="text-3xl lg:text-5xl font-bold font-headline text-black">Our Solutions</h1>
+            <p className="mt-2 text-black/80 max-w-2xl mx-auto font-medium text-sm">
               Professional, eco-friendly, and nationwide liquid waste management services.
             </p>
           </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -51,21 +50,21 @@ export function HomeSlider() {
   };
 
   if (loading) return (
-    <div className="h-[400px] flex items-center justify-center bg-muted/20">
+    <div className="h-[300px] flex items-center justify-center bg-muted/20">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 
   return (
-    <section className="py-5 bg-background overflow-hidden">
+    <section className="py-2.5 bg-background overflow-hidden">
       <div className="container mx-auto px-4 md:px-6">
         <Carousel className="w-full relative group" opts={{ loop: true }}>
           <CarouselContent>
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i}>
-                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-2xl overflow-hidden border bg-white shadow-xl min-h-[500px] lg:h-[600px]">
+                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-[400px] lg:h-[500px]">
                   {/* Media Section (3/4) */}
-                  <div className="relative w-full h-[300px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
+                  <div className="relative w-full h-[250px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
                       <video 
                         src={slide.imageUrl} 
@@ -82,26 +81,26 @@ export function HomeSlider() {
                         priority={i === 0}
                       />
                     ) : (
-                      <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-xs uppercase font-bold">
+                      <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-[10px] uppercase font-bold">
                         Media Pending
                       </div>
                     )}
                   </div>
 
-                  {/* Content Section (1/4) - Green Background with Black Text */}
-                  <div className="flex flex-col justify-center p-6 lg:p-10 space-y-6 lg:col-span-1 bg-primary text-black">
-                    <div className="space-y-4">
-                      <h2 className="text-2xl lg:text-3xl font-bold font-headline text-black tracking-tight leading-tight">
+                  {/* Content Section (1/4) */}
+                  <div className="flex flex-col justify-center p-6 lg:p-8 space-y-5 lg:col-span-1 bg-primary text-black">
+                    <div className="space-y-3">
+                      <h2 className="text-xl lg:text-2xl font-bold font-headline text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
-                      <p className="text-black text-sm leading-relaxed font-medium">
+                      <p className="text-black text-xs leading-relaxed font-medium">
                         {slide.description}
                       </p>
                     </div>
-                    <div className="pt-2">
-                      <Button asChild size="lg" className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-12 px-6 text-[10px]">
+                    <div className="pt-1">
+                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-[9px]">
                         <Link href={slide.link || "#"}>
-                          {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-primary" />
+                          {slide.buttonText || "Learn More"} <ArrowRight className="h-3.5 w-3.5 text-primary" />
                         </Link>
                       </Button>
                     </div>
@@ -110,11 +109,11 @@ export function HomeSlider() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <CarouselPrevious className="relative left-0 h-10 w-10 bg-background/80 hover:bg-primary border-primary text-foreground" />
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <CarouselPrevious className="relative left-0 h-9 w-9 bg-background/80 hover:bg-primary border-primary text-foreground" />
           </div>
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <CarouselNext className="relative right-0 h-10 w-10 bg-background/80 hover:bg-primary border-primary text-foreground" />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <CarouselNext className="relative right-0 h-9 w-9 bg-background/80 hover:bg-primary border-primary text-foreground" />
           </div>
         </Carousel>
       </div>
