@@ -31,12 +31,12 @@ export function RegionalPortal() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 bg-background relative group">
+    <section className="py-2.5 bg-background relative group font-arial">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
             <Link href="/admin/content?tab=regional">
-              <Edit3 className="h-4 w-4" /> Edit Presence
+              <Edit3 className="h-4 w-4" /> Edit Our Presence
             </Link>
           </Button>
         </div>
@@ -44,8 +44,8 @@ export function RegionalPortal() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-5 items-center">
           <div className="lg:w-1/3 space-y-3 text-center lg:text-left">
-            <h2 className="text-[16px] font-bold leading-tight">{content.title}</h2>
-            <p className="text-[14px] font-normal text-muted-foreground">{content.description}</p>
+            <h2 className="text-[16px] font-bold leading-tight uppercase tracking-widest">{content.title}</h2>
+            <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">{content.description}</p>
             <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/20 inline-block lg:block">
               <div className="flex gap-2.5 items-center">
                 <div className="h-7 w-7 rounded-full bg-secondary/20 flex items-center justify-center text-primary"><MapPin className="h-3.5 w-3.5" /></div>
