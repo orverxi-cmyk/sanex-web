@@ -150,10 +150,10 @@ export default function ContentManagementPage() {
                 <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2 text-[10px] font-bold uppercase"><Shield className="h-3 w-3 text-primary" /> Highlights</TabsTrigger>
-                <TabsTrigger value="services" className="gap-2 text-[10px] font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
+                <TabsTrigger value="services" className="gap-2 text-[10px) font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
                 <TabsTrigger value="impact" className="gap-2 text-[10px] font-bold uppercase"><RefreshCw className="h-3 w-3 text-primary" /> Impact UI</TabsTrigger>
-                <TabsTrigger value="milestones" className="gap-2 text-[10px] font-bold uppercase"><Clock className="h-3 w-3 text-primary" /> Milestones</TabsTrigger>
-                <TabsTrigger value="regional" className="gap-2 text-[10px] font-bold uppercase"><Globe className="h-3 w-3 text-primary" /> Regional</TabsTrigger>
+                <TabsTrigger value="milestones" className="gap-2 text-[10px] font-bold uppercase"><Clock className="h-3 w-3 text-primary" /> Who We Are</TabsTrigger>
+                <TabsTrigger value="regional" className="gap-2 text-[10px] font-bold uppercase"><Globe className="h-3 w-3 text-primary" /> Presence</TabsTrigger>
                 <TabsTrigger value="gallery" className="gap-2 text-[10px] font-bold uppercase"><ImageIcon className="h-3 w-3 text-primary" /> Gallery</TabsTrigger>
               </TabsList>
             </div>
@@ -739,11 +739,19 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
 }
 
 function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState({ items: initialData?.items || [] });
+  const [formData, setFormData] = React.useState({ 
+    title: initialData?.title || "Who We Are", 
+    description: initialData?.description || "",
+    items: initialData?.items || [] 
+  });
 
   React.useEffect(() => { 
-    if (initialData?.items) {
-      setFormData({ items: initialData.items });
+    if (initialData) {
+      setFormData({ 
+        title: initialData.title || "Who We Are",
+        description: initialData.description || "",
+        items: initialData.items || [] 
+      });
     }
   }, [initialData]);
   
@@ -769,14 +777,30 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-xl">Evolution Milestones</CardTitle>
-          <CardDescription className="text-xs">Timeline of company growth and achievements.</CardDescription>
+          <CardTitle className="text-xl">Who We Are / Evolution</CardTitle>
+          <CardDescription className="text-xs">Manage section headers and growth milestones.</CardDescription>
         </div>
         <Button size="sm" onClick={addItem} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest">
           <Plus className="h-4 w-4" /> Add Milestone
         </Button>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-6">
+        <div className="space-y-4 p-4 border rounded-xl bg-primary/5">
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Section Title</Label>
+            <Input 
+              className="h-9 text-sm font-bold" 
+              value={formData.title} 
+              onChange={e => setFormData({...formData, title: e.target.value})} 
+            />
+          </div>
+          <RichTextEditor 
+            label="Who We Are Introduction" 
+            value={formData.description} 
+            onChange={html => setFormData({...formData, description: html})} 
+          />
+        </div>
+
         <div className="grid grid-cols-1 gap-5">
           {formData.items.map((item: any, i: number) => (
             <div key={i} className="p-4 border rounded-xl relative bg-muted/5 group border-primary/10">
@@ -804,7 +828,7 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
                 </div>
               </div>
               <RichTextEditor 
-                label="Description"
+                label="Item Details"
                 value={item.description} 
                 onChange={val => updateItem(i, 'description', val)} 
                 placeholder="Describe the milestone event..."
@@ -818,7 +842,7 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
           )}
         </div>
         <Button onClick={() => onSave(formData)} className="h-11 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black mt-4">
-          <Save className="h-4 w-4 mr-2" /> Save Milestones Configuration
+          <Save className="h-4 w-4 mr-2" /> Save Who We Are Configuration
         </Button>
       </CardContent>
     </Card>
@@ -830,7 +854,7 @@ function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (da
   React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
   return (
     <Card>
-      <CardHeader><CardTitle className="text-xl">Regional Presence</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-xl">Our Presence</CardTitle></CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {formData.items.map((item: any, i: number) => (
@@ -847,7 +871,7 @@ function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (da
             </div>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Regions</Button>
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Presence Config</Button>
       </CardContent>
     </Card>
   );

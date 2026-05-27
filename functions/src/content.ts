@@ -105,7 +105,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     items: [
       { 
         title: "Liquid Waste Collection", 
-        description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.", 
+        description: "<p>Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda. We ensure efficient and hygienic collection processes tailored to your needs.</p>", 
         imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
         width: 1200,
         height: 600,
@@ -114,7 +114,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
       },
       { 
         title: "Clean Water Reuse", 
-        description: "Advanced DWTS systems using activated sludge technology for irrigation.", 
+        description: "<p>Advanced DWTS systems using activated sludge technology for irrigation and flushing. Transform your waste into a sustainable resource for the future.</p>", 
         imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
         width: 1200,
         height: 600,
@@ -166,26 +166,37 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
         title: "Environmental Preservation", 
         icon: "leaf", 
         points: [
-          "We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.",
-          "Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation."
+          "<p>We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.</p>",
+          "<p>Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation.</p>"
         ] 
       },
       { 
         title: "Public Health Improvement", 
         icon: "heart", 
         points: [
-          "By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.",
-          "Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living."
+          "<p>By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.</p>",
+          "<p>Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living.</p>"
         ] 
       },
       { 
         title: "Job Creation", 
         icon: "briefcase", 
         points: [
-          "SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.",
-          "Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices."
+          "<p>SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.</p>",
+          "<p>Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices.</p>"
         ] 
       }
+    ]
+  });
+
+  // Milestones Section (Who We Are)
+  batch.set(db.collection('settings').doc('milestones'), {
+    title: "Who We Are",
+    description: "<p>SANEX Company Ltd is dedicated to delivering comprehensive liquid waste management solutions across Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.</p>",
+    items: [
+      { year: "2017", title: "Founding", description: "<p>Established to address Rwanda's liquid waste challenges.</p>", icon: "clock" },
+      { year: "2021", title: "Licensing", description: "<p>Achieved official licensing for waste collection.</p>", icon: "shield" },
+      { year: "2024", title: "Expansion", description: "<p>Expanded services to decentralized treatment systems.</p>", icon: "rocket" }
     ]
   });
 

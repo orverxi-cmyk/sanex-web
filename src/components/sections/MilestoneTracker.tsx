@@ -96,9 +96,10 @@ export function MilestoneTracker() {
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-2xl lg:text-3xl font-bold font-headline">{content.title}</h2>
-              <div className="text-muted-foreground text-[11px] leading-relaxed prose prose-sm max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: content.description }} />
-              </div>
+              <div 
+                className="text-muted-foreground text-[11px] leading-relaxed prose prose-sm max-w-none prose-p:leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: content.description }}
+              />
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -133,9 +134,10 @@ export function MilestoneTracker() {
                   <div className="space-y-0">
                     <span className="text-primary font-bold text-[9px] uppercase tracking-wider">{milestone.year}</span>
                     <h4 className="text-sm font-bold font-headline leading-tight">{milestone.title}</h4>
-                    <div className="text-[10px] text-muted-foreground leading-snug prose prose-xs">
-                      <div dangerouslySetInnerHTML={{ __html: milestone.description }} />
-                    </div>
+                    <div 
+                      className="text-[10px] text-muted-foreground leading-snug prose prose-xs"
+                      dangerouslySetInnerHTML={{ __html: milestone.description }}
+                    />
                   </div>
                 </div>
               ))}
