@@ -15,10 +15,7 @@ export function Navbar() {
   const { user } = useUser();
   const db = useFirestore();
 
-  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
   const generalRef = React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]);
-
-  const { data: userProfile } = useDoc(userDocRef);
   const { data: generalData } = useDoc(generalRef);
 
   const defaultNavLinks = [
@@ -31,7 +28,6 @@ export function Navbar() {
   ];
 
   const navLinks = generalData?.navLinks || defaultNavLinks;
-
   const siteName = generalData?.siteName || "SANEX Company Ltd";
   const logoUrl = generalData?.logoUrl;
   const logoWidth = generalData?.logoWidth || 160;
@@ -44,35 +40,25 @@ export function Navbar() {
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center" style={{ gap: `${logoSpacing}px` }}>
             {logoUrl ? (
-              <div 
-                className="relative overflow-hidden"
-                style={{ width: logoWidth, height: logoHeight }}
-              >
-                <Image 
-                  src={logoUrl} 
-                  alt={siteName} 
-                  width={logoWidth} 
-                  height={logoHeight} 
-                  className="object-contain w-full h-full" 
-                />
+              <div className="relative overflow-hidden" style={{ width: logoWidth, height: logoHeight }}>
+                <Image src={logoUrl} alt={siteName} width={logoWidth} height={logoHeight} className="object-contain w-full h-full" />
               </div>
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-black">
                 <Droplets className="h-6 w-6" />
               </div>
             )}
-            <span className="text-base font-bold tracking-tight font-headline text-primary">
+            <span className="text-[16px] font-bold tracking-tight text-primary">
               {siteName.split(' ')[0]} <span className="text-foreground">{siteName.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link: any) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors"
+                className="text-[16px] font-bold uppercase tracking-widest hover:text-primary transition-colors"
               >
                 {link.name}
               </Link>
@@ -80,41 +66,30 @@ export function Navbar() {
             
             <div className="flex items-center gap-4 ml-4">
               <UserNav />
-              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-base gap-2">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-bold uppercase tracking-widest h-10 px-5 text-[16px] gap-2">
                 <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
               </Button>
             </div>
           </div>
 
-          {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-4 lg:hidden">
             <UserNav />
-            <button
-              className="p-2 text-primary"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
-            >
+            <button className="p-2 text-primary" onClick={() => setIsOpen(!isOpen)}>
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="lg:hidden border-t bg-background animate-in slide-in-from-top duration-300">
           <div className="flex flex-col space-y-4 p-6">
             {navLinks.map((link: any) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className="text-base font-bold uppercase tracking-widest"
-              >
+              <Link key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-[16px] font-bold uppercase tracking-widest">
                 {link.name}
               </Link>
             ))}
-            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-base uppercase tracking-widest gap-2">
+            <Button asChild className="w-full bg-primary text-black font-bold h-11 text-[16px] uppercase tracking-widest gap-2">
               <Link href="/book"><Calendar className="h-4 w-4 text-black" /> Book a Service</Link>
             </Button>
           </div>

@@ -66,22 +66,11 @@ export function HomeSlider() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-0 lg:h-[500px]">
                   <div className="relative w-full h-[200px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
-                      <video 
-                        src={slide.imageUrl} 
-                        controls
-                        playsInline
-                        className="w-full h-full object-cover"
-                      />
+                      <video src={slide.imageUrl} controls playsInline className="w-full h-full object-cover" />
                     ) : slide.imageUrl ? (
-                      <Image
-                        src={slide.imageUrl}
-                        alt={slide.title || "Slide media"}
-                        fill
-                        className="object-cover"
-                        priority={i === 0}
-                      />
+                      <Image src={slide.imageUrl} alt={slide.title || "Slide media"} fill className="object-cover" priority={i === 0} />
                     ) : (
-                      <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-[15px] uppercase font-bold">
+                      <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-[16px] uppercase font-bold">
                         Media Pending
                       </div>
                     )}
@@ -89,16 +78,16 @@ export function HomeSlider() {
 
                   <div className="flex flex-col justify-center p-5 lg:p-8 space-y-4 lg:col-span-1 bg-primary text-black">
                     <div className="space-y-2">
-                      <h2 className="text-base font-bold font-headline text-black tracking-tight leading-tight">
+                      <h2 className="text-[16px] font-bold text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
                       <div 
-                        className="text-black text-sm font-normal leading-relaxed prose prose-sm max-w-none prose-p:leading-relaxed"
+                        className="text-black text-[14px] font-normal leading-relaxed prose prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ __html: slide.description }}
                       />
                     </div>
                     <div className="pt-1">
-                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-base">
+                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-[16px]">
                         <Link href={slide.link || "#"}>
                           {slide.buttonText || "Learn More"} <ArrowRight className="h-3.5 w-3.5 text-primary" />
                         </Link>
@@ -109,12 +98,6 @@ export function HomeSlider() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <div className="hidden lg:block absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <CarouselPrevious className="relative left-0 h-9 w-9 bg-background/80 hover:bg-primary border-primary text-foreground" />
-          </div>
-          <div className="hidden lg:block absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <CarouselNext className="relative right-0 h-9 w-9 bg-background/80 hover:bg-primary border-primary text-foreground" />
-          </div>
         </Carousel>
       </div>
     </section>

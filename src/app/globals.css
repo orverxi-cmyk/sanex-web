@@ -5,9 +5,6 @@
 
 @layer base {
   :root {
-    /* Main Brand Green: #a0c452 -> HSL(79, 51%, 55%) */
-    /* Secondary Brand Black: #010101 -> HSL(0, 0%, 0%) */
-    
     --background: 79 30% 98%;
     --foreground: 0 0% 0%;
     
@@ -18,10 +15,10 @@
     --popover-foreground: 0 0% 0%;
     
     --primary: 79 51% 55%;
-    --primary-foreground: 0 0% 0%; /* Black text on green background */
+    --primary-foreground: 0 0% 0%;
     
     --secondary: 0 0% 0%;
-    --secondary-foreground: 79 51% 55%; /* Green text on black background */
+    --secondary-foreground: 79 51% 55%;
     
     --muted: 79 20% 92%;
     --muted-foreground: 0 0% 30%;
@@ -43,35 +40,6 @@
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
   }
-  .dark {
-    --background: 0 0% 4%;
-    --foreground: 79 30% 98%;
-    
-    --card: 0 0% 6%;
-    --card-foreground: 79 30% 98%;
-    
-    --popover: 0 0% 6%;
-    --popover-foreground: 79 30% 98%;
-    
-    --primary: 79 51% 55%;
-    --primary-foreground: 0 0% 0%;
-    
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 79 30% 98%;
-    
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 70%;
-    
-    --accent: 79 51% 55%;
-    --accent-foreground: 0 0% 0%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 79 51% 55%;
-  }
 }
 
 @layer base {
@@ -79,9 +47,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-arial text-[14px] font-normal leading-relaxed;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-arial font-bold;
   }
 }

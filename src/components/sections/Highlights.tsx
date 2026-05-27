@@ -35,21 +35,9 @@ export function Highlights() {
   const { data: highlightsData, loading } = useDoc(highlightsRef);
 
   const defaultHighlights = [
-    {
-      icon: "shield",
-      title: "Licensed Since 2021",
-      description: "Trusted by over 114 clients nationwide with verified operational standards."
-    },
-    {
-      icon: "cpu",
-      title: "Advanced Technology",
-      description: "Eco-friendly wastewater treatment systems using activated sludge technology."
-    },
-    {
-      icon: "globe",
-      title: "Nationwide Coverage",
-      description: "Serving urban and rural communities from Kigali to Musanze and Huye."
-    }
+    { icon: "shield", title: "Licensed Since 2021", description: "Trusted by over 114 clients nationwide with verified operational standards." },
+    { icon: "cpu", title: "Advanced Technology", description: "Eco-friendly wastewater treatment systems using activated sludge technology." },
+    { icon: "globe", title: "Nationwide Coverage", description: "Serving urban and rural communities from Kigali to Musanze and Huye." }
   ];
 
   const items = highlightsData?.items?.length ? highlightsData.items : defaultHighlights;
@@ -57,12 +45,11 @@ export function Highlights() {
   const getIcon = (name: string) => {
     const iconClass = "h-6 w-6 text-primary";
     const normalized = name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'shield';
-    
     switch (normalized) {
       case 'shield': case 'shieldcheck': return <ShieldCheck className={iconClass} />;
       case 'cpu': return <Cpu className={iconClass} />;
       case 'globe': return <Globe className={iconClass} />;
-      case 'zap': case 'energy': return <Zap className={iconClass} />;
+      case 'zap': return <Zap className={iconClass} />;
       case 'award': return <Award className={iconClass} />;
       case 'target': return <Target className={iconClass} />;
       case 'hardhat': return <HardHat className={iconClass} />;
@@ -92,13 +79,13 @@ export function Highlights() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {items.map((item: any, i: number) => (
-            <div key={i} className="flex gap-3 items-center animate-in fade-in slide-in-from-bottom duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+            <div key={i} className="flex gap-3 items-center">
               <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-lg bg-white border border-primary/20 shadow-sm">
                 {getIcon(item.icon)}
               </div>
               <div className="space-y-0">
-                <h3 className="text-base font-bold font-headline leading-tight">{item.title}</h3>
-                <p className="text-sm font-normal text-muted-foreground leading-snug">{item.description}</p>
+                <h3 className="text-[16px] font-bold leading-tight">{item.title}</h3>
+                <p className="text-[14px] font-normal text-muted-foreground leading-snug">{item.description}</p>
               </div>
             </div>
           ))}
