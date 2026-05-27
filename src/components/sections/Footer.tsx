@@ -3,8 +3,7 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Droplets, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -14,7 +13,6 @@ export function Footer() {
     React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db])
   );
 
-  const siteName = generalData?.siteName || "SANEX Company Ltd";
   const phone = generalData?.phone || "+250 788303628";
   const email = generalData?.email || "info@sanex.rw";
 
@@ -91,7 +89,7 @@ export function Footer() {
         </div>
         
         <div className="border-t border-black/10 pt-2.5 flex flex-col md:flex-row items-center justify-center gap-4 text-[9px] text-black/50 font-bold uppercase tracking-widest">
-          <span>© {new Date().getFullYear()} {siteName}. All rights reserved.</span>
+          <span>© {new Date().getFullYear()}. All rights reserved.</span>
         </div>
       </div>
     </footer>
