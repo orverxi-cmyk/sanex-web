@@ -43,9 +43,9 @@ export function ImpactDashboard() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 bg-primary text-black relative overflow-hidden group">
+    <section className="py-2.5 bg-background relative overflow-hidden group">
       {isAdmin && (
-        <div className="absolute inset-0 z-20 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
             <Link href="/admin/content?tab=impact">
               <Edit3 className="h-4 w-4" /> Edit Impact
@@ -56,25 +56,30 @@ export function ImpactDashboard() {
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center mb-5 space-y-4">
           <h2 className="text-[16px] font-bold leading-tight">{content.title}</h2>
-          <p className="text-[15px] font-bold text-black/70 max-w-3xl mx-auto">{content.subtitle}</p>
+          <p className="text-[15px] font-bold text-muted-foreground max-w-3xl mx-auto">{content.subtitle}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {content.items.map((impact: any, i: number) => (
-            <div key={i} className="p-8 rounded-2xl bg-black border border-white/5 hover:border-primary/20 transition-colors shadow-2xl space-y-4">
-              <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center">{getIcon(impact.icon)}</div>
-              <div className="space-y-3">
-                <h4 className="text-[16px] font-bold text-white">{impact.title}</h4>
-                <div className="space-y-3">
-                  {impact.points?.map((point: string, pi: number) => (
-                    <div key={pi} className="flex gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                      <div 
-                        className="prose prose-invert prose-xs text-[14px] font-normal text-white/70 leading-relaxed" 
-                        dangerouslySetInnerHTML={{ __html: point }} 
-                      />
-                    </div>
-                  ))}
+            <div key={i} className="p-8 rounded-2xl bg-black border border-white/5 hover:border-primary/20 transition-colors shadow-2xl space-y-5">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+                  {getIcon(impact.icon)}
                 </div>
+                <h4 className="text-[16px] font-bold text-white leading-tight">
+                  {impact.title}
+                </h4>
+              </div>
+              
+              <div className="space-y-3">
+                {impact.points?.map((point: string, pi: number) => (
+                  <div key={pi} className="flex gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <div 
+                      className="prose prose-invert prose-xs text-[14px] font-normal text-white/70 leading-relaxed" 
+                      dangerouslySetInnerHTML={{ __html: point }} 
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           ))}
