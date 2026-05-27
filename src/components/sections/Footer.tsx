@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -33,14 +32,6 @@ export function Footer() {
             <p className="text-[11px] text-black/70 leading-relaxed font-medium">
               Transforming Waste into Opportunity since 2017.
             </p>
-            <div className="flex gap-2">
-              <Link href="#" className="h-7 w-7 rounded-full bg-black/10 flex items-center justify-center hover:bg-black hover:text-primary transition-colors">
-                <Twitter className="h-3.5 w-3.5" />
-              </Link>
-              <Link href="#" className="h-7 w-7 rounded-full bg-black/10 flex items-center justify-center hover:bg-black hover:text-primary transition-colors">
-                <Linkedin className="h-3.5 w-3.5" />
-              </Link>
-            </div>
           </div>
 
           <div className="space-y-3">
@@ -88,8 +79,16 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-black/10 pt-2.5 flex flex-col md:flex-row items-center justify-center gap-4 text-[9px] text-black/50 font-bold uppercase tracking-widest">
+        <div className="border-t border-black/10 pt-2.5 flex flex-col md:flex-row items-center justify-between gap-4 text-[9px] text-black/50 font-bold uppercase tracking-widest">
           <span>© {new Date().getFullYear()}. All rights reserved.</span>
+          <div className="flex gap-2">
+            <Link href="#" className="h-7 w-7 rounded-full bg-black/10 flex items-center justify-center hover:bg-black hover:text-primary transition-colors text-black">
+              <Twitter className="h-3.5 w-3.5" />
+            </Link>
+            <Link href="#" className="h-7 w-7 rounded-full bg-black/10 flex items-center justify-center hover:bg-black hover:text-primary transition-colors text-black">
+              <Linkedin className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
