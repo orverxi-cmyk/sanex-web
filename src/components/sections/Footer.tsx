@@ -35,27 +35,6 @@ export function Footer() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
           <div className="space-y-3">
-            <Link href="/" className="flex items-center" style={{ gap: `${logoSpacing}px` }}>
-              {logoUrl ? (
-                <div 
-                  className="relative overflow-hidden bg-white p-1 rounded-lg"
-                  style={{ width: logoWidth, height: logoHeight }}
-                >
-                  <Image 
-                    src={logoUrl} 
-                    alt={siteName} 
-                    width={logoWidth} 
-                    height={logoHeight} 
-                    className="object-contain w-full h-full" 
-                  />
-                </div>
-              ) : (
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-primary">
-                  <Droplets className="h-4 w-4" />
-                </div>
-              )}
-              <span className="text-lg font-bold font-headline tracking-tight text-black">{siteName.split(' ')[0]}</span>
-            </Link>
             <p className="text-[11px] text-black/70 leading-relaxed font-medium">
               Transforming Waste into Opportunity since 2017.
             </p>
@@ -114,8 +93,29 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-black/10 pt-2.5 text-center text-[9px] text-black/50 font-bold uppercase tracking-widest">
-          © {new Date().getFullYear()} {siteName}. All rights reserved.
+        <div className="border-t border-black/10 pt-2.5 flex flex-col md:flex-row items-center justify-center gap-4 text-[9px] text-black/50 font-bold uppercase tracking-widest">
+          <Link href="/" className="flex items-center opacity-80 hover:opacity-100 transition-opacity" style={{ gap: `${logoSpacing}px` }}>
+            {logoUrl ? (
+              <div 
+                className="relative overflow-hidden bg-white p-0.5 rounded shadow-sm"
+                style={{ width: logoWidth * 0.5, height: logoHeight * 0.5 }}
+              >
+                <Image 
+                  src={logoUrl} 
+                  alt={siteName} 
+                  width={logoWidth * 0.5} 
+                  height={logoHeight * 0.5} 
+                  className="object-contain w-full h-full" 
+                />
+              </div>
+            ) : (
+              <div className="flex h-4 w-4 items-center justify-center rounded bg-white text-primary">
+                <Droplets className="h-2.5 w-2.5" />
+              </div>
+            )}
+            <span className="text-[10px] font-bold font-headline tracking-tight text-black">{siteName.split(' ')[0]}</span>
+          </Link>
+          <span>© {new Date().getFullYear()} {siteName}. All rights reserved.</span>
         </div>
       </div>
     </footer>
