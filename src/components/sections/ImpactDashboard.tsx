@@ -1,13 +1,19 @@
-
 "use client";
 
 import React from "react";
-import { Leaf, Sparkles, Heart, Briefcase } from "lucide-react";
-import { useDoc, useFirestore } from "@/firebase";
+import Link from "next/link";
+import { Leaf, Sparkles, Heart, Briefcase, Edit3 } from "lucide-react";
+import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { Button } from "@/components/ui/button";
 
 export function ImpactDashboard() {
   const db = useFirestore();
+  const { user } = useUser();
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile } = useDoc(userDocRef);
+  const isAdmin = userProfile?.role === "admin";
+
   const { data: impactData, loading } = useDoc(db ? doc(db, "settings", "impact") : null);
 
   const defaultImpacts = [
@@ -36,7 +42,16 @@ export function ImpactDashboard() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 bg-primary text-black relative overflow-hidden">
+    <section className="py-2.5 bg-primary text-black relative overflow-hidden group">
+      {isAdmin && (
+        <div className="absolute inset-0 z-20 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
+            <Link href="/admin/content?tab=impact">
+              <Edit3 className="h-4 w-4" /> Edit Impact
+            </Link>
+          </Button>
+        </div>
+      )}
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center mb-5 space-y-4">
           <h2 className="text-[16px] font-bold leading-tight">{content.title}</h2>

@@ -1,16 +1,20 @@
-
 "use client";
 
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useDoc, useFirestore } from "@/firebase";
+import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { ArrowRight, Calendar, Loader2 } from "lucide-react";
+import { ArrowRight, Calendar, Loader2, Edit3 } from "lucide-react";
 
 export function Hero() {
   const db = useFirestore();
+  const { user } = useUser();
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile } = useDoc(userDocRef);
+  const isAdmin = userProfile?.role === "admin";
+
   const heroRef = React.useMemo(() => (db ? doc(db, "settings", "hero") : null), [db]);
   const { data: heroData, loading } = useDoc(heroRef);
 
@@ -33,7 +37,16 @@ export function Hero() {
   );
 
   return (
-    <section className="relative overflow-hidden py-2.5 bg-black text-white">
+    <section className="relative overflow-hidden py-2.5 bg-black text-white group">
+      {isAdmin && (
+        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-white text-black hover:bg-white/80 gap-2">
+            <Link href="/admin/content?tab=hero">
+              <Edit3 className="h-4 w-4" /> Edit Hero
+            </Link>
+          </Button>
+        </div>
+      )}
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">

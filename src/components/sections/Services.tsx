@@ -1,17 +1,23 @@
-
 "use client";
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDoc, useFirestore } from "@/firebase";
+import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { Button } from "@/components/ui/button";
 import { 
-  Truck, Settings, Droplets, Users, Loader2, ShieldCheck, Cpu, Globe, Zap, Award, Target, HardHat, Activity, Leaf, Heart, Scale, Sparkles, Clock, Rocket, Building, CheckCircle, Stethoscope
+  Truck, Settings, Droplets, Users, Loader2, ShieldCheck, Cpu, Globe, Zap, Award, Target, HardHat, Activity, Leaf, Heart, Scale, Sparkles, Clock, Rocket, Building, CheckCircle, Stethoscope, Edit3
 } from "lucide-react";
 
 export function Services() {
   const db = useFirestore();
+  const { user } = useUser();
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile } = useDoc(userDocRef);
+  const isAdmin = userProfile?.role === "admin";
+
   const servicesRef = React.useMemo(() => (db ? doc(db, "settings", "services") : null), [db]);
   const { data: servicesData, loading } = useDoc(servicesRef);
 
@@ -60,7 +66,16 @@ export function Services() {
   if (loading) return <div className="py-2.5 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>;
 
   return (
-    <section id="services" className="py-2.5 bg-background">
+    <section id="services" className="py-2.5 bg-background relative group">
+      {isAdmin && (
+        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
+            <Link href="/admin/content?tab=services">
+              <Edit3 className="h-4 w-4" /> Edit Services
+            </Link>
+          </Button>
+        </div>
+      )}
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-5 space-y-1">
           <h2 className="text-[16px] font-bold">{content.title}</h2>

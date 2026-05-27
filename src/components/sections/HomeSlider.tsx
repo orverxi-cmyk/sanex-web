@@ -1,23 +1,25 @@
-
 "use client";
 
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useDoc, useFirestore } from "@/firebase";
+import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { 
   Carousel, 
   CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
+  CarouselItem 
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Edit3 } from "lucide-react";
 
 export function HomeSlider() {
   const db = useFirestore();
+  const { user } = useUser();
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile } = useDoc(userDocRef);
+  const isAdmin = userProfile?.role === "admin";
+
   const sliderRef = React.useMemo(() => (db ? doc(db, "settings", "slider") : null), [db]);
   const { data: sliderData, loading } = useDoc(sliderRef);
 
@@ -57,9 +59,18 @@ export function HomeSlider() {
   );
 
   return (
-    <section className="py-2.5 bg-background overflow-hidden">
+    <section className="py-2.5 bg-background overflow-hidden relative group">
+      {isAdmin && (
+        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
+            <Link href="/admin/content?tab=slider">
+              <Edit3 className="h-4 w-4" /> Edit Slider
+            </Link>
+          </Button>
+        </div>
+      )}
       <div className="container mx-auto px-4 md:px-6">
-        <Carousel className="w-full relative group" opts={{ loop: true }}>
+        <Carousel className="w-full relative" opts={{ loop: true }}>
           <CarouselContent>
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full">

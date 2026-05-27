@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -24,13 +23,21 @@ import {
   CheckCircle,
   Lightbulb,
   Microscope,
-  Stethoscope
+  Stethoscope,
+  Edit3
 } from "lucide-react";
-import { useDoc, useFirestore } from "@/firebase";
+import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Highlights() {
   const db = useFirestore();
+  const { user } = useUser();
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile } = useDoc(userDocRef);
+  const isAdmin = userProfile?.role === "admin";
+
   const highlightsRef = React.useMemo(() => (db ? doc(db, "settings", "highlights") : null), [db]);
   const { data: highlightsData, loading } = useDoc(highlightsRef);
 
@@ -75,7 +82,16 @@ export function Highlights() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 border-y bg-muted/30">
+    <section className="py-2.5 border-y bg-muted/30 relative group">
+      {isAdmin && (
+        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
+            <Link href="/admin/content?tab=highlights">
+              <Edit3 className="h-4 w-4" /> Edit Highlights
+            </Link>
+          </Button>
+        </div>
+      )}
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {items.map((item: any, i: number) => (

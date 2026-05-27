@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/components/MediaPicker";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { 
   ChevronLeft, 
   ImageIcon, 
@@ -39,11 +40,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
-export default function ContentManagementPage() {
+function ContentManagementContent() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const functions = useFunctions();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "general";
   
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -134,14 +137,14 @@ export default function ContentManagementPage() {
           
           <div className="flex justify-between items-center mb-5">
             <div>
-              <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
+              <h1 className="text-[16px] font-bold font-headline flex items-center gap-3">
                 <Layout className="h-8 w-8 text-primary" /> Site Content Manager
               </h1>
-              <p className="text-muted-foreground">Update branding, pages, and dynamic site sections.</p>
+              <p className="text-[14px] font-normal text-muted-foreground">Update branding, pages, and dynamic site sections.</p>
             </div>
           </div>
 
-          <Tabs defaultValue="general" className="space-y-5">
+          <Tabs defaultValue={defaultTab} className="space-y-5">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
                 <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding</TabsTrigger>
@@ -150,7 +153,7 @@ export default function ContentManagementPage() {
                 <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2 text-[10px] font-bold uppercase"><Shield className="h-3 w-3 text-primary" /> Highlights</TabsTrigger>
-                <TabsTrigger value="services" className="gap-2 text-[10px) font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
+                <TabsTrigger value="services" className="gap-2 text-[10px] font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
                 <TabsTrigger value="impact" className="gap-2 text-[10px] font-bold uppercase"><RefreshCw className="h-3 w-3 text-primary" /> Impact UI</TabsTrigger>
                 <TabsTrigger value="milestones" className="gap-2 text-[10px] font-bold uppercase"><Clock className="h-3 w-3 text-primary" /> Who We Are</TabsTrigger>
                 <TabsTrigger value="regional" className="gap-2 text-[10px] font-bold uppercase"><Globe className="h-3 w-3 text-primary" /> Presence</TabsTrigger>
@@ -206,6 +209,14 @@ export default function ContentManagementPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function ContentManagementPage() {
+  return (
+    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <ContentManagementContent />
+    </Suspense>
   );
 }
 
