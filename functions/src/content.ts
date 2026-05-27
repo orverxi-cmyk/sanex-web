@@ -1,4 +1,3 @@
-
 import { onCall, HttpsError, CallableRequest, onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
@@ -192,7 +191,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
 
   // Regional Section
   batch.set(db.collection('settings').doc('regional'), {
-    title: "Regional Availability Portal",
+    title: "Our Presence",
     description: "Establishing operational offices in key towns across Rwanda...",
     items: [
       { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },

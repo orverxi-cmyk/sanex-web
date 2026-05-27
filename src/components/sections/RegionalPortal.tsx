@@ -16,7 +16,7 @@ export function RegionalPortal() {
   ];
 
   const content = {
-    title: regionalData?.title || "Regional Portal",
+    title: regionalData?.title || "Our Presence",
     description: regionalData?.description || "Establishing operational offices in key towns across Rwanda, ensuring reliable sanitation services are always within reach.",
     items: regionalData?.items?.length ? regionalData.items : defaultRegions
   };
