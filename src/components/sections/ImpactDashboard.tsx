@@ -1,34 +1,14 @@
-
 "use client";
 
 import React from "react";
 import { 
-  CheckCircle, 
   Leaf, 
-  Users, 
-  Globe, 
-  Building2, 
   Sparkles, 
   Heart, 
-  Scale, 
-  ArrowRight,
-  ShieldCheck,
-  Cpu,
-  Zap,
-  Award,
-  Target,
-  HardHat,
-  Activity,
-  Droplets,
-  Truck,
-  Clock,
-  Rocket,
   Briefcase
 } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export function ImpactDashboard() {
   const db = useFirestore();
@@ -92,7 +72,7 @@ export function ImpactDashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {content.items.map((impact: any, i: number) => (
             <div key={i} className="p-8 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-primary/40 transition-colors space-y-4">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -111,15 +91,6 @@ export function ImpactDashboard() {
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="max-w-2xl mx-auto p-6 rounded-2xl bg-neutral-900 border border-neutral-800 text-center flex flex-col items-center gap-4">
-          <p className="text-lg font-bold leading-relaxed italic text-primary">
-            "Transforming Waste into Opportunity."
-          </p>
-          <Button asChild size="lg" variant="secondary" className="gap-2 font-bold bg-primary text-black hover:bg-primary/90 rounded-full px-8">
-            <Link href="/articles">View Impact Articles <ArrowRight className="h-4 w-4" /></Link>
-          </Button>
         </div>
       </div>
     </section>
