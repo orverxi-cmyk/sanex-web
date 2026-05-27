@@ -3,7 +3,6 @@ import { HomeSlider } from "@/components/sections/HomeSlider";
 import { Highlights } from "@/components/sections/Highlights";
 import { Services } from "@/components/sections/Services";
 import { ImpactDashboard } from "@/components/sections/ImpactDashboard";
-import { MilestoneTracker } from "@/components/sections/MilestoneTracker";
 import { RegionalPortal } from "@/components/sections/RegionalPortal";
 import { VideoHighlight } from "@/components/sections/VideoHighlight";
 import { Footer } from "@/components/sections/Footer";
@@ -18,7 +17,6 @@ export default function Home() {
         <Services />
         <VideoHighlight />
         <ImpactDashboard />
-        <MilestoneTracker />
         <RegionalPortal />
       </main>
       <Footer />
