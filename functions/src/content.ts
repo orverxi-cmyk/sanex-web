@@ -163,8 +163,30 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     title: "Impact Since Our Inception",
     subtitle: "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
     items: [
-      { title: "Environmental", icon: "leaf", points: ["Preventing pollutants from contaminating ecosystems", "Cleaner water sources via DWTS"] },
-      { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] }
+      { 
+        title: "Environmental Preservation", 
+        icon: "leaf", 
+        points: [
+          "We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.",
+          "Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation."
+        ] 
+      },
+      { 
+        title: "Public Health Improvement", 
+        icon: "heart", 
+        points: [
+          "By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.",
+          "Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living."
+        ] 
+      },
+      { 
+        title: "Job Creation", 
+        icon: "briefcase", 
+        points: [
+          "SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.",
+          "Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices."
+        ] 
+      }
     ]
   });
 
