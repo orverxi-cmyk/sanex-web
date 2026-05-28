@@ -49,25 +49,6 @@ const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
 /**
- * Helper to verify admin privileges for v2 onRequest functions.
- */
-async function verifyAdminToken(authHeader) {
-    var _a;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        throw new Error('No auth token provided');
-    }
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const userId = decodedToken.uid;
-    const userDoc = await db.collection('users').doc(userId).get();
-    const isAdmin = userDoc.exists && ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role) === 'admin';
-    const hasAdminClaim = decodedToken.admin === true;
-    if (!isAdmin && !hasAdminClaim) {
-        throw new Error('Admin permission required');
-    }
-    return userId;
-}
-/**
  * CORS helper for v2 onRequest functions.
  */
 function setCorsHeaders(req, res) {
@@ -176,7 +157,7 @@ exports.adminAddArticle = (0, https_1.onCall)({ cors: true }, async (request) =>
         imageUrl: imageUrl || '',
         imageWidth: Number(imageWidth) || 1200,
         imageHeight: Number(imageHeight) || 600,
-        category: category || 'General',
+        category: category || 'Impact',
         author: author || 'Admin',
         createdAt: Date.now(),
         updatedAt: Date.now()
