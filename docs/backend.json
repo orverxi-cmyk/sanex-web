@@ -87,6 +87,15 @@
         "logoSpacing": { "type": "number" },
         "phone": { "type": "string" },
         "email": { "type": "string" },
+        "socials": {
+          "type": "object",
+          "properties": {
+            "twitter": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "facebook": { "type": "string" },
+            "instagram": { "type": "string" }
+          }
+        },
         "navLinks": {
           "type": "array",
           "items": {

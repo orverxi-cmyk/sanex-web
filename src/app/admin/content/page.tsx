@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense } from "react";
@@ -35,7 +36,11 @@ import {
   FileText,
   Navigation as NavigationIcon,
   Clock,
-  Shield
+  Shield,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -147,7 +152,7 @@ function ContentManagementContent() {
           <Tabs defaultValue={defaultTab} className="space-y-5">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
-                <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding</TabsTrigger>
+                <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding & Socials</TabsTrigger>
                 <TabsTrigger value="navigation" className="gap-2 text-[10px] font-bold uppercase"><NavigationIcon className="h-3 w-3 text-primary" /> Menu</TabsTrigger>
                 <TabsTrigger value="articles" className="gap-2 text-[10px] font-bold uppercase"><FileText className="h-3 w-3 text-primary" /> Articles</TabsTrigger>
                 <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
@@ -490,17 +495,38 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
 }
 
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { siteName: "SANEX Company Ltd", logoUrl: "", logoWidth: 160, logoHeight: 40, logoSpacing: 8, phone: "", email: "" });
+  const [formData, setFormData] = React.useState(initialData || { 
+    siteName: "SANEX Company Ltd", 
+    logoUrl: "", 
+    logoWidth: 160, 
+    logoHeight: 40, 
+    logoSpacing: 8, 
+    phone: "", 
+    email: "",
+    socials: { twitter: "", linkedin: "", facebook: "", instagram: "" }
+  });
   
   React.useEffect(() => { 
-    if (initialData) setFormData(initialData); 
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        socials: initialData.socials || { twitter: "", linkedin: "", facebook: "", instagram: "" }
+      });
+    }
   }, [initialData]);
+
+  const updateSocial = (key: string, value: string) => {
+    setFormData({
+      ...formData,
+      socials: { ...formData.socials, [key]: value }
+    });
+  };
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-xl">Branding</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-xl">Branding & Social Links</CardTitle></CardHeader>
       <CardContent>
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-5">
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Site Name</Label>
@@ -534,7 +560,30 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
               <Input className="h-9 text-xs" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
           </div>
-          <Button type="submit" className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4" /> Save branding</Button>
+
+          <div className="border-t pt-5">
+            <Label className="text-sm font-bold mb-4 block">Social Media Links</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Twitter className="h-3 w-3" /> Twitter URL</Label>
+                <Input className="h-9 text-xs" value={formData.socials.twitter} onChange={e => updateSocial('twitter', e.target.value)} placeholder="https://twitter.com/..." />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Linkedin className="h-3 w-3" /> LinkedIn URL</Label>
+                <Input className="h-9 text-xs" value={formData.socials.linkedin} onChange={e => updateSocial('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Facebook className="h-3 w-3" /> Facebook URL</Label>
+                <Input className="h-9 text-xs" value={formData.socials.facebook} onChange={e => updateSocial('facebook', e.target.value)} placeholder="https://facebook.com/..." />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram URL</Label>
+                <Input className="h-9 text-xs" value={formData.socials.instagram} onChange={e => updateSocial('instagram', e.target.value)} placeholder="https://instagram.com/..." />
+              </div>
+            </div>
+          </div>
+
+          <Button type="submit" className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4" /> Save Branding & Socials</Button>
         </form>
       </CardContent>
     </Card>
@@ -762,7 +811,7 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
         title: initialData.title || "Who We Are",
         description: initialData.description || "",
         items: initialData.items || [] 
-      });
+  });
     }
   }, [initialData]);
   
