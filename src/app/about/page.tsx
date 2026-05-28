@@ -20,9 +20,17 @@ export default function AboutPage() {
             </p>
           </div>
         </div>
+        
         <MilestoneTracker />
-        <Highlights />
-        <RegionalPortal />
+        
+        <div className="bg-muted/30 py-10 border-t">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+              <Highlights />
+              <RegionalPortal />
+            </div>
+          </div>
+        </div>
       </main>
       <Footer />
     </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -32,9 +31,9 @@ export function RegionalPortal() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 bg-muted/5 relative group border-t">
+    <div className="relative group">
       {isAdmin && (
-        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+        <div className="absolute -inset-2 z-20 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-xl">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[14px]">
             <Link href="/admin/content?tab=regional">
               <Edit3 className="h-4 w-4" /> Edit Our Presence
@@ -42,52 +41,49 @@ export function RegionalPortal() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* Left Column: Title and Global Status */}
-          <div className="lg:w-1/3 space-y-4">
-            <div className="space-y-1">
-              <h2 className="text-[16px] font-bold text-black uppercase tracking-widest">{content.title}</h2>
-              <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">{content.description}</p>
-            </div>
-            
-            <div className="p-4 rounded-xl bg-muted/40 border border-border/50 shadow-sm inline-block w-full">
-              <div className="flex gap-4 items-center">
-                <div className="h-10 w-10 rounded-full bg-white border flex items-center justify-center text-primary shadow-inner">
-                  <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
-                </div>
-                <div>
-                  <div className="text-[14px] font-bold text-black">Rwanda Nationwide</div>
-                  <div className="text-[14px] font-normal text-muted-foreground">Urban & Rural Connectivity</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      
+      <div className="space-y-1 mb-8">
+        <h2 className="text-[16px] font-bold text-black uppercase tracking-widest">{content.title}</h2>
+        <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">{content.description}</p>
+      </div>
 
-          {/* Right Column: Regional Cards */}
-          <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-            {content.items.map((region: any, i: number) => (
-              <div key={i} className="bg-white p-5 rounded-2xl border border-border shadow-sm hover:border-primary/40 transition-all group/card">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-[16px] font-bold text-black group-hover/card:text-primary transition-colors">{region.name}</h3>
-                  <div className="px-1.5 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-wider bg-muted text-muted-foreground border">ACTIVE</div>
-                </div>
-                
-                <ul className="space-y-2.5">
-                  <li className="flex items-center gap-2.5 text-[14px] font-normal text-muted-foreground">
-                    <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30 flex-shrink-0" />
-                    <span>{region.status}</span>
-                  </li>
-                  <li className="flex items-center gap-2.5 text-[14px] font-normal text-muted-foreground">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
-                    <span>{region.capacity}</span>
-                  </li>
-                </ul>
-              </div>
-            ))}
+      <div className="space-y-6">
+        {/* Nationwide Status Card */}
+        <div className="p-5 rounded-xl bg-white border border-border/50 shadow-sm">
+          <div className="flex gap-4 items-center">
+            <div className="h-10 w-10 rounded-full bg-muted/40 border flex items-center justify-center text-primary shadow-inner">
+              <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
+            </div>
+            <div>
+              <div className="text-[14px] font-bold text-black">Rwanda Nationwide</div>
+              <div className="text-[14px] font-normal text-muted-foreground">Urban & Rural Connectivity</div>
+            </div>
           </div>
         </div>
+
+        {/* Vertical Stack of Regions */}
+        <div className="space-y-4">
+          {content.items.map((region: any, i: number) => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-border shadow-sm hover:border-primary/40 transition-all group/card">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-[16px] font-bold text-black group-hover/card:text-primary transition-colors">{region.name}</h3>
+                <div className="px-1.5 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-wider bg-muted text-muted-foreground border">ACTIVE</div>
+              </div>
+              
+              <ul className="space-y-2.5">
+                <li className="flex items-center gap-2.5 text-[14px] font-normal text-muted-foreground">
+                  <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30 flex-shrink-0" />
+                  <span>{region.status}</span>
+                </li>
+                <li className="flex items-center gap-2.5 text-[14px] font-normal text-muted-foreground">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                  <span>{region.capacity}</span>
+                </li>
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
