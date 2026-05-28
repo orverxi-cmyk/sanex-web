@@ -4,18 +4,16 @@
 import React from "react";
 import { 
   Clock, 
-  Rocket, 
   Shield, 
-  Target, 
-  Zap, 
-  Edit3,
+  Rocket, 
   TrendingUp,
-  Award
+  Edit3
 } from "lucide-react";
 import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export function MilestoneTracker() {
   const db = useFirestore();
@@ -27,9 +25,9 @@ export function MilestoneTracker() {
   const { data: milestonesData, loading } = useDoc(db ? doc(db, "settings", "milestones") : null);
 
   const defaultMilestones = [
-    { year: "2017", title: "Founding", description: "<p>Established to address Rwanda's liquid waste challenges.</p>", icon: "clock" },
-    { year: "2021", title: "Licensing", description: "<p>Achieved official licensing for waste collection.</p>", icon: "shield" },
-    { year: "2024", title: "Expansion", description: "<p>Expanded services to decentralized treatment systems.</p>", icon: "rocket" }
+    { year: "2017", title: "Founding", description: "Established to address Rwanda's liquid waste challenges.", icon: "clock" },
+    { year: "2021", title: "Licensing", description: "Achieved official licensing for waste collection.", icon: "shield" },
+    { year: "2024", title: "Expansion", description: "Expanded services to decentralized treatment systems.", icon: "rocket" }
   ];
 
   const content = {
@@ -42,15 +40,12 @@ export function MilestoneTracker() {
   };
 
   const getIcon = (name: string) => {
-    const iconClass = "h-5 w-5 text-primary";
+    const iconClass = "h-5 w-5 text-black";
     const normalized = name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'clock';
     switch (normalized) {
       case 'clock': return <Clock className={iconClass} />;
       case 'shield': return <Shield className={iconClass} />;
       case 'rocket': return <Rocket className={iconClass} />;
-      case 'trendingup': return <TrendingUp className={iconClass} />;
-      case 'award': return <Award className={iconClass} />;
-      case 'zap': return <Zap className={iconClass} />;
       default: return <Clock className={iconClass} />;
     }
   };
@@ -69,56 +64,64 @@ export function MilestoneTracker() {
         </div>
       )}
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Left Column: Who We Are Story */}
           <div className="space-y-6">
             <div className="space-y-4">
-              <div className="inline-flex px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
-                Our Story
-              </div>
-              <h2 className="text-[16px] font-bold">{content.title}</h2>
+              <h2 className="text-[16px] font-bold text-black uppercase tracking-widest">{content.title}</h2>
               <div 
-                className="text-[14px] font-normal text-muted-foreground leading-relaxed space-y-4"
+                className="text-[14px] font-normal text-muted-foreground leading-relaxed space-y-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: content.description }}
               />
             </div>
 
-            <div className="space-y-4 pt-4">
-              <div className="p-6 rounded-2xl bg-muted/30 border-l-4 border-primary shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-primary">
-                  <TrendingUp className="h-4 w-4" />
-                  <h3 className="text-[16px] font-bold">Our Vision</h3>
+            <div className="space-y-4">
+              <div className="p-5 rounded-xl bg-white border border-border border-l-4 border-l-primary shadow-sm">
+                <div className="flex items-center gap-2 mb-1 text-black">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <h3 className="text-[15px] font-bold">Our Vision</h3>
                 </div>
-                <p className="text-[14px] font-normal leading-relaxed">
+                <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">
                   To be Rwanda's leading provider of sustainable liquid waste management solutions, fostering a cleaner, healthier, and more sustainable environment for future generations.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-muted/30 border-l-4 border-primary shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-primary">
-                  <Shield className="h-4 w-4" />
-                  <h3 className="text-[16px] font-bold">Our Mission</h3>
+              <div className="p-5 rounded-xl bg-white border border-border border-l-4 border-l-primary shadow-sm">
+                <div className="flex items-center gap-2 mb-1 text-black">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <h3 className="text-[15px] font-bold">Our Mission</h3>
                 </div>
-                <p className="text-[14px] font-normal leading-relaxed">
+                <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">
                   To deliver efficient, eco-friendly, and cost-effective liquid waste management services that empower communities, support businesses, and promote environmental conservation.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {content.items.map((milestone: any, i: number) => (
-              <div key={i} className="p-6 rounded-2xl bg-white border border-primary/10 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center space-y-3">
-                <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center">
-                  {getIcon(milestone.icon)}
+          {/* Right Column: Evolution Timeline */}
+          <div className="bg-white border border-border rounded-2xl p-6 lg:p-8 shadow-sm h-full">
+            <h2 className="text-[16px] font-bold text-black text-center mb-10">Our Evolution</h2>
+            
+            <div className="relative space-y-12">
+              {/* Vertical line */}
+              <div className="absolute left-[20px] top-4 bottom-4 w-px bg-border z-0" />
+              
+              {content.items.map((milestone: any, i: number) => (
+                <div key={i} className="relative z-10 flex gap-6 items-start">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center shadow-md border-2 border-white">
+                    {getIcon(milestone.icon)}
+                  </div>
+                  <div className="flex-grow pt-1">
+                    <div className="text-[14px] font-bold text-primary mb-1">{milestone.year}</div>
+                    <h4 className="text-[16px] font-bold text-black mb-1">{milestone.title}</h4>
+                    <div 
+                      className="text-[14px] font-normal text-muted-foreground leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: milestone.description }}
+                    />
+                  </div>
                 </div>
-                <div className="text-primary font-bold text-[15px]">{milestone.year}</div>
-                <h4 className="text-[16px] font-bold leading-tight">{milestone.title}</h4>
-                <div 
-                  className="text-[14px] font-normal text-muted-foreground leading-snug"
-                  dangerouslySetInnerHTML={{ __html: milestone.description }}
-                />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

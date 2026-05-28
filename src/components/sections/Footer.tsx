@@ -28,7 +28,7 @@ export function Footer() {
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Links</h4>
             <ul className="space-y-1.5 text-[14px] font-normal">
               {navLinks.map((link: any) => (
-                <li key={link.name}><Link href={link.href} className="text-white/70 hover:text-primary">{link.name}</Link></li>
+                <li key={link.name}><Link href={link.href} className="text-white/70 hover:text-primary transition-colors">{link.name}</Link></li>
               ))}
             </ul>
           </div>
@@ -44,17 +44,17 @@ export function Footer() {
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Contact</h4>
             <ul className="space-y-1.5 text-[14px] font-normal text-white/70">
               <li className="flex gap-2 justify-center md:justify-start"><MapPin className="h-3.5 w-3.5 text-primary" /> Kigali, Rwanda</li>
-              <li className="flex gap-2 justify-center md:justify-start"><Phone className="h-3.5 w-3.5 text-primary" /><a href={`tel:${phone}`} className="hover:text-primary">{phone}</a></li>
-              <li className="flex gap-2 justify-center md:justify-start"><Mail className="h-3.5 w-3.5 text-primary" /><a href={`mailto:${email}`} className="hover:text-primary">{email}</a></li>
+              <li className="flex gap-2 justify-center md:justify-start"><Phone className="h-3.5 w-3.5 text-primary" /><a href={`tel:${phone}`} className="hover:text-primary transition-colors">{phone}</a></li>
+              <li className="flex gap-2 justify-center md:justify-start"><Mail className="h-3.5 w-3.5 text-primary" /><a href={`mailto:${email}`} className="hover:text-primary transition-colors">{email}</a></li>
             </ul>
           </div>
         </div>
         
-        <div className="border-t border-white/10 pt-2.5 flex items-center justify-between gap-4 text-[14px] font-normal text-white/50">
+        <div className="border-t border-white/10 pt-2.5 flex flex-col md:flex-row items-center justify-between gap-4 text-[14px] font-normal text-white/50">
           <span>© {new Date().getFullYear()}. SANEX Company Ltd. All rights reserved.</span>
           <div className="flex gap-2">
-            <Link href="#" className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-colors text-white"><Twitter className="h-3.5 w-3.5" /></Link>
-            <Link href="#" className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-colors text-white"><Linkedin className="h-3.5 w-3.5" /></Link>
+            <Link href="#" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white"><Twitter className="h-4 w-4" /></Link>
+            <Link href="#" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white"><Linkedin className="h-4 w-4" /></Link>
           </div>
         </div>
       </div>
