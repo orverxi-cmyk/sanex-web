@@ -22,13 +22,15 @@ export default function GalleryPage() {
 
   const { data: photos, loading } = useCollection(galleryQuery);
 
-  const handlePrevious = useCallback(() => {
+  const handlePrevious = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (photos && selectedIndex !== null) {
       setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : photos.length - 1));
     }
   }, [photos, selectedIndex]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (photos && selectedIndex !== null) {
       setSelectedIndex((prev) => (prev !== null && prev < photos.length - 1 ? prev + 1 : 0));
     }
@@ -70,24 +72,23 @@ export default function GalleryPage() {
                 {photos.map((photo, index) => (
                   <div 
                     key={photo.id} 
-                    className="group relative rounded-xl overflow-hidden bg-muted shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center p-2 cursor-pointer"
+                    className="group relative rounded-xl overflow-hidden bg-muted shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center cursor-pointer aspect-video"
                     onClick={() => setSelectedIndex(index)}
                   >
                     {photo.imageUrl ? (
                       <Image
                         src={photo.imageUrl}
                         alt={photo.description || "Gallery photo"}
-                        width={photo.width || 800}
-                        height={photo.height || 600}
-                        className="object-contain transition-transform duration-500 group-hover:scale-105 rounded-lg h-auto w-full"
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="aspect-video w-full bg-muted flex items-center justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      <div className="h-full w-full bg-muted flex items-center justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         No Image
                       </div>
                     )}
-                    <div className="absolute inset-x-2 bottom-2 bg-black/80 p-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-white font-medium text-xs">
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                      <p className="text-white font-bold text-[14px] line-clamp-2">
                         {photo.description}
                       </p>
                     </div>
@@ -96,9 +97,10 @@ export default function GalleryPage() {
               </div>
 
               <Dialog open={selectedIndex !== null} onOpenChange={(open) => !open && setSelectedIndex(null)}>
-                <DialogContent className="max-w-[95vw] max-h-[90vh] p-0 border-none bg-black/90 flex items-center justify-center overflow-hidden">
+                <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-none bg-black/95 flex flex-col overflow-hidden">
                   {selectedIndex !== null && photos[selectedIndex] && (
-                    <div className="relative w-full h-full flex items-center justify-center p-4">
+                    <div className="relative flex-grow flex flex-col">
+                      {/* Close Button */}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -108,17 +110,19 @@ export default function GalleryPage() {
                         <X className="h-6 w-6" />
                       </Button>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute left-4 z-50 text-white hover:bg-white/20 bg-black/20 rounded-full h-12 w-12"
-                        onClick={(e) => { e.stopPropagation(); handlePrevious(); }}
-                      >
-                        <ChevronLeft className="h-8 w-8" />
-                      </Button>
+                      {/* Main Image Container */}
+                      <div className="relative flex-grow w-full flex items-center justify-center p-4 md:p-12">
+                        {/* Navigation Controls */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute left-4 z-50 text-white hover:bg-white/20 bg-black/20 rounded-full h-12 w-12 hidden md:flex"
+                          onClick={handlePrevious}
+                        >
+                          <ChevronLeft className="h-8 w-8" />
+                        </Button>
 
-                      <div className="relative w-full h-full flex flex-col items-center justify-center gap-4">
-                        <div className="relative w-full flex-grow flex items-center justify-center">
+                        <div className="relative w-full h-full">
                           <Image
                             src={photos[selectedIndex].imageUrl}
                             alt={photos[selectedIndex].description}
@@ -127,30 +131,47 @@ export default function GalleryPage() {
                             priority
                           />
                         </div>
-                        <div className="text-center p-4">
-                          <p className="text-white text-[14px] font-bold">{photos[selectedIndex].description}</p>
-                          <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest mt-1">
-                            {selectedIndex + 1} / {photos.length}
-                          </p>
-                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-4 z-50 text-white hover:bg-white/20 bg-black/20 rounded-full h-12 w-12 hidden md:flex"
+                          onClick={handleNext}
+                        >
+                          <ChevronRight className="h-8 w-8" />
+                        </Button>
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-4 z-50 text-white hover:bg-white/20 bg-black/20 rounded-full h-12 w-12"
-                        onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                      >
-                        <ChevronRight className="h-8 w-8" />
-                      </Button>
+                      {/* Footer Info */}
+                      <div className="bg-black/60 backdrop-blur-md p-6 border-t border-white/10">
+                        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                          <p className="text-white text-[14px] font-bold text-center md:text-left">
+                            {photos[selectedIndex].description}
+                          </p>
+                          <div className="flex items-center gap-4">
+                            <span className="text-white/50 text-[10px] uppercase font-bold tracking-widest">
+                              {selectedIndex + 1} / {photos.length}
+                            </span>
+                            <div className="flex gap-2 md:hidden">
+                                <Button size="sm" variant="outline" className="border-white/20 text-white h-8 w-8 p-0" onClick={handlePrevious}>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button size="sm" variant="outline" className="border-white/20 text-white h-8 w-8 p-0" onClick={handleNext}>
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </DialogContent>
               </Dialog>
             </>
           ) : (
-            <div className="text-center py-10 opacity-50">
-              <p className="text-[14px] font-normal">No photos uploaded yet.</p>
+            <div className="text-center py-20 opacity-50 bg-muted/20 rounded-2xl border-2 border-dashed">
+              <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-[14px] font-bold">No photos in the gallery yet.</p>
             </div>
           )}
         </div>
