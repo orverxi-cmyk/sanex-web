@@ -157,7 +157,7 @@ function ContentManagementContent() {
                 <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding & Socials</TabsTrigger>
                 <TabsTrigger value="navigation" className="gap-2 text-[10px] font-bold uppercase"><NavigationIcon className="h-3 w-3 text-primary" /> Menu</TabsTrigger>
                 <TabsTrigger value="articles" className="gap-2 text-[10px] font-bold uppercase"><FileText className="h-3 w-3 text-primary" /> Articles</TabsTrigger>
-                <TabsTrigger value="slider" className="gap-2 text-[10px) font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
+                <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2 text-[10px] font-bold uppercase"><Shield className="h-3 w-3 text-primary" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2 text-[10px] font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
@@ -940,7 +940,6 @@ function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (da
 }
 
 function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) {
-  const { user } = useUser();
   const functions = useFunctions();
   const { toast } = useToast();
   
@@ -950,6 +949,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
   const [width, setWidth] = React.useState(800);
   const [height, setHeight] = React.useState(600);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   const resetForm = () => {
     setIsEditing(null);
@@ -992,6 +992,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
 
   const handleDelete = async (id: string) => {
     if (!functions || !confirm("Delete this photo?")) return;
+    setDeletingId(id);
     try {
       const delFunc = httpsCallable(functions, 'adminDeleteGalleryItem');
       await delFunc({ id });
@@ -999,6 +1000,8 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
       if (isEditing === id) resetForm();
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -1058,6 +1061,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                     variant="secondary" 
                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                     onClick={() => handleEdit(p)}
+                    disabled={deletingId === p.id}
                   >
                     <Edit3 className="h-4 w-4 text-primary" />
                   </Button>
@@ -1066,8 +1070,9 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                     variant="destructive" 
                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                     onClick={() => handleDelete(p.id)}
+                    disabled={deletingId === p.id}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {deletingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                   </Button>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1075,6 +1080,12 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                 </div>
               </div>
             ))}
+            {!loading && photos?.length === 0 && (
+              <div className="col-span-full py-20 text-center opacity-50">
+                <ImageIcon className="h-10 w-10 mx-auto mb-2" />
+                <p className="text-sm">No photos in gallery.</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
