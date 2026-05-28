@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -31,10 +32,10 @@ export function RegionalPortal() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 bg-background relative group font-arial">
+    <section className="py-2.5 bg-background relative group">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
+          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[14px]">
             <Link href="/admin/content?tab=regional">
               <Edit3 className="h-4 w-4" /> Edit Our Presence
             </Link>

@@ -51,7 +51,7 @@ export function Footer() {
         </div>
         
         <div className="border-t border-white/10 pt-2.5 flex items-center justify-between gap-4 text-[14px] font-normal text-white/50">
-          <span>© {new Date().getFullYear()}. All rights reserved.</span>
+          <span>© {new Date().getFullYear()}. SANEX Company Ltd. All rights reserved.</span>
           <div className="flex gap-2">
             <Link href="#" className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-colors text-white"><Twitter className="h-3.5 w-3.5" /></Link>
             <Link href="#" className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-colors text-white"><Linkedin className="h-3.5 w-3.5" /></Link>
