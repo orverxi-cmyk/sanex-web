@@ -566,19 +566,19 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Twitter className="h-3 w-3" /> Twitter URL</Label>
-                <Input className="h-9 text-xs" value={formData.socials.twitter} onChange={e => updateSocial('twitter', e.target.value)} placeholder="https://twitter.com/..." />
+                <Input className="h-9 text-xs" value={formData.socials?.twitter || ""} onChange={e => updateSocial('twitter', e.target.value)} placeholder="https://twitter.com/..." />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Linkedin className="h-3 w-3" /> LinkedIn URL</Label>
-                <Input className="h-9 text-xs" value={formData.socials.linkedin} onChange={e => updateSocial('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." />
+                <Input className="h-9 text-xs" value={formData.socials?.linkedin || ""} onChange={e => updateSocial('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Facebook className="h-3 w-3" /> Facebook URL</Label>
-                <Input className="h-9 text-xs" value={formData.socials.facebook} onChange={e => updateSocial('facebook', e.target.value)} placeholder="https://facebook.com/..." />
+                <Input className="h-9 text-xs" value={formData.socials?.facebook || ""} onChange={e => updateSocial('facebook', e.target.value)} placeholder="https://facebook.com/..." />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram URL</Label>
-                <Input className="h-9 text-xs" value={formData.socials.instagram} onChange={e => updateSocial('instagram', e.target.value)} placeholder="https://instagram.com/..." />
+                <Input className="h-9 text-xs" value={formData.socials?.instagram || ""} onChange={e => updateSocial('instagram', e.target.value)} placeholder="https://instagram.com/..." />
               </div>
             </div>
           </div>
@@ -771,7 +771,7 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
                     className="h-9 text-xs" 
                     value={item.icon} 
                     onChange={e => updateItem(i, 'icon', e.target.value)} 
-                    placeholder="e.g. leaf, check, heart, scale" 
+                    placeholder="e.g. leaf, heart, briefcase" 
                   />
                 </div>
               </div>
@@ -1034,7 +1034,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                   className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => handleDelete(p.id)}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <p className="text-[8px] text-white font-medium line-clamp-1">{p.description} ({p.width}x{p.height})</p>

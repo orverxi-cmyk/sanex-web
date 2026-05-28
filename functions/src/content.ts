@@ -1,3 +1,4 @@
+
 import { onCall, HttpsError, CallableRequest, onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
@@ -75,6 +76,12 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     logoSpacing: 8,
     phone: "+250 788303628",
     email: "info@sanex.rw",
+    socials: {
+      twitter: "https://twitter.com/sanex_rw",
+      linkedin: "https://linkedin.com/company/sanex-rw",
+      facebook: "https://facebook.com/sanex.rw",
+      instagram: "https://instagram.com/sanex_rw"
+    },
     navLinks: [
       { name: "Home", href: "/" },
       { name: "About", href: "/about" },
