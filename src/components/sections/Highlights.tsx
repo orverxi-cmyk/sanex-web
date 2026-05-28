@@ -82,7 +82,7 @@ export function Highlights() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 border-y bg-muted/30 relative group">
+    <section className="py-10 bg-muted/30 relative group">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2">
@@ -93,15 +93,17 @@ export function Highlights() {
         </div>
       )}
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="max-w-xl mx-auto space-y-8">
           {items.map((item: any, i: number) => (
-            <div key={i} className="flex gap-3 items-center">
-              <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-lg bg-white border border-primary/20 shadow-sm">
+            <div key={i} className="flex gap-5 items-start">
+              <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-white border border-primary/20 shadow-sm">
                 {getIcon(item.icon)}
               </div>
-              <div className="space-y-0">
-                <h3 className="text-[16px] font-bold leading-tight">{item.title}</h3>
-                <p className="text-[14px] font-normal text-muted-foreground leading-snug">{item.description}</p>
+              <div className="space-y-1">
+                <h3 className="text-[16px] font-bold leading-tight text-black">{item.title}</h3>
+                <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">
+                  {item.description}
+                </p>
               </div>
             </div>
           ))}
