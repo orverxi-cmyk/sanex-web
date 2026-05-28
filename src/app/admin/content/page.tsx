@@ -40,7 +40,9 @@ import {
   Twitter,
   Linkedin,
   Facebook,
-  Instagram
+  Instagram,
+  Edit3,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -155,7 +157,7 @@ function ContentManagementContent() {
                 <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding & Socials</TabsTrigger>
                 <TabsTrigger value="navigation" className="gap-2 text-[10px] font-bold uppercase"><NavigationIcon className="h-3 w-3 text-primary" /> Menu</TabsTrigger>
                 <TabsTrigger value="articles" className="gap-2 text-[10px] font-bold uppercase"><FileText className="h-3 w-3 text-primary" /> Articles</TabsTrigger>
-                <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
+                <TabsTrigger value="slider" className="gap-2 text-[10px) font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
                 <TabsTrigger value="hero" className="gap-2 text-[10px] font-bold uppercase"><Sparkles className="h-3 w-3 text-primary" /> Hero</TabsTrigger>
                 <TabsTrigger value="highlights" className="gap-2 text-[10px] font-bold uppercase"><Shield className="h-3 w-3 text-primary" /> Highlights</TabsTrigger>
                 <TabsTrigger value="services" className="gap-2 text-[10px] font-bold uppercase"><List className="h-3 w-3 text-primary" /> Services</TabsTrigger>
@@ -424,7 +426,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleEdit(a)}><Settings className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleEdit(a)}><Edit3 className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => handleDelete(a.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
@@ -941,45 +943,51 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
   const { user } = useUser();
   const functions = useFunctions();
   const { toast } = useToast();
+  
+  const [isEditing, setIsEditing] = React.useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [width, setWidth] = React.useState(800);
   const [height, setHeight] = React.useState(600);
-  const [isAdding, setIsAdding] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setIsEditing(null);
+    setPhotoUrl("");
+    setDescription("");
+    setWidth(800);
+    setHeight(600);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !photoUrl) return;
-    setIsAdding(true);
+    if (!functions || !photoUrl) return;
+    setIsSubmitting(true);
     try {
-      const token = await user.getIdToken();
-      
-      const response = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/adminAddGalleryItem', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          imageUrl: photoUrl,
-          description: description.trim(),
-          width: width,
-          height: height
-        })
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
+      if (isEditing) {
+        const updateFunc = httpsCallable(functions, 'adminUpdateGalleryItem');
+        await updateFunc({ id: isEditing, imageUrl: photoUrl, description, width, height });
+        toast({ title: "Updated", description: "Photo updated successfully." });
+      } else {
+        const addFunc = httpsCallable(functions, 'adminAddGalleryItem');
+        await addFunc({ imageUrl: photoUrl, description, width, height });
+        toast({ title: "Success", description: "Photo added to gallery." });
       }
-      
-      setPhotoUrl(""); setDescription("");
-      toast({ title: "Success", description: "Photo added to gallery." });
+      resetForm();
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
-      setIsAdding(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const handleEdit = (photo: any) => {
+    setIsEditing(photo.id);
+    setPhotoUrl(photo.imageUrl);
+    setDescription(photo.description);
+    setWidth(photo.width || 800);
+    setHeight(photo.height || 600);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -988,6 +996,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
       const delFunc = httpsCallable(functions, 'adminDeleteGalleryItem');
       await delFunc({ id });
       toast({ title: "Deleted", description: "Photo removed from gallery." });
+      if (isEditing === id) resetForm();
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -995,14 +1004,24 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <Card className="lg:col-span-1 h-fit">
-        <CardHeader><CardTitle className="text-xl">Add to Gallery</CardTitle></CardHeader>
+      <Card className="lg:col-span-1 h-fit sticky top-24">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-xl">{isEditing ? "Edit Photo" : "Add to Gallery"}</CardTitle>
+            <CardDescription className="text-xs">Manage visual service proof.</CardDescription>
+          </div>
+          {isEditing && (
+            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={resetForm}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </CardHeader>
         <CardContent>
-          <form onSubmit={handleAdd} className="space-y-4">
-            <MediaPicker value={photoUrl} onChange={setPhotoUrl} />
+          <form onSubmit={handleSave} className="space-y-4">
+            <MediaPicker value={photoUrl} onChange={setPhotoUrl} label="Gallery Item (Image/Video)" />
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Caption</Label>
-              <Input className="h-9 text-xs" value={description} onChange={e => setDescription(e.target.value)} placeholder="Service description..." />
+              <Input className="h-9 text-xs" value={description} onChange={e => setDescription(e.target.value)} placeholder="Service description..." required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -1014,30 +1033,45 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                 <Input type="number" className="h-9 text-xs" value={height} onChange={e => setHeight(Number(e.target.value))} />
               </div>
             </div>
-            <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-black" disabled={isAdding}>
-              {isAdding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Add Photo
+            <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-black" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+              {isEditing ? "Save Changes" : "Add Photo"}
             </Button>
+            {isEditing && (
+              <Button type="button" variant="outline" className="w-full h-10 text-[10px] font-bold uppercase tracking-widest" onClick={resetForm}>
+                Cancel Edit
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>
       <Card className="lg:col-span-2">
-        <CardHeader><CardTitle className="text-xl">Photos</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-xl">Gallery Photos</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /> : photos?.map((p: any) => (
               <div key={p.id} className="group relative aspect-video rounded-lg overflow-hidden border border-primary/10">
                 <Image src={p.imageUrl} alt="" fill className="object-cover" />
-                <Button 
-                  size="icon" 
-                  variant="destructive" 
-                  className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleDelete(p.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-[8px] text-white font-medium line-clamp-1">{p.description} ({p.width}x{p.height})</p>
+                <div className="absolute top-2 right-2 flex flex-col gap-1">
+                  <Button 
+                    size="icon" 
+                    variant="secondary" 
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                    onClick={() => handleEdit(p)}
+                  >
+                    <Edit3 className="h-4 w-4 text-primary" />
+                  </Button>
+                  <Button 
+                    size="icon" 
+                    variant="destructive" 
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                    onClick={() => handleDelete(p.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <p className="text-[9px] text-white font-medium line-clamp-1">{p.description}</p>
                 </div>
               </div>
             ))}

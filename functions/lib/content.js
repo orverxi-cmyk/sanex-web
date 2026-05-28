@@ -111,6 +111,12 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         logoSpacing: 8,
         phone: "+250 788303628",
         email: "info@sanex.rw",
+        socials: {
+            twitter: "https://twitter.com/sanex_rw",
+            linkedin: "https://linkedin.com/company/sanex-rw",
+            facebook: "https://facebook.com/sanex.rw",
+            instagram: "https://instagram.com/sanex_rw"
+        },
         navLinks: [
             { name: "Home", href: "/" },
             { name: "About", href: "/about" },
@@ -139,7 +145,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         items: [
             {
                 title: "Liquid Waste Collection",
-                description: "Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.",
+                description: "<p>Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda. We ensure efficient and hygienic collection processes tailored to your needs.</p>",
                 imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
                 width: 1200,
                 height: 600,
@@ -148,7 +154,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
             },
             {
                 title: "Clean Water Reuse",
-                description: "Advanced DWTS systems using activated sludge technology for irrigation.",
+                description: "<p>Advanced DWTS systems using activated sludge technology for irrigation and flushing. Transform your waste into a sustainable resource for the future.</p>",
                 imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
                 width: 1200,
                 height: 600,
@@ -192,13 +198,48 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         title: "Impact Since Our Inception",
         subtitle: "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
         items: [
-            { title: "Environmental", icon: "leaf", points: ["Preventing pollutants from contaminating ecosystems", "Cleaner water sources via DWTS"] },
-            { title: "Public Health", icon: "heart", points: ["Reducing waterborne diseases", "Safety awareness campaigns"] }
+            {
+                title: "Environmental Preservation",
+                icon: "leaf",
+                points: [
+                    "<p>We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.</p>",
+                    "<p>Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation.</p>"
+                ]
+            },
+            {
+                title: "Public Health Improvement",
+                icon: "heart",
+                points: [
+                    "<p>By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.</p>",
+                    "<p>Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living.</p>"
+                ]
+            },
+            {
+                title: "Job Creation",
+                icon: "briefcase",
+                points: [
+                    "<p>SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.</p>",
+                    "<p>Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices.</p>"
+                ]
+            }
+        ]
+    });
+    // Milestones Section (Who We Are)
+    batch.set(db.collection('settings').doc('milestones'), {
+        title: "Who We Are",
+        description: `
+      <p>Founded in 2017, SANEX Company Ltd was born out of a commitment to address Rwanda's pressing liquid waste management challenges. Recognizing the critical need for sustainable solutions, we embarked on a journey to protect the environment, improve public health, and contribute to sustainable development.</p>
+      <p>Over the years, our dedication to innovation and customer satisfaction has positioned SANEX as a trusted name in the waste management sector. We take pride in offering end-to-end solutions, from waste collection and transportation to the installation of cutting-edge decentralized wastewater treatment systems (DWTS). Our holistic approach ensures we deliver services that are not only efficient but also environmentally responsible.</p>
+    `,
+        items: [
+            { year: "2017", title: "Founding", description: "<p>Established to address Rwanda's liquid waste challenges.</p>", icon: "clock" },
+            { year: "2021", title: "Licensing", description: "<p>Achieved official licensing for waste collection.</p>", icon: "shield" },
+            { year: "2024", title: "Expansion", description: "<p>Expanded services to decentralized treatment systems.</p>", icon: "rocket" }
         ]
     });
     // Regional Section
     batch.set(db.collection('settings').doc('regional'), {
-        title: "Regional Availability Portal",
+        title: "Our Presence",
         description: "Establishing operational offices in key towns across Rwanda...",
         items: [
             { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },
