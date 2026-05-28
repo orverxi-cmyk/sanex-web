@@ -12,7 +12,6 @@ import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 export function MilestoneTracker() {
   const db = useFirestore();
@@ -62,7 +61,7 @@ export function MilestoneTracker() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Left Column: Who We Are Story */}
           <div className="space-y-6">
