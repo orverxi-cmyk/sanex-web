@@ -192,7 +192,10 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
   // Milestones Section (Who We Are)
   batch.set(db.collection('settings').doc('milestones'), {
     title: "Who We Are",
-    description: "<p>SANEX Company Ltd is dedicated to delivering comprehensive liquid waste management solutions across Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.</p>",
+    description: `
+      <p>Founded in 2017, SANEX Company Ltd was born out of a commitment to address Rwanda's pressing liquid waste management challenges. Recognizing the critical need for sustainable solutions, we embarked on a journey to protect the environment, improve public health, and contribute to sustainable development.</p>
+      <p>Over the years, our dedication to innovation and customer satisfaction has positioned SANEX as a trusted name in the waste management sector. We take pride in offering end-to-end solutions, from waste collection and transportation to the installation of cutting-edge decentralized wastewater treatment systems (DWTS). Our holistic approach ensures we deliver services that are not only efficient but also environmentally responsible.</p>
+    `,
     items: [
       { year: "2017", title: "Founding", description: "<p>Established to address Rwanda's liquid waste challenges.</p>", icon: "clock" },
       { year: "2021", title: "Licensing", description: "<p>Achieved official licensing for waste collection.</p>", icon: "shield" },

@@ -127,7 +127,7 @@ function ContentManagementContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-arial">
       <Navbar />
       <main className="flex-grow py-5 bg-muted/10">
         <div className="container mx-auto px-4">
