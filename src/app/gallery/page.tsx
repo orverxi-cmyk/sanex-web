@@ -8,7 +8,7 @@ import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import Image from "next/image";
 import { Loader2, Camera, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 export default function GalleryPage() {
@@ -98,6 +98,10 @@ export default function GalleryPage() {
 
               <Dialog open={selectedIndex !== null} onOpenChange={(open) => !open && setSelectedIndex(null)}>
                 <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-none bg-black/95 flex flex-col overflow-hidden">
+                  <DialogHeader className="sr-only">
+                    <DialogTitle>Photo Gallery Viewer</DialogTitle>
+                    <DialogDescription>Viewing image {selectedIndex !== null ? selectedIndex + 1 : ''} of {photos.length}</DialogDescription>
+                  </DialogHeader>
                   {selectedIndex !== null && photos[selectedIndex] && (
                     <div className="relative flex-grow flex flex-col">
                       {/* Close Button */}
