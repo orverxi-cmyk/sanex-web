@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -51,7 +52,7 @@ export function MilestoneTracker() {
   if (loading) return null;
 
   return (
-    <section className="py-2.5 bg-background relative group">
+    <section className="pt-0 pb-2.5 bg-background relative group">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[14px]">

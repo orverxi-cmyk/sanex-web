@@ -62,7 +62,7 @@ export function HomeSlider() {
   );
 
   return (
-    <section className="py-2.5 bg-background overflow-hidden relative group font-arial">
+    <section className="pt-2.5 pb-0 bg-background overflow-hidden relative group font-arial">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
