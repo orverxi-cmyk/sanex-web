@@ -52,7 +52,7 @@ export function MilestoneTracker() {
   if (loading) return null;
 
   return (
-    <section className="pt-0 pb-2.5 bg-background relative group">
+    <section className="py-0 bg-background relative group">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[14px]">
@@ -62,8 +62,8 @@ export function MilestoneTracker() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="container mx-auto px-4 md:px-16 mt-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-5">
           {/* Left Column: Who We Are Story */}
           <div className="space-y-6">
             <div className="space-y-4">

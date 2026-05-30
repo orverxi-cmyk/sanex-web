@@ -62,7 +62,7 @@ export function HomeSlider() {
   );
 
   return (
-    <section className="pt-2.5 pb-0 bg-background overflow-hidden relative group font-arial">
+    <section className="py-0 bg-background overflow-hidden relative group font-arial">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
@@ -73,10 +73,10 @@ export function HomeSlider() {
         </div>
       )}
       <div className="container mx-auto px-4 md:px-16">
-        <Carousel className="w-full relative overflow-visible" opts={{ loop: true }}>
-          <CarouselContent>
+        <Carousel className="w-full relative overflow-visible m-0 p-0" opts={{ loop: true }}>
+          <CarouselContent className="m-0">
             {items.map((slide: any, i: number) => (
-              <CarouselItem key={i} className="h-full">
+              <CarouselItem key={i} className="h-full pl-0">
                 <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-0 lg:h-[500px]">
                   <div className="relative w-full h-[200px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
