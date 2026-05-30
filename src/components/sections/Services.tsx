@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -76,10 +77,10 @@ export function Services() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-16">
         <div className="text-center mb-5 space-y-1">
           <h2 className="text-[16px] font-bold">{content.title}</h2>
-          <p className="text-[15px] font-bold text-muted-foreground max-w-[800px] mx-auto">{content.subtitle}</p>
+          <p className="text-[14px] font-normal text-muted-foreground max-w-[800px] mx-auto">{content.subtitle}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {content.items.map((service: any, i: number) => (

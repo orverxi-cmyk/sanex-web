@@ -39,13 +39,13 @@ export function VideoHighlight() {
 
   return (
     <section className="py-2.5 bg-muted/20">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-16">
         <div className="flex flex-col items-center text-center mb-5 space-y-1">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">
             <Activity className="h-2.5 w-2.5" /> Operational Highlights
           </div>
           <h2 className="text-base font-bold font-headline">{content.title}</h2>
-          <p className="text-[15px] font-bold text-muted-foreground max-w-2xl">{content.description}</p>
+          <p className="text-[14px] font-normal text-muted-foreground max-w-2xl">{content.description}</p>
         </div>
 
         <div className="max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg border-2 border-white bg-black relative">

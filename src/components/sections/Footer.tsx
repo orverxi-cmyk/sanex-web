@@ -24,7 +24,7 @@ export function Footer() {
 
   return (
     <footer id="contact" className="bg-black text-white py-5">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
           <div className="space-y-4">
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Links</h4>
