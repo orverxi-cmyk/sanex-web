@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -63,7 +62,7 @@ export function MilestoneTracker() {
         </div>
       )}
       <div className="container mx-auto px-4 md:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-2 lg:pt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-0">
           {/* Left Column: Who We Are Story */}
           <div className="space-y-6">
             <div className="space-y-4">
