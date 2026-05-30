@@ -62,12 +62,12 @@ export function MilestoneTracker() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-16 mt-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-5">
+      <div className="container mx-auto px-4 md:px-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-2 lg:pt-4">
           {/* Left Column: Who We Are Story */}
           <div className="space-y-6">
             <div className="space-y-4">
-              <h2 className="text-[16px] font-bold text-black uppercase tracking-widest">{content.title}</h2>
+              <h2 className="text-[16px] font-bold text-black uppercase tracking-widest m-0">{content.title}</h2>
               <div 
                 className="text-[14px] font-normal text-muted-foreground leading-relaxed space-y-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: content.description }}

@@ -72,7 +72,7 @@ export function HomeSlider() {
           </Button>
         </div>
       )}
-      <div className="container mx-auto px-4 md:px-16">
+      <div className="container mx-auto px-4 md:px-16 pb-0">
         <Carousel className="w-full relative overflow-visible m-0 p-0" opts={{ loop: true }}>
           <CarouselContent className="m-0">
             {items.map((slide: any, i: number) => (
