@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -69,7 +68,7 @@ export function Hero() {
               <div dangerouslySetInnerHTML={{ __html: content.description }} />
             </div>
             
-            <div className="flex flex-wrap gap-4 pt-1">
+            <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] pt-1">
               <Button asChild className="h-12 px-8 text-base font-bold uppercase tracking-widest bg-primary text-black rounded-full gap-2 hover:bg-primary/90 transition-transform hover:scale-105">
                 <Link href={content.ctaLink}>
                   <Calendar className="h-4 w-4 text-black" /> 

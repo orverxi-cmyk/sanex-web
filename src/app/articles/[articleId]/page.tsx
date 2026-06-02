@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -126,7 +125,7 @@ export default function ArticleDetailPage() {
 
           <div className="mt-10 pt-5 border-t border-primary/20">
             <h3 className="text-[16px] font-bold font-headline mb-4">Want to learn more?</h3>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-wrap gap-x-[5px] gap-y-[20px]">
               <Button asChild className="h-12 px-8 bg-primary text-black font-bold text-[14px] uppercase tracking-widest rounded-full shadow-md">
                 <Link href="/book">Schedule a Consultation</Link>
               </Button>
