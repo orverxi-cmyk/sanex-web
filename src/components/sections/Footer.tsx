@@ -54,7 +54,7 @@ export function Footer() {
               </li>
               <li className="flex gap-2 justify-center md:justify-start">
                 <Phone className="h-3.5 w-3.5 text-primary" />
-                <a href={`tel:${phone}`} className="hover:text-primary transition-colors">{phone}</a>
+                <a href={`tel:${phone.replace(/\s+/g, '')}`} className="hover:text-primary transition-colors">{phone}</a>
               </li>
               <li className="flex gap-2 justify-center md:justify-start">
                 <Mail className="h-3.5 w-3.5 text-primary" />
