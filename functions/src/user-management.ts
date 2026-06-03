@@ -24,13 +24,15 @@ async function assertAdmin(request: CallableRequest) {
 
 export const adminCreateUser = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
-  const { email, displayName, role } = request.data;
+  const { email, displayName, role, password } = request.data;
   if (!email) throw new HttpsError('invalid-argument', 'Email is required.');
+  if (!password) throw new HttpsError('invalid-argument', 'Initial password is required.');
 
   try {
-    // Create the auth user. Note: User will need to reset password or use SSO to login.
+    // Create the auth user with the provided password.
     const userRecord = await admin.auth().createUser({
       email,
+      password,
       displayName: displayName || email.split('@')[0],
     });
 

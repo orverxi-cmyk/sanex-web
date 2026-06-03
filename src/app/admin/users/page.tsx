@@ -33,7 +33,8 @@ import {
   Search,
   Mail,
   Calendar,
-  UserPlus
+  UserPlus,
+  Key
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,6 +53,7 @@ export default function UserManagementPage() {
   const [newUser, setNewUser] = React.useState({
     email: "",
     displayName: "",
+    password: "",
     isAdmin: false
   });
 
@@ -61,7 +63,7 @@ export default function UserManagementPage() {
 
   const usersQuery = React.useMemo(() => {
     if (!db) return null;
-    return query(collection(db, "users"), orderBy("lastLogin", "desc"));
+    return query(collection(db, "users"), orderBy("createdAt", "desc"));
   }, [db]);
 
   const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
@@ -92,6 +94,11 @@ export default function UserManagementPage() {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!functions) return;
+
+    if (!newUser.password || newUser.password.length < 6) {
+      toast({ variant: "destructive", title: "Weak Password", description: "Password must be at least 6 characters." });
+      return;
+    }
     
     setIsAdding(true);
     try {
@@ -99,14 +106,15 @@ export default function UserManagementPage() {
       await addFunc({
         email: newUser.email,
         displayName: newUser.displayName,
+        password: newUser.password,
         role: newUser.isAdmin ? 'admin' : 'user'
       });
       
-      toast({ title: "User Added", description: `${newUser.displayName || newUser.email} has been provisioned.` });
+      toast({ title: "User Created", description: `Account for ${newUser.displayName || newUser.email} has been provisioned.` });
       setIsDialogOpen(false);
-      setNewUser({ email: "", displayName: "", isAdmin: false });
+      setNewUser({ email: "", displayName: "", password: "", isAdmin: false });
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Failed to Add User", description: err.message });
+      toast({ variant: "destructive", title: "Creation Failed", description: err.message });
     } finally {
       setIsAdding(false);
     }
@@ -124,16 +132,18 @@ export default function UserManagementPage() {
 
   if (!user || !isAuthorized) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col font-arial">
         <Navbar />
         <main className="flex-grow flex items-center justify-center px-4">
           <Card className="w-full max-w-md text-center py-5">
             <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
             <CardTitle>Unauthorized Access</CardTitle>
-            <p className="mt-2 text-muted-foreground">You do not have permission to view this page.</p>
-            <Button asChild className="mt-6">
-              <Link href="/admin">Return to Dashboard</Link>
-            </Button>
+            <p className="mt-2 text-muted-foreground text-[14px]">You do not have permission to view this directory.</p>
+            <div className="pt-6 flex flex-wrap gap-x-[5px] gap-y-[20px] w-full justify-center">
+              <Button asChild className="h-10 px-8 text-[10px] font-bold uppercase tracking-widest">
+                <Link href="/admin">Return to Dashboard</Link>
+              </Button>
+            </div>
           </Card>
         </main>
         <Footer />
@@ -142,16 +152,16 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-arial">
+    <div className="min-h-screen flex flex-col font-arial text-[14px]">
       <Navbar />
       <main className="flex-grow py-5 bg-muted/10">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 md:px-16">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
-              <Button asChild variant="ghost" className="mb-2 -ml-2">
+              <Button asChild variant="ghost" className="mb-2 -ml-2 text-[10px] font-bold uppercase tracking-widest">
                 <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
               </Button>
-              <h1 className="text-[16px] font-bold font-headline flex items-center gap-3">
+              <h1 className="text-[16px] font-bold font-headline flex items-center gap-3 text-black">
                 <Users className="h-8 w-8 text-primary" /> System User Directory
               </h1>
             </div>
@@ -169,21 +179,21 @@ export default function UserManagementPage() {
 
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="h-10 text-[10px] font-bold uppercase tracking-widest gap-2 bg-primary text-black">
-                    <UserPlus className="h-4 w-4" /> Add User
+                  <Button className="h-10 text-[10px] font-bold uppercase tracking-widest gap-2 bg-primary text-black rounded-full px-6">
+                    <UserPlus className="h-4 w-4" /> Add New User
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <form onSubmit={handleAddUser}>
                     <DialogHeader>
-                      <DialogTitle>Provision New User</DialogTitle>
-                      <DialogDescription>
-                        Enter details to create a new system account.
+                      <DialogTitle className="text-[16px] font-bold">Provision New Account</DialogTitle>
+                      <DialogDescription className="text-[14px] font-normal">
+                        Create a unique access key and profile for an operator.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-[10px] font-bold uppercase">Email Address *</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="email" className="text-[10px] font-bold uppercase text-muted-foreground">Work Email Address *</Label>
                         <Input 
                           id="email" 
                           type="email" 
@@ -191,17 +201,29 @@ export default function UserManagementPage() {
                           className="h-10 text-sm"
                           value={newUser.email}
                           onChange={e => setNewUser({...newUser, email: e.target.value})}
-                          placeholder="user@sanex.rw"
+                          placeholder="operator@sanex.rw"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="text-[10px] font-bold uppercase">Full Name</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="name" className="text-[10px] font-bold uppercase text-muted-foreground">Full Name</Label>
                         <Input 
                           id="name" 
                           className="h-10 text-sm"
                           value={newUser.displayName}
                           onChange={e => setNewUser({...newUser, displayName: e.target.value})}
-                          placeholder="John Doe"
+                          placeholder="Jane Doe"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="pass" className="text-[10px] font-bold uppercase text-muted-foreground">Initial Password / Access Key *</Label>
+                        <Input 
+                          id="pass" 
+                          type="password"
+                          required 
+                          className="h-10 text-sm"
+                          value={newUser.password}
+                          onChange={e => setNewUser({...newUser, password: e.target.value})}
+                          placeholder="At least 6 characters"
                         />
                       </div>
                       <div className="flex items-center space-x-2 pt-2">
@@ -210,16 +232,16 @@ export default function UserManagementPage() {
                           checked={newUser.isAdmin}
                           onCheckedChange={(checked) => setNewUser({...newUser, isAdmin: !!checked})}
                         />
-                        <Label htmlFor="admin-role" className="text-sm font-medium leading-none cursor-pointer">
-                          Grant Administrative Access
+                        <Label htmlFor="admin-role" className="text-[14px] font-bold cursor-pointer">
+                          Grant Full Administrative Rights
                         </Label>
                       </div>
                     </div>
                     <DialogFooter>
-                      <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full pt-4">
-                        <Button type="submit" className="flex-grow h-12 text-[12px] font-bold uppercase tracking-widest bg-primary text-black" disabled={isAdding}>
+                      <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full pt-2">
+                        <Button type="submit" className="flex-grow h-12 text-[12px] font-bold uppercase tracking-widest bg-primary text-black rounded-full" disabled={isAdding}>
                           {isAdding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                          Create User
+                          Create Account
                         </Button>
                       </div>
                     </DialogFooter>
@@ -229,28 +251,28 @@ export default function UserManagementPage() {
             </div>
           </div>
 
-          <Card className="shadow-sm border-none overflow-hidden">
-            <CardHeader className="border-b bg-white/50">
-              <CardTitle className="text-sm font-bold">Manage Permissions</CardTitle>
-              <CardDescription className="text-xs">Secure role promotion via Cloud Functions & Custom Claims.</CardDescription>
+          <Card className="shadow-sm border-none overflow-hidden bg-white">
+            <CardHeader className="border-b bg-muted/5">
+              <CardTitle className="text-sm font-bold text-black uppercase tracking-widest">Operator Management</CardTitle>
+              <CardDescription className="text-[12px] font-normal">Manage secure access keys and system roles via Cloud Functions.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full text-[14px] font-normal">
-                  <thead className="bg-muted/50 text-muted-foreground font-bold border-b text-[10px] uppercase tracking-widest">
+                <table className="w-full">
+                  <thead className="bg-muted/30 text-muted-foreground font-bold border-b text-[10px] uppercase tracking-widest">
                     <tr>
-                      <th className="px-6 py-4 text-left">User Profile</th>
-                      <th className="px-6 py-4 text-left">Current Role</th>
-                      <th className="px-6 py-4 text-left">Last Activity</th>
+                      <th className="px-6 py-4 text-left">Profile</th>
+                      <th className="px-6 py-4 text-left">Level</th>
+                      <th className="px-6 py-4 text-left">Last Session</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y bg-white">
+                  <tbody className="divide-y">
                     {usersLoading ? (
                       <tr>
                         <td colSpan={4} className="py-20 text-center">
                           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-                          <p className="mt-2 text-muted-foreground">Syncing directory...</p>
+                          <p className="mt-2 text-muted-foreground text-[14px]">Syncing directory...</p>
                         </td>
                       </tr>
                     ) : filteredUsers.length > 0 ? (
@@ -264,7 +286,7 @@ export default function UserManagementPage() {
                               <div>
                                 <div className="font-bold text-black flex items-center gap-2">
                                   {u.displayName}
-                                  {u.isMaster && <Badge variant="secondary" className="text-[8px] h-4 font-bold uppercase tracking-widest px-1">Master</Badge>}
+                                  {u.isMaster && <Badge className="bg-primary text-black text-[8px] font-bold uppercase tracking-widest px-1.5 h-4">Master</Badge>}
                                 </div>
                                 <div className="text-[12px] text-muted-foreground flex items-center gap-1">
                                   <Mail className="h-3 w-3" /> {u.email}
@@ -277,11 +299,8 @@ export default function UserManagementPage() {
                               {u.role || "USER"}
                             </Badge>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 text-muted-foreground text-[12px]">
-                              <Calendar className="h-3 w-3" />
-                              {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "Never"}
-                            </div>
+                          <td className="px-6 py-4 text-[12px] text-muted-foreground">
+                            {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "Pending login"}
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] justify-end">
@@ -290,10 +309,10 @@ export default function UserManagementPage() {
                                 size="sm"
                                 disabled={u.isMaster || updatingId === u.id || u.email === 'sanexcompany@gmail.com'}
                                 onClick={() => handleToggleRole(u)}
-                                className="h-8 text-[10px] font-bold uppercase tracking-widest"
+                                className="h-8 px-4 text-[9px] font-bold uppercase tracking-widest rounded-full"
                               >
                                 {updatingId === u.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 
-                                 u.role === "admin" ? "Demote" : "Promote"}
+                                 u.role === "admin" ? "Demote" : "Promote Admin"}
                               </Button>
                             </div>
                           </td>
@@ -301,8 +320,8 @@ export default function UserManagementPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="py-20 text-center text-muted-foreground italic">
-                          No matches found for your search.
+                        <td colSpan={4} className="py-20 text-center text-muted-foreground italic text-[14px]">
+                          No personnel found matching your criteria.
                         </td>
                       </tr>
                     )}

@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminBootstrapMaster = exports.adminUpdateUserRole = void 0;
+exports.adminBootstrapMaster = exports.adminUpdateUserRole = exports.adminCreateUser = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
@@ -54,6 +54,37 @@ async function assertAdmin(request) {
     }
     return userId;
 }
+exports.adminCreateUser = (0, https_1.onCall)({ cors: true }, async (request) => {
+    await assertAdmin(request);
+    const { email, displayName, role } = request.data;
+    if (!email)
+        throw new https_1.HttpsError('invalid-argument', 'Email is required.');
+    try {
+        // Create the auth user. Note: User will need to reset password or use SSO to login.
+        const userRecord = await admin.auth().createUser({
+            email,
+            displayName: displayName || email.split('@')[0],
+        });
+        const userData = {
+            email,
+            displayName: userRecord.displayName,
+            role: role === 'admin' ? 'admin' : 'user',
+            lastLogin: null,
+            createdAt: Date.now()
+        };
+        // Create firestore doc
+        await db.collection('users').doc(userRecord.uid).set(userData);
+        // Set custom claims if admin
+        if (role === 'admin') {
+            await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
+        }
+        return Object.assign({ success: true, uid: userRecord.uid }, userData);
+    }
+    catch (error) {
+        console.error('Error creating user:', error);
+        throw new https_1.HttpsError('internal', error.message || 'Failed to create user.');
+    }
+});
 exports.adminUpdateUserRole = (0, https_1.onCall)({ cors: true }, async (request) => {
     var _a;
     const callerUid = await assertAdmin(request);
@@ -65,7 +96,7 @@ exports.adminUpdateUserRole = (0, https_1.onCall)({ cors: true }, async (request
     if (targetUserId === callerUid) {
         throw new https_1.HttpsError('failed-precondition', 'You cannot change your own role.');
     }
-    const masterEmail = 'orverxi@gmail.com';
+    const masterEmail = 'sanexcompany@gmail.com';
     const targetUserDoc = await db.collection('users').doc(targetUserId).get();
     if (targetUserDoc.exists && ((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email) === masterEmail) {
         throw new https_1.HttpsError('permission-denied', 'Cannot modify the master administrator.');
@@ -79,7 +110,7 @@ exports.adminBootstrapMaster = (0, https_1.onCall)({ cors: true }, async (reques
         throw new https_1.HttpsError('unauthenticated', 'Must be logged in.');
     const uid = request.auth.uid;
     const email = request.auth.token.email;
-    const masterEmail = 'orverxi@gmail.com';
+    const masterEmail = 'sanexcompany@gmail.com';
     if (email !== masterEmail) {
         throw new https_1.HttpsError('permission-denied', 'Email not authorized to bootstrap.');
     }
