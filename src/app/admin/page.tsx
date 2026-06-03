@@ -21,8 +21,7 @@ import {
   Loader2,
   LogIn,
   ClipboardList,
-  Shield,
-  Key
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 

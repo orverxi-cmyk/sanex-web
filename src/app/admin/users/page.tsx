@@ -34,7 +34,8 @@ import {
   Mail,
   Calendar,
   UserPlus,
-  Key
+  Key,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,7 +50,6 @@ export default function UserManagementPage() {
   const [isAdding, setIsAdding] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   
-  // New User Form State
   const [newUser, setNewUser] = React.useState({
     email: "",
     displayName: "",
@@ -75,6 +75,15 @@ export default function UserManagementPage() {
       u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [allUsers, searchTerm]);
+
+  const generatePassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewUser(prev => ({ ...prev, password }));
+  };
 
   const handleToggleRole = async (targetUser: any) => {
     if (!functions) return;
@@ -215,12 +224,21 @@ export default function UserManagementPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="pass" className="text-[10px] font-bold uppercase text-muted-foreground">Initial Password / Access Key *</Label>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="pass" className="text-[10px] font-bold uppercase text-muted-foreground">Access Key / Password *</Label>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            className="h-6 text-[8px] font-bold uppercase tracking-widest gap-1 p-0 hover:bg-transparent text-primary"
+                            onClick={generatePassword}
+                          >
+                            <RefreshCw className="h-2 w-2" /> Generate Secure
+                          </Button>
+                        </div>
                         <Input 
                           id="pass" 
-                          type="password"
                           required 
-                          className="h-10 text-sm"
+                          className="h-10 text-sm font-mono"
                           value={newUser.password}
                           onChange={e => setNewUser({...newUser, password: e.target.value})}
                           placeholder="At least 6 characters"
