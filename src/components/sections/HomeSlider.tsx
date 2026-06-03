@@ -62,7 +62,7 @@ export function HomeSlider() {
   );
 
   return (
-    <section className="py-[20px] overflow-hidden relative group font-arial">
+    <section className="py-[20px] overflow-hidden relative group font-arial bg-transparent">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
@@ -100,7 +100,7 @@ export function HomeSlider() {
                         dangerouslySetInnerHTML={{ __html: slide.description }}
                       />
                     </div>
-                    <div className="pt-1">
+                    <div className="pt-1 flex flex-wrap gap-x-[5px] gap-y-[20px]">
                       <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-[14px]">
                         <Link href={slide.link || "#"}>
                           {slide.buttonText || "Learn More"} <ArrowRight className="h-3.5 w-3.5 text-primary" />

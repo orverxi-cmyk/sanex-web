@@ -79,9 +79,11 @@ export default function ContactPage() {
                     <Calendar className="h-12 w-12 mx-auto text-primary" />
                     <h3 className="text-2xl font-bold font-headline">Need a Service?</h3>
                     <p className="text-muted-foreground">Book a liquid waste collection or consultancy directly through our booking portal.</p>
-                    <Button asChild className="w-full h-12 text-lg">
-                      <Link href="/book">Schedule Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
-                    </Button>
+                    <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] justify-center">
+                      <Button asChild className="h-12 px-8 text-lg bg-primary text-black font-bold uppercase tracking-widest rounded-full">
+                        <Link href="/book">Schedule Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

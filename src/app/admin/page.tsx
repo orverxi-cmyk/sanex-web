@@ -21,8 +21,7 @@ import {
   Loader2,
   LogIn,
   ClipboardList,
-  Database,
-  CheckCircle
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,7 +32,6 @@ export default function AdminDashboard() {
   const functions = useFunctions();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [isSeeding, setIsSeeding] = React.useState(false);
 
   const { data: userProfile, loading: profileLoading } = useDoc(
     db && user ? doc(db, "users", user.uid) : null
@@ -70,20 +68,6 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleSeedData = async () => {
-    if (!functions) return;
-    setIsSeeding(true);
-    try {
-      const seedFunc = httpsCallable(functions, 'adminSeedInitialData');
-      await seedFunc({});
-      toast({ title: "System Seeded", description: "Initial front-end content has been loaded into Firestore." });
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Seeding Failed", description: err.message });
-    } finally {
-      setIsSeeding(false);
     }
   };
 
@@ -166,19 +150,11 @@ export default function AdminDashboard() {
             <Card className="bg-primary/5 border-primary/20 w-full md:w-auto">
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <Database className="h-5 w-5" />
+                  <Shield className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">System Status</div>
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-primary font-bold"
-                    onClick={handleSeedData}
-                    disabled={isSeeding}
-                  >
-                    {isSeeding ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <CheckCircle className="h-3 w-3 mr-2" />}
-                    Seed Initial Content
-                  </Button>
+                  <div className="text-primary font-bold text-sm">Secure Connection Active</div>
                 </div>
               </CardContent>
             </Card>
@@ -194,7 +170,7 @@ export default function AdminDashboard() {
                 <CardDescription>Review and manage customer bookings and service statuses.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline" className="w-full group-hover:bg-primary group-hover:text-white">
+                <Button asChild variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground">
                   <Link href="/admin/bookings">Manage Bookings <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
@@ -206,10 +182,10 @@ export default function AdminDashboard() {
                   <ImageIcon className="h-6 w-6" />
                 </div>
                 <CardTitle>Content Management</CardTitle>
-                <CardDescription>Update gallery photos and site highlights via server-side logic.</CardDescription>
+                <CardDescription>Update Branding, Gallery, Highlights and Site Sections.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline" className="w-full group-hover:bg-secondary group-hover:text-white">
+                <Button asChild variant="outline" className="w-full group-hover:bg-secondary group-hover:text-secondary-foreground">
                   <Link href="/admin/content">Manage Content <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
@@ -224,7 +200,7 @@ export default function AdminDashboard() {
                 <CardDescription>Secure role promotion using Cloud Functions and Custom Claims.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-white">
+                <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground">
                   <Link href="/admin/users">Manage Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
