@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: 'Sanex Core | Leading Liquid Waste Management in Rwanda',
   description: 'SANEX Company Ltd provides sustainable liquid waste management solutions, decentralized wastewater treatment systems, and professional sanitation services across Rwanda.',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
