@@ -51,7 +51,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     logoHeight: 40,
     logoSpacing: 8,
     phone: "+250 788303628",
-    email: "info@sanex.rw",
+    email: "sanexcompany@gmail.com",
     socials: {
       twitter: "https://twitter.com/sanex_rw",
       linkedin: "https://linkedin.com/company/sanex-rw",

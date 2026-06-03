@@ -18,7 +18,7 @@ export default function ContactPage() {
   );
 
   const phone = generalData?.phone || "+250 788303628";
-  const email = generalData?.email || "info@sanex.rw";
+  const email = generalData?.email || "sanexcompany@gmail.com";
 
   return (
     <div className="min-h-screen flex flex-col">

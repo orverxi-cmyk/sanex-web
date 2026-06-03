@@ -12,7 +12,7 @@ export function Footer() {
   const { data: generalData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]));
 
   const phone = generalData?.phone || "+250 788303628";
-  const email = generalData?.email || "info@sanex.rw";
+  const email = generalData?.email || "sanexcompany@gmail.com";
   const navLinks = generalData?.navLinks || [
     { name: "About Us", href: "/about" },
     { name: "Solutions", href: "/services" },
