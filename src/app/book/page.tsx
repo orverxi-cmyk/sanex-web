@@ -173,7 +173,7 @@ export default function BookingPage() {
 
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase">Location *</Label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-x-[5px] gap-y-[20px]">
                       <Button type="button" variant="outline" size="sm" className="h-9 text-xs gap-2" disabled={isLocating} onClick={handleGetLocation}>
                         {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />} Detect Current Location
                       </Button>
