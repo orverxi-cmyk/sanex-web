@@ -22,6 +22,41 @@ async function assertAdmin(request: CallableRequest) {
   return userId;
 }
 
+export const adminCreateUser = onCall({ cors: true }, async (request: CallableRequest) => {
+  await assertAdmin(request);
+  const { email, displayName, role } = request.data;
+  if (!email) throw new HttpsError('invalid-argument', 'Email is required.');
+
+  try {
+    // Create the auth user. Note: User will need to reset password or use SSO to login.
+    const userRecord = await admin.auth().createUser({
+      email,
+      displayName: displayName || email.split('@')[0],
+    });
+
+    const userData = {
+      email,
+      displayName: userRecord.displayName,
+      role: role === 'admin' ? 'admin' : 'user',
+      lastLogin: null,
+      createdAt: Date.now()
+    };
+
+    // Create firestore doc
+    await db.collection('users').doc(userRecord.uid).set(userData);
+
+    // Set custom claims if admin
+    if (role === 'admin') {
+      await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
+    }
+
+    return { success: true, uid: userRecord.uid, ...userData };
+  } catch (error: any) {
+    console.error('Error creating user:', error);
+    throw new HttpsError('internal', error.message || 'Failed to create user.');
+  }
+});
+
 export const adminUpdateUserRole = onCall({ cors: true }, async (request: CallableRequest) => {
   const callerUid = await assertAdmin(request);
   const { targetUserId, newRole } = request.data;
@@ -32,7 +67,7 @@ export const adminUpdateUserRole = onCall({ cors: true }, async (request: Callab
     throw new HttpsError('failed-precondition', 'You cannot change your own role.');
   }
   
-  const masterEmail = 'orverxi@gmail.com'; 
+  const masterEmail = 'sanexcompany@gmail.com'; 
   
   const targetUserDoc = await db.collection('users').doc(targetUserId).get();
   if (targetUserDoc.exists && targetUserDoc.data()?.email === masterEmail) {
@@ -49,7 +84,7 @@ export const adminBootstrapMaster = onCall({ cors: true }, async (request: Calla
   
   const uid = request.auth.uid;
   const email = request.auth.token.email;
-  const masterEmail = 'orverxi@gmail.com';
+  const masterEmail = 'sanexcompany@gmail.com';
   
   if (email !== masterEmail) {
     throw new HttpsError('permission-denied', 'Email not authorized to bootstrap.');

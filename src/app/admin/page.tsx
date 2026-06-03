@@ -6,7 +6,6 @@ import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useFunctions, useAuth } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ import {
   LayoutDashboard, 
   Image as ImageIcon, 
   ShieldAlert, 
-  ShieldCheck,
   ArrowRight,
   Loader2,
   LogIn,
@@ -29,9 +27,7 @@ export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
   const { auth } = useAuth();
   const db = useFirestore();
-  const functions = useFunctions();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const { data: userProfile, loading: profileLoading } = useDoc(
     db && user ? doc(db, "users", user.uid) : null
@@ -57,20 +53,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleBootstrap = async () => {
-    if (!user || !functions) return;
-    setIsSubmitting(true);
-    try {
-      const bootstrapFunc = httpsCallable(functions, 'adminBootstrapMaster');
-      await bootstrapFunc({});
-      toast({ title: "Success", description: "Master Admin initialized securely." });
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -83,22 +65,22 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5">
-          <Card className="w-full max-w-md shadow-xl">
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5 font-arial">
+          <Card className="w-full max-w-md shadow-xl border-none">
             <CardHeader className="text-center">
               <LayoutDashboard className="mx-auto h-12 w-12 text-primary mb-2" />
-              <CardTitle>Admin Access</CardTitle>
-              <CardDescription>Secure login required for SANEX dashboard</CardDescription>
+              <CardTitle className="text-xl font-bold">Admin Portal Access</CardTitle>
+              <CardDescription className="text-sm">Secure sign-in for SANEX authorized personnel</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-center text-muted-foreground mb-4">
-                Please sign in with an authorized account to access administrative tools.
+                Please sign in with your authorized organizational account to manage site operations.
               </p>
-              <Button onClick={handleSignIn} className="w-full gap-2">
+              <Button onClick={handleSignIn} className="w-full h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full">
                 <LogIn className="h-4 w-4" /> Sign In with Google
               </Button>
-              <Button asChild variant="ghost" className="w-full">
-                <Link href="/">Back to Home</Link>
+              <Button asChild variant="ghost" className="w-full h-12 font-bold uppercase tracking-widest text-[10px]">
+                <Link href="/">Return to Site</Link>
               </Button>
             </CardContent>
           </Card>
@@ -114,19 +96,19 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5">
-          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive">
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5 font-arial">
+          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive border-x-0 border-b-0">
             <CardHeader className="text-center">
               <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-2" />
-              <CardTitle>Access Denied</CardTitle>
-              <CardDescription>
-                Account <strong>{user.email}</strong> is not an authorized administrator.
+              <CardTitle className="text-xl font-bold">Unauthorized Access</CardTitle>
+              <CardDescription className="text-sm">
+                Account <strong>{user.email}</strong> does not have administrative permissions.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">If you are the master administrator, you can initialize your account securely.</p>
-              <Button onClick={handleBootstrap} variant="secondary" className="w-full gap-2" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Bootstrap Master Admin
+              <p className="text-xs text-muted-foreground">If you believe this is an error, please contact the master administrator at sanexcompany@gmail.com.</p>
+              <Button asChild variant="secondary" className="w-full h-12 font-bold uppercase tracking-widest text-[10px]">
+                <Link href="/">Back to Home</Link>
               </Button>
             </CardContent>
           </Card>
@@ -137,70 +119,70 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-arial">
       <Navbar />
       <main className="flex-grow py-5 bg-muted/10">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 md:px-16">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
-              <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back, {user.displayName}. Control center is active.</p>
+              <h1 className="text-3xl font-bold font-headline">Operations Center</h1>
+              <p className="text-[14px] text-muted-foreground">Managing SANEX Company digital infrastructure.</p>
             </div>
             
-            <Card className="bg-primary/5 border-primary/20 w-full md:w-auto">
+            <Card className="bg-white border-primary/20 w-full md:w-auto shadow-sm">
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                   <Shield className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">System Status</div>
-                  <div className="text-primary font-bold text-sm">Secure Connection Active</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Auth Status</div>
+                  <div className="text-black font-bold text-sm">Administrator: {userProfile.displayName || user.email}</div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <Card className="group hover:shadow-lg transition-all border-l-4 border-l-primary">
+            <Card className="group hover:shadow-lg transition-all border-none bg-white">
               <CardHeader>
                 <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
                   <ClipboardList className="h-6 w-6" />
                 </div>
-                <CardTitle>Service Requests</CardTitle>
-                <CardDescription>Review and manage customer bookings and service statuses.</CardDescription>
+                <CardTitle className="text-[16px] font-bold">Service Requests</CardTitle>
+                <CardDescription className="text-[12px]">Monitor and update status for all client liquid waste bookings.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground">
-                  <Link href="/admin/bookings">Manage Bookings <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Button asChild variant="outline" className="w-full h-10 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Link href="/admin/bookings">View Bookings <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-lg transition-all border-l-4 border-l-secondary">
+            <Card className="group hover:shadow-lg transition-all border-none bg-white">
               <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
                   <ImageIcon className="h-6 w-6" />
                 </div>
-                <CardTitle>Content Management</CardTitle>
-                <CardDescription>Update Branding, Gallery, Highlights and Site Sections.</CardDescription>
+                <CardTitle className="text-[16px] font-bold">Web Presence</CardTitle>
+                <CardDescription className="text-[12px]">Update Branding, Gallery, Services, and Public Articles.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline" className="w-full group-hover:bg-secondary group-hover:text-secondary-foreground">
-                  <Link href="/admin/content">Manage Content <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Button asChild variant="outline" className="w-full h-10 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Link href="/admin/content">Content Manager <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-lg transition-all border-l-4 border-l-accent">
+            <Card className="group hover:shadow-lg transition-all border-none bg-white">
               <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
                   <Users className="h-6 w-6" />
                 </div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Secure role promotion using Cloud Functions and Custom Claims.</CardDescription>
+                <CardTitle className="text-[16px] font-bold">Directory Access</CardTitle>
+                <CardDescription className="text-[12px]">Provision new accounts and manage system roles.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground">
+                <Button asChild variant="outline" className="w-full h-10 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
                   <Link href="/admin/users">Manage Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardContent>
