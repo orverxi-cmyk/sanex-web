@@ -6,7 +6,7 @@ import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useAuth } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,13 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { 
   Users, 
-  LayoutDashboard, 
-  Image as ImageIcon, 
   ShieldAlert, 
   ArrowRight,
   Loader2,
   LogIn,
-  ClipboardList,
-  Shield
+  Shield,
+  KeyRound,
+  Mail
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +33,10 @@ export default function AdminDashboard() {
   const [loginEmail, setLoginEmail] = React.useState("");
   const [loginPassword, setLoginPassword] = React.useState("");
   const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+  
+  const [showResetForm, setShowResetForm] = React.useState(false);
+  const [resetEmail, setResetEmail] = React.useState("");
+  const [isResetting, setIsResetting] = React.useState(false);
 
   const { data: userProfile, loading: profileLoading } = useDoc(
     db && user ? doc(db, "users", user.uid) : null
@@ -62,6 +65,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth || !resetEmail) return;
+    
+    setIsResetting(true);
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      toast({
+        title: "Reset Email Sent",
+        description: `A password reset link has been sent to ${resetEmail}.`,
+      });
+      setShowResetForm(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Reset Error",
+        description: error.message || "Failed to send reset email.",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -77,45 +103,81 @@ export default function AdminDashboard() {
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5 font-arial">
           <Card className="w-full max-w-md shadow-xl border-none">
             <CardHeader className="text-center">
-              <Shield className="mx-auto h-12 w-12 text-primary mb-2" />
-              <CardTitle className="text-xl font-bold">Admin Portal Access</CardTitle>
-              <CardDescription className="text-[14px] font-normal">Secure credentials required for entry</CardDescription>
+              {showResetForm ? <KeyRound className="mx-auto h-12 w-12 text-primary mb-2" /> : <Shield className="mx-auto h-12 w-12 text-primary mb-2" />}
+              <CardTitle className="text-xl font-bold">
+                {showResetForm ? "Reset Access Key" : "Admin Portal Access"}
+              </CardTitle>
+              <CardDescription className="text-[14px] font-normal">
+                {showResetForm ? "Enter your work email to receive a recovery link" : "Secure credentials required for entry"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Work Email</Label>
-                  <Input 
-                    type="email" 
-                    required 
-                    className="h-10 text-sm" 
-                    placeholder="admin@sanex.rw" 
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Access Key / Password</Label>
-                  <Input 
-                    type="password" 
-                    required 
-                    className="h-10 text-sm" 
-                    placeholder="••••••••" 
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                  />
-                </div>
-                <div className="pt-2 flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
-                  <Button type="submit" disabled={isLoggingIn} className="flex-grow h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full">
-                    {isLoggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />} Sign In to Operations
-                  </Button>
-                </div>
-              </form>
-              <div className="mt-4 flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
-                <Button asChild variant="ghost" className="flex-grow h-12 font-bold uppercase tracking-widest text-[10px]">
-                  <Link href="/">Return to Site</Link>
-                </Button>
-              </div>
+              {!showResetForm ? (
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Work Email</Label>
+                    <Input 
+                      type="email" 
+                      required 
+                      className="h-10 text-sm" 
+                      placeholder="admin@sanex.rw" 
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Access Key / Password</Label>
+                      <Button 
+                        type="button" 
+                        variant="link" 
+                        className="p-0 h-auto text-[10px] text-primary font-bold uppercase tracking-widest"
+                        onClick={() => setShowResetForm(true)}
+                      >
+                        Forgot?
+                      </Button>
+                    </div>
+                    <Input 
+                      type="password" 
+                      required 
+                      className="h-10 text-sm" 
+                      placeholder="••••••••" 
+                      value={loginPassword}
+                      onChange={(e) => loginPassword.length < 20 && setLoginPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="pt-2 flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
+                    <Button type="submit" disabled={isLoggingIn} className="flex-grow h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full">
+                      {isLoggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />} Sign In to Operations
+                    </Button>
+                    <Button asChild variant="ghost" className="flex-grow h-12 font-bold uppercase tracking-widest text-[10px]">
+                      <Link href="/">Return to Site</Link>
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Registered Work Email</Label>
+                    <Input 
+                      type="email" 
+                      required 
+                      className="h-10 text-sm" 
+                      placeholder="admin@sanex.rw" 
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="pt-2 flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
+                    <Button type="submit" disabled={isResetting} className="flex-grow h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full">
+                      {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />} Send Reset Link
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => setShowResetForm(false)} className="flex-grow h-12 font-bold uppercase tracking-widest text-[10px]">
+                      Back to Login
+                    </Button>
+                  </div>
+                </form>
+              )}
             </CardContent>
           </Card>
         </main>
