@@ -141,9 +141,31 @@ export default function BookingsManagementPage() {
                     </div>
 
                     <div className="lg:col-span-2 space-y-4">
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1">Requested Service</div>
-                        <div className="text-lg font-bold">{booking.serviceType}</div>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1">Requested Service</div>
+                          <div className="text-lg font-bold">{booking.serviceType}</div>
+                        </div>
+
+                        {booking.appointmentDate && (
+                          <div className="bg-primary/10 border border-primary/20 px-3 py-2 rounded-lg text-left">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-0.5">
+                              <Calendar className="h-3 w-3 text-primary" /> Appointment Date
+                            </div>
+                            <div className="text-sm font-bold text-foreground">
+                              {booking.appointmentDateFormatted || (
+                                !isNaN(Date.parse(booking.appointmentDate))
+                                  ? new Date(booking.appointmentDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+                                  : booking.appointmentDate
+                              )}
+                            </div>
+                            {booking.preferredTime && (
+                              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <Clock className="h-3 w-3 text-primary" /> {booking.preferredTime}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       {booking.description && (

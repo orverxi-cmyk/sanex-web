@@ -20,7 +20,9 @@ import {
   LogIn,
   Shield,
   KeyRound,
-  Mail
+  Mail,
+  ClipboardList,
+  Image as ImageIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 

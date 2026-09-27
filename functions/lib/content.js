@@ -238,7 +238,7 @@ exports.createBooking = (0, https_1.onRequest)(async (req, res) => {
         return;
     }
     try {
-        const { customerName, email, phone, serviceType, locationUrl, description } = req.body;
+        const { customerName, email, phone, serviceType, locationUrl, description, appointmentDate, preferredTime } = req.body;
         if (!customerName || !email || !phone || !serviceType || !locationUrl) {
             res.status(400).json({ error: 'Missing required booking fields' });
             return;
@@ -250,6 +250,8 @@ exports.createBooking = (0, https_1.onRequest)(async (req, res) => {
             serviceType,
             locationUrl,
             description: description || '',
+            appointmentDate: appointmentDate || null,
+            preferredTime: preferredTime || null,
             status: 'pending',
             createdAt: Date.now(),
         };

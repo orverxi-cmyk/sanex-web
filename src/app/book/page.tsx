@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -10,8 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Send, CheckCircle2, Navigation, Link as LinkIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { 
+  Loader2, 
+  Send, 
+  CheckCircle2, 
+  Navigation, 
+  Link as LinkIcon, 
+  Calendar as CalendarIcon, 
+  Clock 
+} from "lucide-react";
 
 export default function BookingPage() {
   const { toast } = useToast();
@@ -19,6 +30,11 @@ export default function BookingPage() {
   const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [isLocating, setIsLocating] = React.useState(false);
   const [locationMethod, setLocationMethod] = React.useState<'manual' | 'auto' | null>(null);
+
+  // Appointment date and time state
+  const [appointmentDate, setAppointmentDate] = React.useState<Date | undefined>(undefined);
+  const [preferredTime, setPreferredTime] = React.useState<string>("");
+  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
 
   const [formData, setFormData] = React.useState({
     customerName: "",
@@ -74,12 +90,32 @@ export default function BookingPage() {
 
     setIsSubmitting(true);
     try {
+      const formattedDate = appointmentDate ? format(appointmentDate, "yyyy-MM-dd") : null;
+      const displayDate = appointmentDate ? format(appointmentDate, "PPP") : null;
+
+      const appointmentNotes = displayDate
+        ? `Preferred Appointment: ${displayDate}${preferredTime ? ` (${preferredTime})` : ""}`
+        : null;
+
+      const fullDescription = [
+        appointmentNotes,
+        formData.description ? formData.description : null
+      ].filter(Boolean).join("\n\n");
+
+      const payload = {
+        ...formData,
+        description: fullDescription,
+        appointmentDate: formattedDate,
+        appointmentDateFormatted: displayDate,
+        preferredTime: preferredTime || null,
+      };
+
       const response = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/createBooking', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -104,8 +140,8 @@ export default function BookingPage() {
     return (
       <div className="min-h-screen flex flex-col font-arial">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5">
-          <Card className="w-full max-w-md text-center py-5 border-none shadow-xl">
+        <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-8">
+          <Card className="w-full max-w-md text-center py-6 px-4 border-none shadow-xl">
             <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
@@ -113,7 +149,26 @@ export default function BookingPage() {
             <CardDescription className="text-sm">
               Thank you, <strong>{formData.customerName}</strong>. Our team will contact you shortly regarding your <strong>{formData.serviceType}</strong> request.
             </CardDescription>
-            <Button className="mt-5 bg-primary text-black font-bold h-12 px-8 rounded-full" onClick={() => window.location.href = "/"}>Return to Site</Button>
+
+            {appointmentDate && (
+              <div className="mt-5 p-3.5 bg-muted/40 rounded-xl text-left border text-sm max-w-xs mx-auto">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Requested Appointment</div>
+                <div className="font-bold text-foreground flex items-center gap-2 mt-1">
+                  <CalendarIcon className="h-4 w-4 text-primary shrink-0" />
+                  <span>{format(appointmentDate, "EEEE, MMMM d, yyyy")}</span>
+                </div>
+                {preferredTime && (
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 pl-6">
+                    <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>{preferredTime}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Button className="mt-6 bg-primary text-black font-bold h-12 px-8 rounded-full" onClick={() => window.location.href = "/"}>
+              Return to Site
+            </Button>
           </Card>
         </main>
         <Footer />
@@ -171,6 +226,109 @@ export default function BookingPage() {
                     </Select>
                   </div>
 
+                  {/* Appointment Date & Preferred Time Slot */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="appointment-date" className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                          <CalendarIcon className="h-3 w-3 text-primary" /> Appointment Date
+                        </Label>
+                        {appointmentDate && (
+                          <button
+                            type="button"
+                            onClick={() => setAppointmentDate(undefined)}
+                            className="text-[10px] text-muted-foreground hover:text-destructive underline"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            id="appointment-date"
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "w-full h-10 px-3 justify-start text-left font-normal text-sm border-input hover:bg-muted/40 transition-colors",
+                              !appointmentDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4 text-primary shrink-0" />
+                            <span className="truncate">
+                              {appointmentDate ? format(appointmentDate, "EEE, MMM d, yyyy") : "Select date (optional)"}
+                            </span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 border shadow-2xl rounded-xl overflow-hidden bg-background" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={appointmentDate}
+                            onSelect={(date) => {
+                              setAppointmentDate(date);
+                              setIsDatePickerOpen(false);
+                            }}
+                            disabled={(date) => {
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              return date < today;
+                            }}
+                            autoFocus
+                          />
+                          <div className="p-2 border-t flex items-center justify-between bg-muted/30 text-xs">
+                            <span className="text-[11px] text-muted-foreground">Select upcoming date</span>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs px-2 text-primary font-bold hover:bg-primary/10"
+                                onClick={() => {
+                                  setAppointmentDate(new Date());
+                                  setIsDatePickerOpen(false);
+                                }}
+                              >
+                                Today
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs px-2 text-primary font-bold hover:bg-primary/10"
+                                onClick={() => {
+                                  const tomorrow = new Date();
+                                  tomorrow.setDate(tomorrow.getDate() + 1);
+                                  setAppointmentDate(tomorrow);
+                                  setIsDatePickerOpen(false);
+                                }}
+                              >
+                                Tomorrow
+                              </Button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="preferred-time" className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-primary" /> Preferred Time Slot
+                      </Label>
+                      <Select value={preferredTime} onValueChange={setPreferredTime}>
+                        <SelectTrigger id="preferred-time" className="h-10 text-sm">
+                          <SelectValue placeholder="Flexible / Any Time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Morning (08:00 - 12:00)">Morning (08:00 - 12:00)</SelectItem>
+                          <SelectItem value="Afternoon (12:00 - 16:00)">Afternoon (12:00 - 16:00)</SelectItem>
+                          <SelectItem value="Late Afternoon (16:00 - 18:00)">Late Afternoon (16:00 - 18:00)</SelectItem>
+                          <SelectItem value="Urgent / As Soon As Possible">Urgent / As Soon As Possible</SelectItem>
+                          <SelectItem value="Flexible">Flexible / All Day</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold uppercase text-muted-foreground">Operational Location *</Label>
                     <div className="flex flex-wrap gap-x-[5px] gap-y-[20px]">
@@ -197,7 +355,7 @@ export default function BookingPage() {
                     <Textarea id="desc" placeholder="Please describe your specific requirements..." className="min-h-[100px] text-sm" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
                   </div>
 
-                  <Button type="submit" className="w-full h-12 text-[12px] font-bold uppercase tracking-widest gap-2 bg-primary text-black rounded-full shadow-lg" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full h-12 text-[12px] font-bold uppercase tracking-widest gap-2 bg-primary text-black rounded-full shadow-lg hover:brightness-105 transition-all" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} Submit Service Request
                   </Button>
                 </form>
