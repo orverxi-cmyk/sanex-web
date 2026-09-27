@@ -1,11 +1,10 @@
-
 "use client";
 
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
-import { doc, collection, query, orderBy } from "firebase/firestore";
+import { doc, collection } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,10 +33,10 @@ import {
   Mail,
   Calendar,
   UserPlus,
-  Key,
   RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export default function UserManagementPage() {
   const { user, loading: authLoading } = useUser();
@@ -57,16 +56,50 @@ export default function UserManagementPage() {
     isAdmin: false
   });
 
-  const { data: userProfile, loading: profileLoading } = useDoc(
-    db && user ? doc(db, "users", user.uid) : null
-  );
+  const [backupUsers, setBackupUsers] = React.useState<any[] | null>(null);
+  const [isFetchingBackup, setIsFetchingBackup] = React.useState(false);
 
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile, loading: profileLoading } = useDoc(userDocRef);
+
+  const isAuthorized = userProfile?.role === "admin" || (user as any)?.admin === true;
+
+  // Only query Firestore once user authorization is confirmed
   const usersQuery = React.useMemo(() => {
-    if (!db) return null;
-    return query(collection(db, "users"), orderBy("createdAt", "desc"));
-  }, [db]);
+    if (!db || !user || !isAuthorized) return null;
+    return collection(db, "users");
+  }, [db, user, isAuthorized]);
 
-  const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
+  const { data: firestoreUsers, loading: firestoreLoading, error: firestoreError } = useCollection(usersQuery);
+
+  const fetchUsersViaFunction = React.useCallback(async () => {
+    if (!functions) return;
+    setIsFetchingBackup(true);
+    try {
+      const getUsersFunc = httpsCallable(functions, 'adminGetUsers');
+      const result: any = await getUsersFunc();
+      if (Array.isArray(result.data)) {
+        setBackupUsers(result.data);
+      }
+    } catch (err: any) {
+      console.warn("Could not fetch users via callable function:", err.message);
+    } finally {
+      setIsFetchingBackup(false);
+    }
+  }, [functions]);
+
+  // If firestore returns an error or empty while authorized, try callable function
+  React.useEffect(() => {
+    if (user && isAuthorized && (firestoreError || (!firestoreLoading && (!firestoreUsers || firestoreUsers.length === 0)))) {
+      fetchUsersViaFunction();
+    }
+  }, [user, isAuthorized, firestoreError, firestoreLoading, firestoreUsers, fetchUsersViaFunction]);
+
+  const allUsers = (firestoreUsers && firestoreUsers.length > 0)
+    ? firestoreUsers
+    : (backupUsers || firestoreUsers || []);
+
+  const usersLoading = (firestoreLoading && !backupUsers) || (isFetchingBackup && allUsers.length === 0);
 
   const filteredUsers = React.useMemo(() => {
     if (!allUsers) return [];
@@ -92,6 +125,9 @@ export default function UserManagementPage() {
     try {
       const updateRoleFunc = httpsCallable(functions, 'adminUpdateUserRole');
       await updateRoleFunc({ targetUserId: targetUser.id, newRole });
+      if (backupUsers) {
+        setBackupUsers(prev => prev ? prev.map(u => u.id === targetUser.id ? { ...u, role: newRole } : u) : null);
+      }
       toast({ title: "Updated", description: `Role for ${targetUser.displayName} changed to ${newRole}.` });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Action Failed", description: err.message });
@@ -112,13 +148,24 @@ export default function UserManagementPage() {
     setIsAdding(true);
     try {
       const addFunc = httpsCallable(functions, 'adminCreateUser');
-      await addFunc({
+      const res: any = await addFunc({
         email: newUser.email,
         displayName: newUser.displayName,
         password: newUser.password,
         role: newUser.isAdmin ? 'admin' : 'user'
       });
       
+      const createdUser = res?.data || {
+        email: newUser.email,
+        displayName: newUser.displayName || newUser.email.split('@')[0],
+        role: newUser.isAdmin ? 'admin' : 'user',
+        createdAt: Date.now()
+      };
+
+      if (backupUsers) {
+        setBackupUsers(prev => prev ? [...prev, { id: createdUser.uid || Date.now().toString(), ...createdUser }] : null);
+      }
+
       toast({ title: "User Created", description: `Account for ${newUser.displayName || newUser.email} has been provisioned.` });
       setIsDialogOpen(false);
       setNewUser({ email: "", displayName: "", password: "", isAdmin: false });
@@ -129,15 +176,13 @@ export default function UserManagementPage() {
     }
   };
 
-  if (authLoading || profileLoading) {
+  if (authLoading || (profileLoading && !userProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  const isAuthorized = userProfile?.role === "admin";
 
   if (!user || !isAuthorized) {
     return (
@@ -175,7 +220,18 @@ export default function UserManagementPage() {
               </h1>
             </div>
             
-            <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full md:w-auto items-center">
+            <div className="flex flex-wrap gap-x-[10px] gap-y-[10px] w-full md:w-auto items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 text-[10px] font-bold uppercase tracking-widest gap-2"
+                onClick={() => fetchUsersViaFunction()}
+                disabled={isFetchingBackup}
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", isFetchingBackup && "animate-spin")} />
+                Refresh
+              </Button>
+
               <div className="relative flex-grow md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
@@ -214,9 +270,9 @@ export default function UserManagementPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="name" className="text-[10px] font-bold uppercase text-muted-foreground">Full Name</Label>
+                        <Label htmlFor="dname" className="text-[10px] font-bold uppercase text-muted-foreground">Display Name</Label>
                         <Input 
-                          id="name" 
+                          id="dname" 
                           className="h-10 text-sm"
                           value={newUser.displayName}
                           onChange={e => setNewUser({...newUser, displayName: e.target.value})}
@@ -270,9 +326,14 @@ export default function UserManagementPage() {
           </div>
 
           <Card className="shadow-sm border-none overflow-hidden bg-white">
-            <CardHeader className="border-b bg-muted/5">
-              <CardTitle className="text-sm font-bold text-black uppercase tracking-widest">Operator Management</CardTitle>
-              <CardDescription className="text-[12px] font-normal">Manage secure access keys and system roles via Cloud Functions.</CardDescription>
+            <CardHeader className="border-b bg-muted/5 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-bold text-black uppercase tracking-widest">Operator Management</CardTitle>
+                <CardDescription className="text-[12px] font-normal">Manage secure access keys and system roles via Cloud Functions.</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs px-3 py-1">
+                {allUsers.length} Operators
+              </Badge>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -318,28 +379,50 @@ export default function UserManagementPage() {
                             </Badge>
                           </td>
                           <td className="px-6 py-4 text-[12px] text-muted-foreground">
-                            {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "Pending login"}
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" /> 
+                              {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] justify-end">
+                            {u.isMaster ? (
+                              <span className="text-[10px] text-muted-foreground italic font-medium">Root Access</span>
+                            ) : (
                               <Button 
-                                variant={u.role === "admin" ? "destructive" : "secondary"} 
-                                size="sm"
-                                disabled={u.isMaster || updatingId === u.id || u.email === 'sanexcompany@gmail.com'}
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2"
+                                disabled={updatingId === u.id || u.id === user.uid}
                                 onClick={() => handleToggleRole(u)}
-                                className="h-8 px-4 text-[9px] font-bold uppercase tracking-widest rounded-full"
                               >
-                                {updatingId === u.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 
-                                 u.role === "admin" ? "Demote" : "Promote Admin"}
+                                {updatingId === u.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : u.role === "admin" ? (
+                                  <>
+                                    <UserX className="h-3 w-3 text-destructive" /> Demote to User
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="h-3 w-3 text-primary" /> Promote to Admin
+                                  </>
+                                )}
                               </Button>
-                            </div>
+                            )}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="py-20 text-center text-muted-foreground italic text-[14px]">
-                          No personnel found matching your criteria.
+                        <td colSpan={4} className="py-12 text-center text-muted-foreground">
+                          <p>No operators matching your criteria.</p>
+                          <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="mt-2 text-xs text-primary font-bold"
+                            onClick={() => fetchUsersViaFunction()}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" /> Retry sync with Cloud Functions
+                          </Button>
                         </td>
                       </tr>
                     )}

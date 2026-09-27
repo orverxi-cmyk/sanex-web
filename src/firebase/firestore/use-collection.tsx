@@ -17,9 +17,12 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
   useEffect(() => {
     if (!query) {
+      setData(null);
       setLoading(false);
       return;
     }
+
+    setLoading(true);
 
     const unsubscribe = onSnapshot(
       query,
@@ -30,8 +33,10 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         }));
         setData(items);
         setLoading(false);
+        setError(null);
       },
       async (serverError) => {
+        console.warn("Firestore collection error:", serverError);
         const permissionError = new FirestorePermissionError({
           path: (query as any)._query?.path?.toString() || 'unknown',
           operation: 'list',

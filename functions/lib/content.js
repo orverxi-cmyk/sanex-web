@@ -267,4 +267,9 @@ exports.adminUpdateBookingStatus = (0, https_1.onCall)({ cors: true }, async (re
     await db.collection('bookings').doc(bookingId).update({ status });
     return { success: true };
 });
+exports.adminGetBookings = (0, https_1.onCall)({ cors: true }, async (request) => {
+    await assertAdmin(request);
+    const snap = await db.collection('bookings').get();
+    return snap.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
+});
 //# sourceMappingURL=content.js.map

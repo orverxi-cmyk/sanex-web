@@ -245,3 +245,10 @@ export const adminUpdateBookingStatus = onCall({ cors: true }, async (request: C
   await db.collection('bookings').doc(bookingId).update({ status });
   return { success: true };
 });
+
+export const adminGetBookings = onCall({ cors: true }, async (request: CallableRequest) => {
+  await assertAdmin(request);
+  const snap = await db.collection('bookings').get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+});
+

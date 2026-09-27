@@ -56,13 +56,16 @@ async function assertAdmin(request) {
 }
 exports.adminCreateUser = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
-    const { email, displayName, role } = request.data;
+    const { email, displayName, role, password } = request.data;
     if (!email)
         throw new https_1.HttpsError('invalid-argument', 'Email is required.');
+    if (!password)
+        throw new https_1.HttpsError('invalid-argument', 'Initial password is required.');
     try {
-        // Create the auth user. Note: User will need to reset password or use SSO to login.
+        // Create the auth user with the provided password.
         const userRecord = await admin.auth().createUser({
             email,
+            password,
             displayName: displayName || email.split('@')[0],
         });
         const userData = {
@@ -123,5 +126,10 @@ exports.adminBootstrapMaster = (0, https_1.onCall)({ cors: true }, async (reques
     }, { merge: true });
     await admin.auth().setCustomUserClaims(uid, { admin: true });
     return { success: true };
+});
+exports.adminGetUsers = (0, https_1.onCall)({ cors: true }, async (request) => {
+    await assertAdmin(request);
+    const snap = await db.collection('users').get();
+    return snap.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
 });
 //# sourceMappingURL=user-management.js.map

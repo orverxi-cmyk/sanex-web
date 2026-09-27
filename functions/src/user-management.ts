@@ -103,3 +103,9 @@ export const adminBootstrapMaster = onCall({ cors: true }, async (request: Calla
   await admin.auth().setCustomUserClaims(uid, { admin: true });
   return { success: true };
 });
+
+export const adminGetUsers = onCall({ cors: true }, async (request: CallableRequest) => {
+  await assertAdmin(request);
+  const snap = await db.collection('users').get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+});
