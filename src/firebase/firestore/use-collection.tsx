@@ -5,7 +5,8 @@ import {
   Query, 
   onSnapshot, 
   QuerySnapshot, 
-  DocumentData 
+  DocumentData,
+  queryEqual
 } from 'firebase/firestore';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError } from '../errors';
@@ -15,13 +16,22 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const prevQuery = useState<{ current: Query<T> | null }>({ current: null })[0];
+
   useEffect(() => {
     if (!query) {
+      prevQuery.current = null;
       setData(null);
       setLoading(false);
+      setError(null);
       return;
     }
 
+    if (prevQuery.current && queryEqual(prevQuery.current, query)) {
+      return;
+    }
+
+    prevQuery.current = query;
     setLoading(true);
 
     const unsubscribe = onSnapshot(
@@ -35,7 +45,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setLoading(false);
         setError(null);
       },
-      async (serverError) => {
+      (serverError) => {
         console.warn("Firestore collection error:", serverError);
         const permissionError = new FirestorePermissionError({
           path: (query as any)._query?.path?.toString() || 'unknown',
@@ -47,7 +57,9 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
       }
     );
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, [query]);
 
   return { data, loading, error };

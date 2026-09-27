@@ -40,9 +40,8 @@ export default function AdminDashboard() {
   const [resetEmail, setResetEmail] = React.useState("");
   const [isResetting, setIsResetting] = React.useState(false);
 
-  const { data: userProfile, loading: profileLoading } = useDoc(
-    db && user ? doc(db, "users", user.uid) : null
-  );
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user?.uid]);
+  const { data: userProfile, loading: profileLoading } = useDoc(userDocRef);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +89,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (authLoading || profileLoading) {
+  if (authLoading || (user && profileLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -188,7 +187,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const isAuthorized = userProfile?.role === "admin";
+  const isAuthorized = userProfile?.role === "admin" || (user as any)?.admin === true;
 
   if (!isAuthorized) {
     return (
@@ -236,7 +235,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Auth Status</div>
-                  <div className="text-black font-bold text-sm">Operator: {userProfile.displayName || user.email}</div>
+                  <div className="text-black font-bold text-sm">Operator: {userProfile?.displayName || user.email}</div>
                 </div>
               </CardContent>
             </Card>
