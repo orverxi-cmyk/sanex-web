@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminBootstrapMaster = exports.adminUpdateUserRole = exports.adminCreateUser = void 0;
+exports.adminGetUsers = exports.adminBootstrapMaster = exports.adminUpdateUserRole = exports.adminCreateUser = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();

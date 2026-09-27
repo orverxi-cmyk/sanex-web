@@ -44,7 +44,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminUpdateBookingStatus = exports.createBooking = exports.adminUpdateSiteSection = exports.adminDeleteGalleryItem = exports.adminUpdateGalleryItem = exports.adminAddGalleryItem = exports.adminUpdateArticle = exports.adminDeleteArticle = exports.adminAddArticle = exports.adminSeedInitialData = void 0;
+exports.adminGetBookings = exports.adminUpdateBookingStatus = exports.createBooking = exports.adminUpdateSiteSection = exports.adminDeleteGalleryItem = exports.adminUpdateGalleryItem = exports.adminAddGalleryItem = exports.adminUpdateArticle = exports.adminDeleteArticle = exports.adminAddArticle = exports.adminSeedInitialData = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
