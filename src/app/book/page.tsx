@@ -110,13 +110,32 @@ export default function BookingPage() {
         preferredTime: preferredTime || null,
       };
 
-      const response = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/createBooking', {
+      // Call same-origin API route to avoid cross-origin CORS errors on custom domains like sanex.rw
+      let response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        // Graceful fallback to direct Cloud Function if API route is not available
+        try {
+          const directRes = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/createBooking', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+          });
+          if (directRes.ok) {
+            response = directRes;
+          }
+        } catch (_) {
+          // Keep original response for error handling
+        }
+      }
 
       if (!response.ok) {
         const errorData = await response.json();

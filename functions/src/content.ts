@@ -9,13 +9,7 @@ const db = admin.firestore();
  */
 function setCorsHeaders(req: any, res: any) {
   const origin = req.headers.origin;
-  if (origin && (
-    origin.includes('cloudworkstations.dev') || 
-    origin.includes('hosted.app') || 
-    origin.includes('localhost')
-  )) {
-    res.set('Access-Control-Allow-Origin', origin);
-  }
+  res.set('Access-Control-Allow-Origin', origin || '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.set('Access-Control-Max-Age', '3600');
@@ -208,7 +202,7 @@ export const adminUpdateSiteSection = onCall({ cors: true }, async (request: Cal
   return { success: true };
 });
 
-export const createBooking = onRequest(async (req, res) => {
+export const createBooking = onRequest({ cors: true }, async (req, res) => {
   setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
