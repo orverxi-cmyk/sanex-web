@@ -21,7 +21,8 @@ import {
   Navigation, 
   Link as LinkIcon, 
   Calendar as CalendarIcon, 
-  Clock 
+  Clock,
+  HelpCircle
 } from "lucide-react";
 
 export default function BookingPage() {
@@ -35,6 +36,10 @@ export default function BookingPage() {
   const [appointmentDate, setAppointmentDate] = React.useState<Date | undefined>(undefined);
   const [preferredTime, setPreferredTime] = React.useState<string>("");
   const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
+
+  // Referral source state
+  const [referralSource, setReferralSource] = React.useState<string>("");
+  const [customReferral, setCustomReferral] = React.useState<string>("");
 
   const [formData, setFormData] = React.useState({
     customerName: "",
@@ -93,17 +98,27 @@ export default function BookingPage() {
       const formattedDate = appointmentDate ? format(appointmentDate, "yyyy-MM-dd") : null;
       const displayDate = appointmentDate ? format(appointmentDate, "PPP") : null;
 
+      const finalReferral = referralSource === "Others" && customReferral.trim()
+        ? `Others (${customReferral.trim()})`
+        : (referralSource || null);
+
       const appointmentNotes = displayDate
         ? `Preferred Appointment: ${displayDate}${preferredTime ? ` (${preferredTime})` : ""}`
         : null;
 
+      const referralNotes = finalReferral
+        ? `Heard About Us: ${finalReferral}`
+        : null;
+
       const fullDescription = [
         appointmentNotes,
+        referralNotes,
         formData.description ? formData.description : null
       ].filter(Boolean).join("\n\n");
 
       const payload = {
         ...formData,
+        referralSource: finalReferral,
         description: fullDescription,
         appointmentDate: formattedDate,
         appointmentDateFormatted: displayDate,
@@ -365,6 +380,32 @@ export default function BookingPage() {
                         className="h-10 text-sm" 
                         value={formData.locationUrl} 
                         onChange={(e) => setFormData({...formData, locationUrl: e.target.value})} 
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="referral-source" className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                      <HelpCircle className="h-3 w-3 text-primary" /> How Did You Hear About Us?
+                    </Label>
+                    <Select value={referralSource} onValueChange={setReferralSource}>
+                      <SelectTrigger id="referral-source" className="h-10 text-sm">
+                        <SelectValue placeholder="Select an option (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                        <SelectItem value="Facebook">Facebook</SelectItem>
+                        <SelectItem value="Google Search">Google Search</SelectItem>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Others">Others</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {referralSource === "Others" && (
+                      <Input 
+                        placeholder="Please specify (e.g. Word of mouth, Referral, Event...)" 
+                        className="h-10 text-sm mt-2" 
+                        value={customReferral} 
+                        onChange={(e) => setCustomReferral(e.target.value)} 
                       />
                     )}
                   </div>

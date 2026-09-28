@@ -99,9 +99,9 @@ exports.adminUpdateUserRole = (0, https_1.onCall)({ cors: true }, async (request
     if (targetUserId === callerUid) {
         throw new https_1.HttpsError('failed-precondition', 'You cannot change your own role.');
     }
-    const masterEmail = 'sanexcompany@gmail.com';
+    const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com'];
     const targetUserDoc = await db.collection('users').doc(targetUserId).get();
-    if (targetUserDoc.exists && ((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email) === masterEmail) {
+    if (targetUserDoc.exists && masterEmails.includes((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email)) {
         throw new https_1.HttpsError('permission-denied', 'Cannot modify the master administrator.');
     }
     await db.collection('users').doc(targetUserId).update({ role: newRole });
@@ -113,8 +113,8 @@ exports.adminBootstrapMaster = (0, https_1.onCall)({ cors: true }, async (reques
         throw new https_1.HttpsError('unauthenticated', 'Must be logged in.');
     const uid = request.auth.uid;
     const email = request.auth.token.email;
-    const masterEmail = 'sanexcompany@gmail.com';
-    if (email !== masterEmail) {
+    const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com'];
+    if (!email || !masterEmails.includes(email)) {
         throw new https_1.HttpsError('permission-denied', 'Email not authorized to bootstrap.');
     }
     await db.collection('users').doc(uid).set({

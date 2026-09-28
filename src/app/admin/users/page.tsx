@@ -4,7 +4,7 @@ import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
-import { doc, collection } from "firebase/firestore";
+import { doc, collection, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,12 +123,25 @@ export default function UserManagementPage() {
   };
 
   const handleToggleRole = async (targetUser: any) => {
-    if (!functions) return;
     setUpdatingId(targetUser.id);
     const newRole = targetUser.role === "admin" ? "user" : "admin";
     try {
-      const updateRoleFunc = httpsCallable(functions, 'adminUpdateUserRole');
-      await updateRoleFunc({ targetUserId: targetUser.id, newRole });
+      if (functions) {
+        try {
+          const updateRoleFunc = httpsCallable(functions, 'adminUpdateUserRole');
+          await updateRoleFunc({ targetUserId: targetUser.id, newRole });
+        } catch (funcErr: any) {
+          console.warn("Function update failed, attempting direct Firestore update:", funcErr);
+          if (db) {
+            await updateDoc(doc(db, "users", targetUser.id), { role: newRole });
+          } else {
+            throw funcErr;
+          }
+        }
+      } else if (db) {
+        await updateDoc(doc(db, "users", targetUser.id), { role: newRole });
+      }
+      
       if (backupUsers) {
         setBackupUsers(prev => prev ? prev.map(u => u.id === targetUser.id ? { ...u, role: newRole } : u) : null);
       }

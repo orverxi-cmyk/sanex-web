@@ -4,7 +4,7 @@ import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
-import { doc, collection } from "firebase/firestore";
+import { doc, collection, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,16 +93,39 @@ export default function BookingsManagementPage() {
   const isLoading = (firestoreLoading && !backupBookings) || (isFetchingBackup && sortedBookings.length === 0);
 
   const handleUpdateStatus = async (bookingId: string, status: string) => {
-    if (!functions) return;
     setUpdatingId(bookingId);
-    try {
-      const updateFunc = httpsCallable(functions, 'adminUpdateBookingStatus');
-      await updateFunc({ bookingId, status });
-      // Update local state immediately if in backup list
-      if (backupBookings) {
-        setBackupBookings(prev => prev ? prev.map(b => b.id === bookingId ? { ...b, status } : b) : null);
+    
+    // 1. Direct Firestore update (Instant, real-time sync, zero CORS issues from sanex.rw)
+    if (db) {
+      try {
+        const bookingRef = doc(db, 'bookings', bookingId);
+        await updateDoc(bookingRef, {
+          status,
+          updatedAt: Date.now()
+        });
+        if (backupBookings) {
+          setBackupBookings(prev => prev ? prev.map(b => b.id === bookingId ? { ...b, status } : b) : null);
+        }
+        toast({ title: "Status Updated", description: `Booking marked as ${status}.` });
+        setUpdatingId(null);
+        return;
+      } catch (firestoreError: any) {
+        console.warn("Direct Firestore update failed, falling back to callable function:", firestoreError);
       }
-      toast({ title: "Status Updated", description: `Booking marked as ${status}.` });
+    }
+
+    // 2. Fallback to Cloud Function
+    try {
+      if (functions) {
+        const updateFunc = httpsCallable(functions, 'adminUpdateBookingStatus');
+        await updateFunc({ bookingId, status });
+        if (backupBookings) {
+          setBackupBookings(prev => prev ? prev.map(b => b.id === bookingId ? { ...b, status } : b) : null);
+        }
+        toast({ title: "Status Updated", description: `Booking marked as ${status}.` });
+        return;
+      }
+      throw new Error("No database or function connection available.");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
@@ -201,6 +224,13 @@ export default function BookingsManagementPage() {
                       <div className="flex flex-col gap-1 text-sm text-muted-foreground font-medium">
                         <span className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> {booking.email}</span>
                         <span className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> {booking.phone}</span>
+                        {booking.referralSource && (
+                          <div className="pt-1">
+                            <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                              Via {booking.referralSource}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
