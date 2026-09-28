@@ -93,6 +93,10 @@ export default function BookingsManagementPage() {
       if (channelParam) {
         setChannelFilter(channelParam);
       }
+      const statusParam = params.get("status");
+      if (statusParam) {
+        setStatusFilter(statusParam);
+      }
     }
   }, []);
 

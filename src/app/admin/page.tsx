@@ -5,7 +5,7 @@ import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useAuth, useCollection } from "@/firebase";
-import { doc, setDoc, collection } from "firebase/firestore";
+import { doc, setDoc, collection, updateDoc } from "firebase/firestore";
 import { 
   signInWithEmailAndPassword, 
   sendPasswordResetEmail,
@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { 
   Users, 
@@ -31,10 +32,22 @@ import {
   ClipboardList, 
   Image as ImageIcon,
   CheckCircle2,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Calendar,
+  Phone,
+  ExternalLink,
+  Filter,
+  ArrowUpRight,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  Search,
+  X,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { ChannelAnalyticsDashboard, BookingData } from "@/components/admin/ChannelAnalyticsDashboard";
 
 export default function AdminDashboard() {
@@ -483,6 +496,90 @@ export default function AdminDashboard() {
 
   const { data: firestoreBookings, loading: bookingsLoading } = useCollection(bookingsQuery);
 
+  const [statusFilter, setStatusFilter] = React.useState<"all" | "pending" | "confirmed" | "completed" | "cancelled">("all");
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+
+  const statusCounts = React.useMemo(() => {
+    let pending = 0;
+    let confirmed = 0;
+    let completed = 0;
+    let cancelled = 0;
+    (firestoreBookings || []).forEach((b: any) => {
+      const s = (b.status || 'pending').toLowerCase();
+      if (s === 'confirmed') confirmed++;
+      else if (s === 'completed') completed++;
+      else if (s === 'cancelled') cancelled++;
+      else pending++;
+    });
+    return {
+      all: (firestoreBookings || []).length,
+      pending,
+      confirmed,
+      completed,
+      cancelled,
+    };
+  }, [firestoreBookings]);
+
+  const filteredBookings = React.useMemo(() => {
+    return (firestoreBookings || []).filter((b: any) => {
+      const s = (b.status || 'pending').toLowerCase();
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'pending' && s !== 'pending') return false;
+        if (statusFilter === 'confirmed' && s !== 'confirmed') return false;
+        if (statusFilter === 'completed' && s !== 'completed') return false;
+        if (statusFilter === 'cancelled' && s !== 'cancelled') return false;
+      }
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        const matchesName = b.customerName?.toLowerCase().includes(term);
+        const matchesEmail = b.email?.toLowerCase().includes(term);
+        const matchesPhone = b.phone?.toLowerCase().includes(term);
+        const matchesService = b.serviceType?.toLowerCase().includes(term);
+        const matchesSource = b.referralSource?.toLowerCase().includes(term);
+        if (!matchesName && !matchesEmail && !matchesPhone && !matchesService && !matchesSource) {
+          return false;
+        }
+      }
+      return true;
+    }).sort((a: any, b: any) => {
+      const tA = typeof a.createdAt === 'number' ? a.createdAt : new Date(a.createdAt || 0).getTime();
+      const tB = typeof b.createdAt === 'number' ? b.createdAt : new Date(b.createdAt || 0).getTime();
+      return tB - tA;
+    });
+  }, [firestoreBookings, statusFilter, searchTerm]);
+
+  const handleUpdateStatus = async (bookingId: string, newStatus: string) => {
+    if (!db) return;
+    setUpdatingId(bookingId);
+    try {
+      const bookingRef = doc(db, 'bookings', bookingId);
+      await updateDoc(bookingRef, {
+        status: newStatus,
+        updatedAt: Date.now()
+      });
+      toast({ title: "Status Updated", description: `Request marked as ${newStatus}.` });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Update Failed", description: err.message });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const getStatusBadge = (status?: string) => {
+    const s = (status || 'pending').toLowerCase();
+    switch (s) {
+      case 'confirmed':
+        return <Badge className="bg-blue-500 text-white font-bold text-[10px]">Confirmed</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-500 text-black font-bold text-[10px]">Completed</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive" className="font-bold text-[10px]">Cancelled</Badge>;
+      default:
+        return <Badge className="bg-amber-100 text-amber-900 border-amber-300 font-bold text-[10px]">Pending</Badge>;
+    }
+  };
+
   const bookingsList: BookingData[] = React.useMemo(() => {
     return (firestoreBookings || []).map((b: any) => ({
       id: b.id,
@@ -580,6 +677,324 @@ export default function AdminDashboard() {
                 <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
                   <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
                 </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Service Requests Pipeline with Status Filters */}
+          <div className="space-y-4 pt-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
+                    Workflow Pipeline
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">• Live Status Management</span>
+                </div>
+                <h2 className="text-xl font-bold font-headline text-foreground">
+                  Service Requests by Status
+                </h2>
+              </div>
+              <Button asChild variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest gap-1.5">
+                <Link href={statusFilter === 'all' ? '/admin/bookings' : `/admin/bookings?status=${statusFilter}`}>
+                  Open Full Bookings Manager <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* 4 Interactive Status Filter Cards: Request (Pending), Confirmed, Completed, Canceled */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Filter 1: Request (Pending) */}
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'pending' ? 'all' : 'pending')}
+                className={cn(
+                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                  statusFilter === 'pending'
+                    ? "border-amber-400 ring-2 ring-amber-400/50 bg-amber-50/40 shadow-md"
+                    : "hover:border-amber-300 hover:shadow"
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <Badge className={cn(
+                    "text-[10px] font-bold transition-colors",
+                    statusFilter === 'pending' ? "bg-amber-500 text-black" : "bg-amber-100 text-amber-800 border-amber-200"
+                  )}>
+                    {statusFilter === 'pending' ? 'Active Filter' : 'Filter'}
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.pending}</div>
+                <div className="text-xs font-bold text-amber-900/90 mt-0.5">Requests (Pending)</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Awaiting operator confirmation</p>
+              </button>
+
+              {/* Filter 2: Confirmed */}
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'confirmed' ? 'all' : 'confirmed')}
+                className={cn(
+                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                  statusFilter === 'confirmed'
+                    ? "border-blue-500 ring-2 ring-blue-500/50 bg-blue-50/40 shadow-md"
+                    : "hover:border-blue-300 hover:shadow"
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <Badge className={cn(
+                    "text-[10px] font-bold transition-colors",
+                    statusFilter === 'confirmed' ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-800 border-blue-200"
+                  )}>
+                    {statusFilter === 'confirmed' ? 'Active Filter' : 'Filter'}
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.confirmed}</div>
+                <div className="text-xs font-bold text-blue-900/90 mt-0.5">Confirmed</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Scheduled for collection</p>
+              </button>
+
+              {/* Filter 3: Completed */}
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'completed' ? 'all' : 'completed')}
+                className={cn(
+                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                  statusFilter === 'completed'
+                    ? "border-emerald-500 ring-2 ring-emerald-500/50 bg-emerald-50/40 shadow-md"
+                    : "hover:border-emerald-300 hover:shadow"
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    <CheckCircle className="h-4 w-4" />
+                  </div>
+                  <Badge className={cn(
+                    "text-[10px] font-bold transition-colors",
+                    statusFilter === 'completed' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                  )}>
+                    {statusFilter === 'completed' ? 'Active Filter' : 'Filter'}
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.completed}</div>
+                <div className="text-xs font-bold text-emerald-900/90 mt-0.5">Completed</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Fulfilled service operations</p>
+              </button>
+
+              {/* Filter 4: Canceled */}
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'cancelled' ? 'all' : 'cancelled')}
+                className={cn(
+                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                  statusFilter === 'cancelled'
+                    ? "border-rose-400 ring-2 ring-rose-400/50 bg-rose-50/40 shadow-md"
+                    : "hover:border-rose-300 hover:shadow"
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-9 w-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+                    <XCircle className="h-4 w-4" />
+                  </div>
+                  <Badge className={cn(
+                    "text-[10px] font-bold transition-colors",
+                    statusFilter === 'cancelled' ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-800 border-rose-200"
+                  )}>
+                    {statusFilter === 'cancelled' ? 'Active Filter' : 'Filter'}
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.cancelled}</div>
+                <div className="text-xs font-bold text-rose-900/90 mt-0.5">Canceled</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Declined or withdrawn</p>
+              </button>
+            </div>
+
+            {/* Filter Toolbar + Request List Container */}
+            <Card className="border bg-white shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b bg-muted/10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  {/* Status Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 shrink-0 flex items-center gap-1">
+                      <Filter className="h-3 w-3" /> Filter:
+                    </span>
+                    {[
+                      { key: "all", label: `All (${statusCounts.all})` },
+                      { key: "pending", label: `Requests (${statusCounts.pending})` },
+                      { key: "confirmed", label: `Confirmed (${statusCounts.confirmed})` },
+                      { key: "completed", label: `Completed (${statusCounts.completed})` },
+                      { key: "cancelled", label: `Canceled (${statusCounts.cancelled})` }
+                    ].map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setStatusFilter(tab.key as any)}
+                        className={cn(
+                          "px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0",
+                          statusFilter === tab.key 
+                            ? "bg-primary text-black shadow-sm" 
+                            : "bg-white text-muted-foreground border hover:text-foreground"
+                        )}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Search Input */}
+                  <div className="relative flex-grow max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search requests..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8 h-8 text-xs bg-white"
+                    />
+                    {searchTerm && (
+                      <button 
+                        onClick={() => setSearchTerm("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-0">
+                {bookingsLoading && filteredBookings.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                    <p className="mt-2 text-xs text-muted-foreground">Loading service requests...</p>
+                  </div>
+                ) : filteredBookings.length > 0 ? (
+                  <div className="divide-y divide-border">
+                    {filteredBookings.slice(0, 5).map((booking: any) => (
+                      <div key={booking.id} className="p-4 hover:bg-muted/30 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(booking.status)}
+                            {booking.referralSource && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                                Via {booking.referralSource}
+                              </span>
+                            )}
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "Recent"}
+                            </span>
+                          </div>
+                          <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                            {booking.customerName}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              • {booking.serviceType}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                            {booking.email && (
+                              <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-primary" /> {booking.email}</span>
+                            )}
+                            {booking.phone && (
+                              <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-primary" /> {booking.phone}</span>
+                            )}
+                            {booking.appointmentDate && (
+                              <span className="text-black font-semibold bg-muted px-2 py-0.5 rounded text-[11px]">
+                                Appt: {booking.appointmentDate} {booking.preferredTime ? `(${booking.preferredTime})` : ''}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Status Quick Actions */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {(!booking.status || booking.status === 'pending') && (
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs font-bold gap-1.5 bg-primary text-black hover:bg-primary/90"
+                              onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
+                              disabled={updatingId === booking.id}
+                            >
+                              {updatingId === booking.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Clock className="h-3.5 w-3.5" />}
+                              Confirm
+                            </Button>
+                          )}
+                          {booking.status === 'confirmed' && (
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs font-bold gap-1.5 bg-green-500 hover:bg-green-600 text-black"
+                              onClick={() => handleUpdateStatus(booking.id, 'completed')}
+                              disabled={updatingId === booking.id}
+                            >
+                              {updatingId === booking.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                              Complete
+                            </Button>
+                          )}
+                          {booking.status !== 'cancelled' && booking.status !== 'completed' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 text-xs font-bold text-destructive hover:bg-destructive/10"
+                              onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
+                              disabled={updatingId === booking.id}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          {(booking.status === 'completed' || booking.status === 'cancelled') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-bold text-muted-foreground"
+                              onClick={() => handleUpdateStatus(booking.id, 'pending')}
+                              disabled={updatingId === booking.id}
+                            >
+                              Reset
+                            </Button>
+                          )}
+                          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-primary hover:bg-primary/10">
+                            <Link href={`/admin/bookings?status=${booking.status || 'pending'}`}>
+                              <ArrowUpRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {filteredBookings.length > 5 && (
+                      <div className="p-3 text-center bg-muted/20">
+                        <Button asChild variant="link" size="sm" className="text-xs font-bold uppercase tracking-wider text-primary">
+                          <Link href={statusFilter === 'all' ? '/admin/bookings' : `/admin/bookings?status=${statusFilter}`}>
+                            View all {filteredBookings.length} {statusFilter === 'all' ? '' : statusFilter} requests in Bookings Hub <ArrowRight className="ml-1 h-3 w-3" />
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center p-4">
+                    <ClipboardList className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
+                    <p className="text-sm font-bold text-foreground">
+                      No {statusFilter === 'all' ? '' : statusFilter} requests found
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {statusFilter !== 'all' ? `No bookings currently marked as ${statusFilter}.` : 'No incoming requests have been placed yet.'}
+                    </p>
+                    {statusFilter !== 'all' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setStatusFilter('all')}
+                        className="mt-3 h-7 text-xs font-bold"
+                      >
+                        Show All Requests
+                      </Button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
