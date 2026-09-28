@@ -65,7 +65,13 @@ export function Footer() {
         </div>
         
         <div className="border-t border-white/10 pt-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[14px] font-normal text-white/50">
-          <span>© {new Date().getFullYear()}. SANEX Company Ltd. All rights reserved.</span>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <span>© {new Date().getFullYear()}. SANEX Company Ltd. All rights reserved.</span>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <Link href="/privacy" className="hover:text-primary transition-colors text-white/70 underline sm:no-underline">
+              Privacy Policy
+            </Link>
+          </div>
           <div className="flex gap-3">
             {socials.twitter && (
               <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white">
