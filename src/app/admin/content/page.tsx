@@ -123,7 +123,7 @@ function ContentManagementContent() {
   if (!user || !isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
+        <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center px-4">
           <Card className="w-full max-w-md text-center py-12">
             <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
@@ -141,7 +141,7 @@ function ContentManagementContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
-      <Navbar />
+      <Navbar isAdmin />
       <div className="flex-grow flex flex-col lg:flex-row">
         <AdminSidebar />
         <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">

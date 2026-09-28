@@ -289,6 +289,25 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               {isAnalyticsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
             </Link>
           )}
+
+          {/* 7. Public Portal */}
+          <div className="pt-2 pb-1">
+            <div className="border-t border-border" />
+          </div>
+          <Link
+            href="/"
+            className="w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
+          >
+            <div className="flex items-center gap-3">
+              <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <div>
+                <div className="font-bold">Public Portal</div>
+                <div className="text-[10px] font-normal text-muted-foreground">
+                  View Live Website
+                </div>
+              </div>
+            </div>
+          </Link>
         </nav>
       </div>
 

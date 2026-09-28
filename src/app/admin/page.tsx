@@ -506,7 +506,7 @@ export default function AdminDashboard() {
   if (resetCode) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
+        <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-8 font-arial">
           <Card className="w-full max-w-md shadow-xl border-none">
             <CardHeader className="text-center">
@@ -594,7 +594,7 @@ export default function AdminDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
+        <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-8 font-arial">
           <Card className="w-full max-w-md shadow-xl border-none">
             <CardHeader className="text-center">
@@ -710,7 +710,7 @@ export default function AdminDashboard() {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
+        <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5 font-arial">
           <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive border-x-0 border-b-0">
             <CardHeader className="text-center">
@@ -737,7 +737,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col font-arial text-[14px] bg-muted/10">
-      <Navbar />
+      <Navbar isAdmin />
 
       <div className="flex-grow flex flex-col lg:flex-row">
         {/* Left Side Menu */}
