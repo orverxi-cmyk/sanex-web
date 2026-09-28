@@ -421,16 +421,20 @@ export default function BookingPage() {
                     {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} Submit Service Request
                   </Button>
 
-                  {/* Privacy Link & Data Usage Assurance */}
+                  {/* Privacy & Terms Data Usage Assurance */}
                   <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs text-muted-foreground space-y-1">
                     <div className="flex items-center gap-1.5 font-bold text-black">
                       <ShieldCheck className="h-4 w-4 text-primary" />
-                      <span>Data Privacy Assurance</span>
+                      <span>Data Privacy & Terms Assurance</span>
                     </div>
                     <p className="text-[11px] leading-relaxed text-black/80">
                       The contact information you share is used solely to contact you as the service requester regarding appointment scheduling, status updates, and field logistics. We never sell or share your data. Read our{" "}
                       <Link href="/privacy" className="font-bold underline text-black hover:text-primary transition-colors">
                         Privacy Policy
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/terms" className="font-bold underline text-black hover:text-primary transition-colors">
+                        Terms of Service
                       </Link>.
                     </p>
                   </div>

@@ -71,6 +71,10 @@ export function Footer() {
             <Link href="/privacy" className="hover:text-primary transition-colors text-white/70 underline sm:no-underline">
               Privacy Policy
             </Link>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <Link href="/terms" className="hover:text-primary transition-colors text-white/70 underline sm:no-underline">
+              Terms of Service
+            </Link>
           </div>
           <div className="flex gap-3">
             {socials.twitter && (
