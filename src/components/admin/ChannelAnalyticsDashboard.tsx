@@ -52,7 +52,7 @@ interface ChannelAnalyticsDashboardProps {
   isRefreshing?: boolean;
 }
 
-const CHANNEL_CONFIG: Record<string, { label: string; color: string; icon: any; bg: string }> = {
+export const CHANNEL_CONFIG: Record<string, { label: string; color: string; icon: any; bg: string }> = {
   "LinkedIn": { 
     label: "LinkedIn", 
     color: "#0A66C2", 
@@ -91,20 +91,20 @@ const CHANNEL_CONFIG: Record<string, { label: string; color: string; icon: any; 
   }
 };
 
+// Normalized Channel Extraction
+export const getChannelKey = (source?: string): string => {
+  if (!source) return "Direct / Unspecified";
+  const lower = source.toLowerCase();
+  if (lower.includes("linkedin")) return "LinkedIn";
+  if (lower.includes("google")) return "Google Search";
+  if (lower.includes("facebook")) return "Facebook";
+  if (lower.includes("email")) return "Email";
+  if (lower.includes("other")) return "Others";
+  return "Others";
+};
+
 export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshing = false }: ChannelAnalyticsDashboardProps) {
   const [timeFilter, setTimeFilter] = React.useState<"all" | "30d" | "7d">("all");
-
-  // Normalized Channel Extraction
-  const getChannelKey = (source?: string): string => {
-    if (!source) return "Direct / Unspecified";
-    const lower = source.toLowerCase();
-    if (lower.includes("linkedin")) return "LinkedIn";
-    if (lower.includes("google")) return "Google Search";
-    if (lower.includes("facebook")) return "Facebook";
-    if (lower.includes("email")) return "Email";
-    if (lower.includes("other")) return "Others";
-    return "Others";
-  };
 
   // Filter bookings by timeframe
   const filteredBookings = React.useMemo(() => {

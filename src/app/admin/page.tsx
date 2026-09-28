@@ -44,11 +44,22 @@ import {
   BarChart3,
   Search,
   X,
-  RefreshCw
+  RefreshCw,
+  LayoutDashboard,
+  Globe,
+  Share2,
+  HelpCircle,
+  Award,
+  Sparkles
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { ChannelAnalyticsDashboard, BookingData } from "@/components/admin/ChannelAnalyticsDashboard";
+import { 
+  ChannelAnalyticsDashboard, 
+  BookingData, 
+  CHANNEL_CONFIG, 
+  getChannelKey 
+} from "@/components/admin/ChannelAnalyticsDashboard";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -111,9 +122,31 @@ export default function AdminDashboard() {
 
   const { data: firestoreBookings, loading: bookingsLoading } = useCollection(bookingsQuery);
 
+  const [activeMenu, setActiveMenu] = React.useState<"operations" | "requests" | "platforms">("operations");
+  const [selectedPlatformTab, setSelectedPlatformTab] = React.useState<string>("all");
   const [statusFilter, setStatusFilter] = React.useState<"all" | "pending" | "confirmed" | "completed" | "cancelled">("all");
   const [searchTerm, setSearchTerm] = React.useState<string>("");
   const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "requests" || tab === "platforms" || tab === "operations") {
+        setActiveMenu(tab);
+      }
+      const statusParam = params.get("status");
+      if (statusParam && (statusParam === "pending" || statusParam === "confirmed" || statusParam === "completed" || statusParam === "cancelled")) {
+        setStatusFilter(statusParam as any);
+        setActiveMenu("requests");
+      }
+      const platformParam = params.get("platform");
+      if (platformParam) {
+        setSelectedPlatformTab(platformParam);
+        setActiveMenu("platforms");
+      }
+    }
+  }, []);
 
   const statusCounts = React.useMemo(() => {
     let pending = 0;
@@ -208,6 +241,67 @@ export default function AdminDashboard() {
       createdAt: b.createdAt
     }));
   }, [firestoreBookings]);
+
+  const platformStats = React.useMemo(() => {
+    const counts: Record<string, { total: number; confirmed: number; pending: number; cancelled: number }> = {
+      "LinkedIn": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
+      "Google Search": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
+      "Facebook": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
+      "Email": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
+      "Others": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
+      "Direct / Unspecified": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
+    };
+
+    (firestoreBookings || []).forEach((booking: any) => {
+      const key = getChannelKey(booking.referralSource);
+      if (!counts[key]) {
+        counts[key] = { total: 0, confirmed: 0, pending: 0, cancelled: 0 };
+      }
+      counts[key].total += 1;
+      const status = (booking.status || "pending").toLowerCase();
+      if (status === "confirmed" || status === "completed") {
+        counts[key].confirmed += 1;
+      } else if (status === "cancelled") {
+        counts[key].cancelled += 1;
+      } else {
+        counts[key].pending += 1;
+      }
+    });
+
+    const totalAll = (firestoreBookings || []).length || 1;
+
+    return Object.entries(counts).map(([name, data]) => {
+      const share = Math.round((data.total / totalAll) * 100);
+      const conversionRate = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
+      return {
+        name,
+        total: data.total,
+        confirmed: data.confirmed,
+        pending: data.pending,
+        cancelled: data.cancelled,
+        share,
+        conversionRate,
+        config: CHANNEL_CONFIG[name] || CHANNEL_CONFIG["Direct / Unspecified"]
+      };
+    }).sort((a, b) => b.total - a.total);
+  }, [firestoreBookings]);
+
+  const topPlatform = React.useMemo(() => {
+    const active = platformStats.filter(p => p.total > 0 && p.name !== "Direct / Unspecified");
+    return active.length > 0 ? active[0] : (platformStats[0] || null);
+  }, [platformStats]);
+
+  const platformFilteredBookings = React.useMemo(() => {
+    if (selectedPlatformTab === "all") return firestoreBookings || [];
+    return (firestoreBookings || []).filter((b: any) => {
+      const key = getChannelKey(b.referralSource);
+      return key.toLowerCase() === selectedPlatformTab.toLowerCase();
+    }).sort((a: any, b: any) => {
+      const tA = typeof a.createdAt === 'number' ? a.createdAt : new Date(a.createdAt || 0).getTime();
+      const tB = typeof b.createdAt === 'number' ? b.createdAt : new Date(b.createdAt || 0).getTime();
+      return tB - tA;
+    });
+  }, [firestoreBookings, selectedPlatformTab]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -595,419 +689,934 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-arial text-[14px]">
+    <div className="min-h-screen flex flex-col font-arial text-[14px] bg-muted/10">
       <Navbar />
-      <main className="flex-grow py-8 bg-muted/10">
-        <div className="container mx-auto px-4 md:px-16 space-y-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+      <div className="flex-grow flex flex-col lg:flex-row">
+        {/* Left Side Menu */}
+        <aside className="w-full lg:w-72 bg-white border-r border-border shrink-0 p-4 lg:p-6 flex flex-col justify-between">
+          <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold font-headline">Operations Center</h1>
-              <p className="text-[14px] text-muted-foreground">Managing SANEX Company digital infrastructure and marketing insights.</p>
-            </div>
-            
-            <Card className="bg-white border-primary/20 w-full md:w-auto shadow-sm">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <Shield className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Auth Status</div>
-                  <div className="text-black font-bold text-sm">Operator: {userProfile?.displayName || user.email}</div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Access Operational Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader className="pb-3">
-                <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                  <ClipboardList className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-[15px] font-bold">Service Requests</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Monitor and update client waste collection requests.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                  <Link href="/admin/bookings">View Bookings <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader className="pb-3">
-                <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-3">
-                  <TrendingUp className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-[15px] font-bold">Channel Analytics</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Marketing intelligence on lead channels & conversion.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                  <Link href="/admin/analytics">Analytics Center <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader className="pb-3">
-                <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
-                  <ImageIcon className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-[15px] font-bold">Web Presence</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Articles.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                  <Link href="/admin/content">Content Manager <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader className="pb-3">
-                <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
-                  <Users className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-[15px] font-bold">Directory Access</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Provision operators and manage system roles.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                  <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Service Requests Pipeline with Status Filters */}
-          <div className="space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
-                    Workflow Pipeline
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">• Live Status Management</span>
-                </div>
-                <h2 className="text-xl font-bold font-headline text-foreground">
-                  Service Requests by Status
-                </h2>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
+                  Command Center
+                </Badge>
               </div>
-              <Button asChild variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest gap-1.5">
-                <Link href={statusFilter === 'all' ? '/admin/bookings' : `/admin/bookings?status=${statusFilter}`}>
-                  Open Full Bookings Manager <ArrowUpRight className="h-3.5 w-3.5" />
+              <h2 className="text-xl font-bold font-headline text-foreground">Admin Portal</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Unified operations and attribution platform</p>
+            </div>
+
+            {/* Main Side Menu */}
+            <nav className="space-y-1.5">
+              {/* Menu 1: Operation Center */}
+              <button
+                type="button"
+                onClick={() => setActiveMenu('operations')}
+                className={cn(
+                  "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+                  activeMenu === 'operations'
+                    ? "bg-primary text-black shadow-sm"
+                    : "hover:bg-muted text-foreground"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <LayoutDashboard className="h-4 w-4 shrink-0" />
+                  <div>
+                    <div className="font-bold">Operation Center</div>
+                    <div className={cn("text-[10px] font-normal", activeMenu === 'operations' ? "text-black/80" : "text-muted-foreground")}>
+                      System Overview & Hub
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Menu 2: Requests */}
+              <button
+                type="button"
+                onClick={() => setActiveMenu('requests')}
+                className={cn(
+                  "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+                  activeMenu === 'requests'
+                    ? "bg-primary text-black shadow-sm"
+                    : "hover:bg-muted text-foreground"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <ClipboardList className="h-4 w-4 shrink-0" />
+                  <div>
+                    <div className="font-bold">Requests</div>
+                    <div className={cn("text-[10px] font-normal", activeMenu === 'requests' ? "text-black/80" : "text-muted-foreground")}>
+                      Service Requests Pipeline
+                    </div>
+                  </div>
+                </div>
+                {statusCounts.pending > 0 && (
+                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", activeMenu === 'requests' ? "bg-black text-white" : "bg-amber-100 text-amber-900 border-amber-300")}>
+                    {statusCounts.pending} new
+                  </Badge>
+                )}
+              </button>
+
+              {/* Menu 3: Platform Performance */}
+              <button
+                type="button"
+                onClick={() => setActiveMenu('platforms')}
+                className={cn(
+                  "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+                  activeMenu === 'platforms'
+                    ? "bg-primary text-black shadow-sm"
+                    : "hover:bg-muted text-foreground"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="h-4 w-4 shrink-0" />
+                  <div>
+                    <div className="font-bold">Platform Performance</div>
+                    <div className={cn("text-[10px] font-normal", activeMenu === 'platforms' ? "text-black/80" : "text-muted-foreground")}>
+                      Channels & Attribution
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="outline" className={cn("text-[9px] uppercase font-bold", activeMenu === 'platforms' ? "border-black/30 text-black" : "text-muted-foreground")}>
+                  Metrics
+                </Badge>
+              </button>
+            </nav>
+
+            {/* Quick System Links */}
+            <div className="pt-4 border-t space-y-1">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-3 mb-2">
+                Quick Shortcuts
+              </div>
+              <Button asChild variant="ghost" className="w-full justify-start h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
+                <Link href="/admin/content">
+                  <ImageIcon className="mr-2 h-4 w-4 text-purple-600" /> Web Presence
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
+                <Link href="/admin/users">
+                  <Users className="mr-2 h-4 w-4 text-emerald-600" /> Directory Access
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
+                <Link href="/admin/bookings">
+                  <ExternalLink className="mr-2 h-4 w-4 text-blue-600" /> Full Bookings Hub
                 </Link>
               </Button>
             </div>
+          </div>
 
-            {/* 4 Interactive Status Filter Cards: Request (Pending), Confirmed, Completed, Canceled */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Filter 1: Request (Pending) */}
-              <button
-                type="button"
-                onClick={() => setStatusFilter(prev => prev === 'pending' ? 'all' : 'pending')}
-                className={cn(
-                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
-                  statusFilter === 'pending'
-                    ? "border-amber-400 ring-2 ring-amber-400/50 bg-amber-50/40 shadow-md"
-                    : "hover:border-amber-300 hover:shadow"
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                    <Clock className="h-4 w-4" />
-                  </div>
-                  <Badge className={cn(
-                    "text-[10px] font-bold transition-colors",
-                    statusFilter === 'pending' ? "bg-amber-500 text-black" : "bg-amber-100 text-amber-800 border-amber-200"
-                  )}>
-                    {statusFilter === 'pending' ? 'Active Filter' : 'Filter'}
-                  </Badge>
-                </div>
-                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.pending}</div>
-                <div className="text-xs font-bold text-amber-900/90 mt-0.5">Requests (Pending)</div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Awaiting operator confirmation</p>
-              </button>
-
-              {/* Filter 2: Confirmed */}
-              <button
-                type="button"
-                onClick={() => setStatusFilter(prev => prev === 'confirmed' ? 'all' : 'confirmed')}
-                className={cn(
-                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
-                  statusFilter === 'confirmed'
-                    ? "border-blue-500 ring-2 ring-blue-500/50 bg-blue-50/40 shadow-md"
-                    : "hover:border-blue-300 hover:shadow"
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <Badge className={cn(
-                    "text-[10px] font-bold transition-colors",
-                    statusFilter === 'confirmed' ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-800 border-blue-200"
-                  )}>
-                    {statusFilter === 'confirmed' ? 'Active Filter' : 'Filter'}
-                  </Badge>
-                </div>
-                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.confirmed}</div>
-                <div className="text-xs font-bold text-blue-900/90 mt-0.5">Confirmed</div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Scheduled for collection</p>
-              </button>
-
-              {/* Filter 3: Completed */}
-              <button
-                type="button"
-                onClick={() => setStatusFilter(prev => prev === 'completed' ? 'all' : 'completed')}
-                className={cn(
-                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
-                  statusFilter === 'completed'
-                    ? "border-emerald-500 ring-2 ring-emerald-500/50 bg-emerald-50/40 shadow-md"
-                    : "hover:border-emerald-300 hover:shadow"
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                    <CheckCircle className="h-4 w-4" />
-                  </div>
-                  <Badge className={cn(
-                    "text-[10px] font-bold transition-colors",
-                    statusFilter === 'completed' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                  )}>
-                    {statusFilter === 'completed' ? 'Active Filter' : 'Filter'}
-                  </Badge>
-                </div>
-                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.completed}</div>
-                <div className="text-xs font-bold text-emerald-900/90 mt-0.5">Completed</div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Fulfilled service operations</p>
-              </button>
-
-              {/* Filter 4: Canceled */}
-              <button
-                type="button"
-                onClick={() => setStatusFilter(prev => prev === 'cancelled' ? 'all' : 'cancelled')}
-                className={cn(
-                  "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
-                  statusFilter === 'cancelled'
-                    ? "border-rose-400 ring-2 ring-rose-400/50 bg-rose-50/40 shadow-md"
-                    : "hover:border-rose-300 hover:shadow"
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="h-9 w-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
-                    <XCircle className="h-4 w-4" />
-                  </div>
-                  <Badge className={cn(
-                    "text-[10px] font-bold transition-colors",
-                    statusFilter === 'cancelled' ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-800 border-rose-200"
-                  )}>
-                    {statusFilter === 'cancelled' ? 'Active Filter' : 'Filter'}
-                  </Badge>
-                </div>
-                <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.cancelled}</div>
-                <div className="text-xs font-bold text-rose-900/90 mt-0.5">Canceled</div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Declined or withdrawn</p>
-              </button>
+          {/* Operator Auth Status at bottom of sidebar */}
+          <div className="pt-4 border-t mt-6">
+            <div className="bg-muted/50 p-3 rounded-xl flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">
+                <Shield className="h-4 w-4" />
+              </div>
+              <div className="overflow-hidden">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Authorized Operator</div>
+                <div className="text-xs font-bold truncate text-foreground">{userProfile?.displayName || user.email}</div>
+              </div>
             </div>
+          </div>
+        </aside>
 
-            {/* Filter Toolbar + Request List Container */}
-            <Card className="border bg-white shadow-sm overflow-hidden">
-              <CardHeader className="pb-3 border-b bg-muted/10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  {/* Status Pills */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 shrink-0 flex items-center gap-1">
-                      <Filter className="h-3 w-3" /> Filter:
-                    </span>
-                    {[
-                      { key: "all", label: `All (${statusCounts.all})` },
-                      { key: "pending", label: `Requests (${statusCounts.pending})` },
-                      { key: "confirmed", label: `Confirmed (${statusCounts.confirmed})` },
-                      { key: "completed", label: `Completed (${statusCounts.completed})` },
-                      { key: "cancelled", label: `Canceled (${statusCounts.cancelled})` }
-                    ].map(tab => (
-                      <button
-                        key={tab.key}
-                        onClick={() => setStatusFilter(tab.key as any)}
-                        className={cn(
-                          "px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0",
-                          statusFilter === tab.key 
-                            ? "bg-primary text-black shadow-sm" 
-                            : "bg-white text-muted-foreground border hover:text-foreground"
-                        )}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
+        {/* Right Dynamic View Area */}
+        <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
+          {/* ========================================================== */}
+          {/* VIEW 1: OPERATION CENTER */}
+          {/* ========================================================== */}
+          {activeMenu === 'operations' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl border shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
+                      Executive Overview
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">• System Operations</span>
                   </div>
-
-                  {/* Search Input */}
-                  <div className="relative flex-grow max-w-xs">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input
-                      placeholder="Search requests..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8 h-8 text-xs bg-white"
-                    />
-                    {searchTerm && (
-                      <button 
-                        onClick={() => setSearchTerm("")}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
+                  <h1 className="text-2xl font-bold font-headline">Operations Center</h1>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Managing SANEX Company digital infrastructure, service inquiries, and marketing attribution.
+                  </p>
                 </div>
-              </CardHeader>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={() => setActiveMenu('requests')}
+                    className="h-9 text-xs font-bold gap-2 bg-primary text-black hover:bg-primary/90"
+                  >
+                    <ClipboardList className="h-4 w-4" /> View Requests ({statusCounts.all})
+                  </Button>
+                </div>
+              </div>
 
-              <CardContent className="p-0">
-                {bookingsLoading && filteredBookings.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-                    <p className="mt-2 text-xs text-muted-foreground">Loading service requests...</p>
+              {/* High-level KPI Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between text-muted-foreground mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Total Inquiries</span>
+                      <ClipboardList className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">{statusCounts.all}</div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                      <span className="text-xs text-muted-foreground">Lifetime volume</span>
+                      <button 
+                        onClick={() => setActiveMenu('requests')}
+                        className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5"
+                      >
+                        Inspect <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-amber-200">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between text-muted-foreground mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Pending Requests</span>
+                      <Clock className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-amber-600">{statusCounts.pending}</div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                      <span className="text-xs text-muted-foreground">Awaiting review</span>
+                      <button 
+                        onClick={() => { setActiveMenu('requests'); setStatusFilter('pending'); }}
+                        className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-0.5"
+                      >
+                        Action <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-blue-200">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between text-muted-foreground mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Confirmed Bookings</span>
+                      <Calendar className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600">{statusCounts.confirmed}</div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                      <span className="text-xs text-muted-foreground">Scheduled pickup</span>
+                      <button 
+                        onClick={() => { setActiveMenu('requests'); setStatusFilter('confirmed'); }}
+                        className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5"
+                      >
+                        Schedule <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-emerald-200">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between text-muted-foreground mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Top Lead Platform</span>
+                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <div className="text-xl font-bold text-foreground truncate">
+                      {topPlatform ? topPlatform.name : "Collecting data"}
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                      <span className="text-xs text-muted-foreground">
+                        {topPlatform ? `${topPlatform.share}% of leads` : "0%"}
+                      </span>
+                      <button 
+                        onClick={() => setActiveMenu('platforms')}
+                        className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-0.5"
+                      >
+                        Performance <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Operational Modules 4-Card Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card 
+                  onClick={() => setActiveMenu('requests')}
+                  className="group hover:shadow-lg transition-all border bg-white cursor-pointer"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                      <ClipboardList className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Service Requests</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Monitor and update client waste collection requests.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      Open Requests <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  onClick={() => setActiveMenu('platforms')}
+                  className="group hover:shadow-lg transition-all border bg-white cursor-pointer"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-3">
+                      <TrendingUp className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Platform Performance</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Marketing intelligence on lead channels & conversion.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      Platform Stats <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="group hover:shadow-lg transition-all border bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
+                      <ImageIcon className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Web Presence</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Articles.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/content">Content Manager <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="group hover:shadow-lg transition-all border bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Directory Access</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Provision operators and manage system roles.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Requests Snapshot on Operation Center */}
+              <Card className="border bg-white shadow-sm overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 border-b">
+                  <div>
+                    <CardTitle className="text-base font-bold">Recent Service Inquiries</CardTitle>
+                    <CardDescription className="text-xs">Latest customer requests placed through the booking system</CardDescription>
                   </div>
-                ) : filteredBookings.length > 0 ? (
-                  <div className="divide-y divide-border">
-                    {filteredBookings.slice(0, 5).map((booking: any) => (
-                      <div key={booking.id} className="p-4 hover:bg-muted/30 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(booking.status)}
-                            {booking.referralSource && (
-                              <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                                Via {booking.referralSource}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setActiveMenu('requests')}
+                    className="h-8 text-[10px] font-bold uppercase tracking-widest gap-1"
+                  >
+                    View All in Requests Menu <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {bookingsLoading ? (
+                    <div className="py-10 text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                    </div>
+                  ) : filteredBookings.length > 0 ? (
+                    <div className="divide-y divide-border">
+                      {filteredBookings.slice(0, 4).map((b: any) => (
+                        <div key={b.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              {getStatusBadge(b.status)}
+                              {b.referralSource && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                                  Via {b.referralSource}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {b.createdAt ? new Date(b.createdAt).toLocaleDateString() : "Recent"}
                               </span>
-                            )}
-                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-                              <Calendar className="h-3 w-3 text-muted-foreground" />
-                              {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "Recent"}
-                            </span>
+                            </div>
+                            <div className="font-bold text-sm">{b.customerName} <span className="text-xs font-normal text-muted-foreground">• {b.serviceType}</span></div>
                           </div>
-                          <div className="font-bold text-sm text-foreground flex items-center gap-2">
-                            {booking.customerName}
-                            <span className="text-xs font-normal text-muted-foreground">
-                              • {booking.serviceType}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                            {booking.email && (
-                              <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-primary" /> {booking.email}</span>
-                            )}
-                            {booking.phone && (
-                              <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-primary" /> {booking.phone}</span>
-                            )}
-                            {booking.appointmentDate && (
-                              <span className="text-black font-semibold bg-muted px-2 py-0.5 rounded text-[11px]">
-                                Appt: {booking.appointmentDate} {booking.preferredTime ? `(${booking.preferredTime})` : ''}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Status Quick Actions */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          {(!booking.status || booking.status === 'pending') && (
-                            <Button
-                              size="sm"
-                              className="h-8 text-xs font-bold gap-1.5 bg-primary text-black hover:bg-primary/90"
-                              onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
-                              disabled={updatingId === booking.id}
-                            >
-                              {updatingId === booking.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Clock className="h-3.5 w-3.5" />}
-                              Confirm
-                            </Button>
-                          )}
-                          {booking.status === 'confirmed' && (
-                            <Button
-                              size="sm"
-                              className="h-8 text-xs font-bold gap-1.5 bg-green-500 hover:bg-green-600 text-black"
-                              onClick={() => handleUpdateStatus(booking.id, 'completed')}
-                              disabled={updatingId === booking.id}
-                            >
-                              {updatingId === booking.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
-                              Complete
-                            </Button>
-                          )}
-                          {booking.status !== 'cancelled' && booking.status !== 'completed' && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 text-xs font-bold text-destructive hover:bg-destructive/10"
-                              onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
-                              disabled={updatingId === booking.id}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                          {(booking.status === 'completed' || booking.status === 'cancelled') && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 text-xs font-bold text-muted-foreground"
-                              onClick={() => handleUpdateStatus(booking.id, 'pending')}
-                              disabled={updatingId === booking.id}
-                            >
-                              Reset
-                            </Button>
-                          )}
-                          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-primary hover:bg-primary/10">
-                            <Link href={`/admin/bookings?status=${booking.status || 'pending'}`}>
-                              <ArrowUpRight className="h-3.5 w-3.5" />
-                            </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => { setActiveMenu('requests'); }}
+                            className="h-8 text-xs font-bold text-primary hover:bg-primary/10 self-start sm:self-auto"
+                          >
+                            Manage Request <ArrowRight className="ml-1 h-3 w-3" />
                           </Button>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-xs text-muted-foreground">
+                      No customer inquiries placed yet.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-                    {filteredBookings.length > 5 && (
-                      <div className="p-3 text-center bg-muted/20">
-                        <Button asChild variant="link" size="sm" className="text-xs font-bold uppercase tracking-wider text-primary">
-                          <Link href={statusFilter === 'all' ? '/admin/bookings' : `/admin/bookings?status=${statusFilter}`}>
-                            View all {filteredBookings.length} {statusFilter === 'all' ? '' : statusFilter} requests in Bookings Hub <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
+          {/* ========================================================== */}
+          {/* VIEW 2: REQUESTS WITH TABLED MENU & STATUS FILTERS */}
+          {/* ========================================================== */}
+          {activeMenu === 'requests' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
+                      Requests Pipeline
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">• Workflow Management</span>
+                  </div>
+                  <h1 className="text-2xl font-bold font-headline">Service Requests</h1>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Filter, confirm, fulfill, or cancel client liquid waste requests in real time.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button asChild variant="outline" size="sm" className="h-9 text-xs font-bold gap-1.5">
+                    <Link href="/admin/bookings">
+                      <ExternalLink className="h-3.5 w-3.5 text-primary" /> Full Bookings Hub
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Clickable Status Filter Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Request (Pending) */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter(prev => prev === 'pending' ? 'all' : 'pending')}
+                  className={cn(
+                    "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                    statusFilter === 'pending'
+                      ? "border-amber-400 ring-2 ring-amber-400/50 bg-amber-50/40 shadow-md"
+                      : "hover:border-amber-300 hover:shadow"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                      <Clock className="h-4 w-4" />
+                    </div>
+                    <Badge className={cn(
+                      "text-[10px] font-bold transition-colors",
+                      statusFilter === 'pending' ? "bg-amber-500 text-black" : "bg-amber-100 text-amber-800 border-amber-200"
+                    )}>
+                      {statusFilter === 'pending' ? 'Active Filter' : 'Filter'}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.pending}</div>
+                  <div className="text-xs font-bold text-amber-900/90 mt-0.5">Requests (Pending)</div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Awaiting operator confirmation</p>
+                </button>
+
+                {/* 2. Confirmed */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter(prev => prev === 'confirmed' ? 'all' : 'confirmed')}
+                  className={cn(
+                    "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                    statusFilter === 'confirmed'
+                      ? "border-blue-500 ring-2 ring-blue-500/50 bg-blue-50/40 shadow-md"
+                      : "hover:border-blue-300 hover:shadow"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                      <Calendar className="h-4 w-4" />
+                    </div>
+                    <Badge className={cn(
+                      "text-[10px] font-bold transition-colors",
+                      statusFilter === 'confirmed' ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-800 border-blue-200"
+                    )}>
+                      {statusFilter === 'confirmed' ? 'Active Filter' : 'Filter'}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.confirmed}</div>
+                  <div className="text-xs font-bold text-blue-900/90 mt-0.5">Confirmed</div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Scheduled for collection</p>
+                </button>
+
+                {/* 3. Completed */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter(prev => prev === 'completed' ? 'all' : 'completed')}
+                  className={cn(
+                    "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                    statusFilter === 'completed'
+                      ? "border-emerald-500 ring-2 ring-emerald-500/50 bg-emerald-50/40 shadow-md"
+                      : "hover:border-emerald-300 hover:shadow"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                      <CheckCircle className="h-4 w-4" />
+                    </div>
+                    <Badge className={cn(
+                      "text-[10px] font-bold transition-colors",
+                      statusFilter === 'completed' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    )}>
+                      {statusFilter === 'completed' ? 'Active Filter' : 'Filter'}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.completed}</div>
+                  <div className="text-xs font-bold text-emerald-900/90 mt-0.5">Completed</div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Fulfilled service operations</p>
+                </button>
+
+                {/* 4. Canceled */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter(prev => prev === 'cancelled' ? 'all' : 'cancelled')}
+                  className={cn(
+                    "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
+                    statusFilter === 'cancelled'
+                      ? "border-rose-400 ring-2 ring-rose-400/50 bg-rose-50/40 shadow-md"
+                      : "hover:border-rose-300 hover:shadow"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-9 w-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+                      <XCircle className="h-4 w-4" />
+                    </div>
+                    <Badge className={cn(
+                      "text-[10px] font-bold transition-colors",
+                      statusFilter === 'cancelled' ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-800 border-rose-200"
+                    )}>
+                      {statusFilter === 'cancelled' ? 'Active Filter' : 'Filter'}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.cancelled}</div>
+                  <div className="text-xs font-bold text-rose-900/90 mt-0.5">Canceled</div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Declined or withdrawn</p>
+                </button>
+              </div>
+
+              {/* Tabled Menu Bar (Tabs for Status) + Search Filter */}
+              <Card className="border bg-white shadow-sm overflow-hidden">
+                <CardHeader className="pb-3 border-b bg-muted/10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    {/* Status Tabled Menu Tabs */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 shrink-0 flex items-center gap-1">
+                        <Filter className="h-3 w-3" /> Status:
+                      </span>
+                      {[
+                        { key: "all", label: `All Requests (${statusCounts.all})` },
+                        { key: "pending", label: `Requests (${statusCounts.pending})` },
+                        { key: "confirmed", label: `Confirmed (${statusCounts.confirmed})` },
+                        { key: "completed", label: `Completed (${statusCounts.completed})` },
+                        { key: "cancelled", label: `Canceled (${statusCounts.cancelled})` }
+                      ].map(tab => (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setStatusFilter(tab.key as any)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 border",
+                            statusFilter === tab.key 
+                              ? "bg-primary text-black border-primary shadow-sm" 
+                              : "bg-white text-muted-foreground border-border hover:text-foreground"
+                          )}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Search Input */}
+                    <div className="relative flex-grow max-w-xs">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by customer, phone, service..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 h-8 text-xs bg-white"
+                      />
+                      {searchTerm && (
+                        <button 
+                          onClick={() => setSearchTerm("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+
+                {/* Tabled View Table Content */}
+                <CardContent className="p-0">
+                  {bookingsLoading && filteredBookings.length === 0 ? (
+                    <div className="py-16 text-center">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                      <p className="mt-2 text-xs text-muted-foreground">Loading service requests...</p>
+                    </div>
+                  ) : filteredBookings.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <th className="py-3 px-4">Client / Contact</th>
+                            <th className="py-3 px-4">Service Details</th>
+                            <th className="py-3 px-4">Platform Origin</th>
+                            <th className="py-3 px-4">Appointment</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border text-xs">
+                          {filteredBookings.map((b: any) => (
+                            <tr key={b.id} className="hover:bg-muted/20 transition-colors">
+                              <td className="py-3 px-4">
+                                <div className="font-bold text-foreground">{b.customerName}</div>
+                                <div className="text-[11px] text-muted-foreground flex flex-col gap-0.5 mt-0.5">
+                                  {b.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-primary" /> {b.email}</span>}
+                                  {b.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-primary" /> {b.phone}</span>}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="font-bold">{b.serviceType}</div>
+                                {b.description && (
+                                  <div className="text-[11px] text-muted-foreground truncate max-w-xs">{b.description}</div>
+                                )}
+                              </td>
+                              <td className="py-3 px-4">
+                                {b.referralSource ? (
+                                  <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                                    Via {b.referralSource}
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-muted-foreground">Direct / Untracked</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="font-semibold text-foreground">
+                                  {b.appointmentDate || "Not Specified"}
+                                </div>
+                                {b.preferredTime && (
+                                  <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                    <Clock className="h-2.5 w-2.5" /> {b.preferredTime}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="py-3 px-4">
+                                {getStatusBadge(b.status)}
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {(!b.status || b.status === 'pending') && (
+                                    <Button
+                                      size="sm"
+                                      className="h-7 px-2.5 text-[11px] font-bold bg-primary text-black hover:bg-primary/90"
+                                      onClick={() => handleUpdateStatus(b.id, 'confirmed')}
+                                      disabled={updatingId === b.id}
+                                    >
+                                      {updatingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm"}
+                                    </Button>
+                                  )}
+                                  {b.status === 'confirmed' && (
+                                    <Button
+                                      size="sm"
+                                      className="h-7 px-2.5 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-black"
+                                      onClick={() => handleUpdateStatus(b.id, 'completed')}
+                                      disabled={updatingId === b.id}
+                                    >
+                                      {updatingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Complete"}
+                                    </Button>
+                                  )}
+                                  {b.status !== 'cancelled' && b.status !== 'completed' && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 px-2 text-[11px] text-destructive hover:bg-destructive/10"
+                                      onClick={() => handleUpdateStatus(b.id, 'cancelled')}
+                                      disabled={updatingId === b.id}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  )}
+                                  {(b.status === 'completed' || b.status === 'cancelled') && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 px-2 text-[10px] font-bold"
+                                      onClick={() => handleUpdateStatus(b.id, 'pending')}
+                                      disabled={updatingId === b.id}
+                                    >
+                                      Reset
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="py-16 text-center p-6">
+                      <ClipboardList className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
+                      <p className="text-sm font-bold text-foreground">
+                        No {statusFilter === 'all' ? '' : statusFilter} requests found
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {statusFilter !== 'all' ? `No bookings currently match status: ${statusFilter}.` : 'No incoming requests have been recorded yet.'}
+                      </p>
+                      {statusFilter !== 'all' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setStatusFilter('all')}
+                          className="mt-3 h-7 text-xs font-bold"
+                        >
+                          Clear Status Filter
                         </Button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="py-12 text-center p-4">
-                    <ClipboardList className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
-                    <p className="text-sm font-bold text-foreground">
-                      No {statusFilter === 'all' ? '' : statusFilter} requests found
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {statusFilter !== 'all' ? `No bookings currently marked as ${statusFilter}.` : 'No incoming requests have been placed yet.'}
-                    </p>
-                    {statusFilter !== 'all' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setStatusFilter('all')}
-                        className="mt-3 h-7 text-xs font-bold"
-                      >
-                        Show All Requests
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-          {/* Embedded Real-Time Marketing Channel Performance Dashboard */}
-          <div className="pt-2">
-            <ChannelAnalyticsDashboard 
-              bookings={bookingsList} 
-              isRefreshing={bookingsLoading}
-            />
-          </div>
-        </div>
-      </main>
+          {/* ========================================================== */}
+          {/* VIEW 3: PLATFORM PERFORMANCE WITH TABLED MENU FOR EACH PLATFORM */}
+          {/* ========================================================== */}
+          {activeMenu === 'platforms' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
+                      Marketing Attribution
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">• Platform ROI Intelligence</span>
+                  </div>
+                  <h1 className="text-2xl font-bold font-headline">Platform Performance</h1>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Analyze customer acquisition channels and conversion efficacy by platform.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button asChild variant="outline" size="sm" className="h-9 text-xs font-bold gap-1.5">
+                    <Link href="/admin/analytics">
+                      <ExternalLink className="h-3.5 w-3.5 text-primary" /> Full Analytics Center
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Tabled Menu for Each Platform */}
+              <div className="bg-white p-2 rounded-2xl border shadow-sm flex items-center gap-1.5 overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlatformTab('all')}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2",
+                    selectedPlatformTab === 'all'
+                      ? "bg-black text-white shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <BarChart3 className="h-3.5 w-3.5" /> All Platforms (Overview)
+                </button>
+
+                {[
+                  { key: "LinkedIn", label: "LinkedIn", icon: Share2, color: "#0A66C2" },
+                  { key: "Google Search", label: "Google Search", icon: Search, color: "#4285F4" },
+                  { key: "Facebook", label: "Facebook", icon: Globe, color: "#1877F2" },
+                  { key: "Email", label: "Email", icon: Mail, color: "#EA4335" },
+                  { key: "Others", label: "Others & Direct", icon: HelpCircle, color: "#9333EA" }
+                ].map(plat => {
+                  const stat = platformStats.find(p => p.name.toLowerCase().includes(plat.key.toLowerCase()));
+                  const Icon = plat.icon;
+                  return (
+                    <button
+                      key={plat.key}
+                      type="button"
+                      onClick={() => setSelectedPlatformTab(plat.key)}
+                      className={cn(
+                        "px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 border",
+                        selectedPlatformTab === plat.key
+                          ? "bg-primary text-black border-primary shadow-sm"
+                          : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" style={{ color: selectedPlatformTab === plat.key ? '#000' : plat.color }} />
+                      <span>{plat.label}</span>
+                      {stat && stat.total > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-bold">
+                          {stat.total}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Display depending on selectedPlatformTab */}
+              {selectedPlatformTab === 'all' ? (
+                /* Full Embedded Channel Dashboard */
+                <ChannelAnalyticsDashboard 
+                  bookings={bookingsList} 
+                  isRefreshing={bookingsLoading}
+                />
+              ) : (
+                /* Platform-Specific Spotlight and Requests Table */
+                <div className="space-y-6">
+                  {(() => {
+                    const currentStat = platformStats.find(p => p.name.toLowerCase().includes(selectedPlatformTab.toLowerCase())) || {
+                      name: selectedPlatformTab,
+                      total: platformFilteredBookings.length,
+                      confirmed: platformFilteredBookings.filter((b: any) => b.status === 'confirmed' || b.status === 'completed').length,
+                      pending: platformFilteredBookings.filter((b: any) => !b.status || b.status === 'pending').length,
+                      cancelled: platformFilteredBookings.filter((b: any) => b.status === 'cancelled').length,
+                      share: 0,
+                      conversionRate: platformFilteredBookings.length > 0 ? Math.round((platformFilteredBookings.filter((b: any) => b.status === 'confirmed' || b.status === 'completed').length / platformFilteredBookings.length) * 100) : 0,
+                      config: CHANNEL_CONFIG[selectedPlatformTab] || CHANNEL_CONFIG["Others"]
+                    };
+                    const PlatformIcon = currentStat.config?.icon || Globe;
+
+                    return (
+                      <>
+                        {/* Platform Spotlight Card */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <Card className="border bg-white shadow-sm p-5 flex items-center gap-4">
+                            <div 
+                              className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border"
+                              style={{ backgroundColor: `${currentStat.config?.color}15`, color: currentStat.config?.color, borderColor: `${currentStat.config?.color}30` }}
+                            >
+                              <PlatformIcon className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Platform</div>
+                              <div className="text-xl font-bold text-foreground">{currentStat.name}</div>
+                            </div>
+                          </Card>
+
+                          <Card className="border bg-white shadow-sm p-5">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Inquiries</div>
+                            <div className="text-2xl font-bold">{currentStat.total}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{currentStat.share}% of all inbound requests</div>
+                          </Card>
+
+                          <Card className="border bg-white shadow-sm p-5">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Confirmed / Completed</div>
+                            <div className="text-2xl font-bold text-emerald-600">{currentStat.confirmed}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">Fulfillment scheduled</div>
+                          </Card>
+
+                          <Card className="border bg-white shadow-sm p-5">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Conversion Rate</div>
+                            <div className="text-2xl font-bold text-blue-600">{currentStat.conversionRate}%</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{currentStat.pending} pending confirmation</div>
+                          </Card>
+                        </div>
+
+                        {/* Requests Table specific to this platform */}
+                        <Card className="border bg-white shadow-sm overflow-hidden">
+                          <CardHeader className="border-b bg-muted/10 pb-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div>
+                                <CardTitle className="text-base font-bold">
+                                  Inquiries Acquired via {currentStat.name}
+                                </CardTitle>
+                                <CardDescription className="text-xs">
+                                  Customers who selected &quot;{currentStat.name}&quot; when requesting services
+                                </CardDescription>
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {platformFilteredBookings.length} Leads
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            {platformFilteredBookings.length > 0 ? (
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse text-xs">
+                                  <thead>
+                                    <tr className="border-b bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      <th className="py-3 px-4">Customer</th>
+                                      <th className="py-3 px-4">Service</th>
+                                      <th className="py-3 px-4">Appointment</th>
+                                      <th className="py-3 px-4">Status</th>
+                                      <th className="py-3 px-4 text-right">Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-border">
+                                    {platformFilteredBookings.map((b: any) => (
+                                      <tr key={b.id} className="hover:bg-muted/20">
+                                        <td className="py-3 px-4">
+                                          <div className="font-bold text-foreground">{b.customerName}</div>
+                                          <div className="text-[11px] text-muted-foreground">{b.email} • {b.phone}</div>
+                                        </td>
+                                        <td className="py-3 px-4 font-semibold">{b.serviceType}</td>
+                                        <td className="py-3 px-4 text-muted-foreground">{b.appointmentDate || "Not Set"}</td>
+                                        <td className="py-3 px-4">{getStatusBadge(b.status)}</td>
+                                        <td className="py-3 px-4 text-right">
+                                          <div className="flex items-center justify-end gap-1.5">
+                                            {(!b.status || b.status === 'pending') && (
+                                              <Button
+                                                size="sm"
+                                                className="h-7 text-xs font-bold bg-primary text-black"
+                                                onClick={() => handleUpdateStatus(b.id, 'confirmed')}
+                                                disabled={updatingId === b.id}
+                                              >
+                                                Confirm
+                                              </Button>
+                                            )}
+                                            {b.status === 'confirmed' && (
+                                              <Button
+                                                size="sm"
+                                                className="h-7 text-xs font-bold bg-green-500 text-black"
+                                                onClick={() => handleUpdateStatus(b.id, 'completed')}
+                                                disabled={updatingId === b.id}
+                                              >
+                                                Complete
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="py-14 text-center p-4">
+                                <PlatformIcon className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
+                                <p className="text-sm font-bold text-foreground">
+                                  No inquiries recorded via {currentStat.name} yet
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  When new bookings specify {currentStat.name} in &quot;How did you hear about us?&quot;, they will be tracked here.
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+
       <Footer />
     </div>
   );
