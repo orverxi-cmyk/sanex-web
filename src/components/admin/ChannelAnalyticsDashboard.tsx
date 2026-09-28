@@ -266,14 +266,14 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
               <Award className="h-4 w-4 text-primary" />
             </div>
             <div className="text-2xl font-bold text-foreground">
-              {topVolumeChannel ? topVolumeChannel.name : "Collecting Data..."}
+              {topVolumeChannel && topVolumeChannel.total > 0 ? topVolumeChannel.name : "None yet"}
             </div>
             <div className="flex items-center gap-2 mt-2">
               <Badge className="bg-primary text-black font-bold text-[10px]">
-                {topVolumeChannel ? `${topVolumeChannel.share}% Share` : "0%"}
+                {topVolumeChannel && topVolumeChannel.total > 0 ? `${topVolumeChannel.share}% Share` : "0%"}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {topVolumeChannel ? `${topVolumeChannel.total} total inquiries` : "No inquiries yet"}
+                {topVolumeChannel && topVolumeChannel.total > 0 ? `${topVolumeChannel.total} total inquiries` : "0 inquiries recorded"}
               </span>
             </div>
           </CardContent>
@@ -288,14 +288,14 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
               <TrendingUp className="h-4 w-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-bold text-foreground">
-              {topConversionChannel ? topConversionChannel.name : "N/A"}
+              {topConversionChannel && topConversionChannel.total > 0 ? topConversionChannel.name : "None yet"}
             </div>
             <div className="flex items-center gap-2 mt-2">
               <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 font-bold text-[10px]">
-                {topConversionChannel ? `${topConversionChannel.conversionRate}% Conversion` : "0%"}
+                {topConversionChannel && topConversionChannel.total > 0 ? `${topConversionChannel.conversionRate}% Conversion` : "0%"}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {topConversionChannel ? `${topConversionChannel.confirmed} confirmed` : "0"}
+                {topConversionChannel && topConversionChannel.total > 0 ? `${topConversionChannel.confirmed} confirmed` : "0 confirmed"}
               </span>
             </div>
           </CardContent>
@@ -456,74 +456,84 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
           </div>
         </CardHeader>
         <CardContent>
-          <div className="divide-y divide-border">
-            {channelStats.map((channel) => {
-              const IconComponent = channel.icon;
-              return (
-                <div key={channel.name} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  {/* Left: Channel Brand Icon & Name */}
-                  <div className="flex items-center gap-3.5 min-w-[220px]">
-                    <div 
-                      className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border"
-                      style={{ backgroundColor: `${channel.color}15`, borderColor: `${channel.color}30`, color: channel.color }}
-                    >
-                      <IconComponent className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-foreground flex items-center gap-2">
-                        {channel.name}
-                        {channel.conversionRate >= 60 && channel.total >= 1 && (
-                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] px-1.5 py-0 h-4 font-bold">
-                            High Yield
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {channel.total} request{channel.total === 1 ? "" : "s"} ({channel.share}% of total)
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Middle: Progress Bar representation of share */}
-                  <div className="flex-grow max-w-md hidden sm:block">
-                    <div className="flex justify-between text-[11px] mb-1 font-medium">
-                      <span className="text-muted-foreground">Share of inquiries</span>
-                      <span className="font-bold">{channel.share}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+          {totalLeads === 0 ? (
+            <div className="py-12 text-center p-4">
+              <Globe className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
+              <p className="text-sm font-bold text-foreground">No Channel Inquiries Yet</p>
+              <p className="text-xs text-muted-foreground mt-0.5 max-w-md mx-auto">
+                When clients book services through the booking form and select their referral channel, conversion rates and volume metrics for each channel will be tracked here.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {channelStats.filter(c => c.total > 0).map((channel) => {
+                const IconComponent = channel.icon;
+                return (
+                  <div key={channel.name} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    {/* Left: Channel Brand Icon & Name */}
+                    <div className="flex items-center gap-3.5 min-w-[220px]">
                       <div 
-                        className="h-full rounded-full transition-all duration-500" 
-                        style={{ width: `${channel.share}%`, backgroundColor: channel.color }}
-                      />
+                        className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border"
+                        style={{ backgroundColor: `${channel.color}15`, borderColor: `${channel.color}30`, color: channel.color }}
+                      >
+                        <IconComponent className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                          {channel.name}
+                          {channel.conversionRate >= 60 && channel.total >= 1 && (
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] px-1.5 py-0 h-4 font-bold">
+                              High Yield
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {channel.total} request{channel.total === 1 ? "" : "s"} ({channel.share}% of total)
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Middle: Progress Bar representation of share */}
+                    <div className="flex-grow max-w-md hidden sm:block">
+                      <div className="flex justify-between text-[11px] mb-1 font-medium">
+                        <span className="text-muted-foreground">Share of inquiries</span>
+                        <span className="font-bold">{channel.share}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-500" 
+                          style={{ width: `${channel.share}%`, backgroundColor: channel.color }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right: Confirmation Rate & Counts */}
+                    <div className="flex items-center gap-4 justify-between md:justify-end">
+                      <div className="text-right">
+                        <div className="text-xs font-bold text-foreground">
+                          {channel.confirmed} confirmed / {channel.total} total
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {channel.conversionRate}% conversion rate
+                        </div>
+                      </div>
+
+                      <Button 
+                        asChild 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-2.5 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10"
+                      >
+                        <Link href={`/admin/bookings?channel=${encodeURIComponent(channel.name)}`}>
+                          Filter <ArrowUpRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-
-                  {/* Right: Confirmation Rate & Counts */}
-                  <div className="flex items-center gap-4 justify-between md:justify-end">
-                    <div className="text-right">
-                      <div className="text-xs font-bold text-foreground">
-                        {channel.confirmed} confirmed / {channel.total} total
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {channel.conversionRate}% conversion rate
-                      </div>
-                    </div>
-
-                    <Button 
-                      asChild 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 px-2.5 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10"
-                    >
-                      <Link href={`/admin/bookings?channel=${encodeURIComponent(channel.name)}`}>
-                        Filter <ArrowUpRight className="ml-1 h-3 w-3" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -541,15 +551,10 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
               <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl leading-relaxed">
                 {topConversionChannel && topConversionChannel.total > 0
                   ? `Your highest converting communication channel is ${topConversionChannel.name} with a ${topConversionChannel.conversionRate}% confirmation rate. Prioritize customer engagement and ad allocation on this channel to optimize return on marketing spend.`
-                  : "Collect more service requests with the new referral source field to unlock automated optimization insights."}
+                  : "Live insights will unlock automatically as client bookings are submitted through the service portal."}
               </p>
             </div>
           </div>
-          <Button asChild size="sm" className="bg-primary text-black font-bold uppercase tracking-widest text-[10px] rounded-full shrink-0">
-            <Link href="/book" target="_blank">
-              Test Booking Form <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-            </Link>
-          </Button>
         </CardContent>
       </Card>
     </div>

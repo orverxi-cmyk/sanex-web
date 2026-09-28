@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ChannelAnalyticsDashboard, BookingData } from "@/components/admin/ChannelAnalyticsDashboard";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export default function AnalyticsPage() {
   const { user, loading: authLoading } = useUser();
@@ -80,19 +81,21 @@ export default function AnalyticsPage() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col font-arial text-[14px] bg-muted/10">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       <Navbar />
-      <main className="flex-grow py-8">
-        <div className="container mx-auto px-4 md:px-16 space-y-6">
+      <div className="flex-grow flex flex-col lg:flex-row">
+        <AdminSidebar />
+        <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
           {/* Breadcrumb Navigation */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2 text-[10px] font-bold uppercase tracking-widest">
-                <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Operations Hub</Link>
+                <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
               </Button>
               <h1 className="text-2xl font-bold font-headline flex items-center gap-3 text-black">
                 <TrendingUp className="h-7 w-7 text-primary" /> Communications & Referral Analytics
               </h1>
+              <p className="text-xs text-muted-foreground mt-0.5">Marketing attribution, lead channels and conversion performance.</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -112,8 +115,8 @@ export default function AnalyticsPage() {
           ) : (
             <ChannelAnalyticsDashboard bookings={bookings} />
           )}
-        </div>
-      </main>
+        </main>
+      </div>
       <Footer />
     </div>
   );

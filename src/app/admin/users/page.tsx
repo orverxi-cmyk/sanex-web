@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export default function UserManagementPage() {
   const { user, loading: authLoading } = useUser();
@@ -112,6 +114,18 @@ export default function UserManagementPage() {
       u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [allUsers, searchTerm]);
+
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const PAGE_SIZE = 10;
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const paginatedUsers = React.useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, currentPage]);
 
   const generatePassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
@@ -223,18 +237,20 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-arial text-[14px]">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       <Navbar />
-      <main className="flex-grow py-5 bg-muted/10">
-        <div className="container mx-auto px-4 md:px-16">
+      <div className="flex-grow flex flex-col lg:flex-row">
+        <AdminSidebar />
+        <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
               <Button asChild variant="ghost" className="mb-2 -ml-2 text-[10px] font-bold uppercase tracking-widest">
                 <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
               </Button>
-              <h1 className="text-[16px] font-bold font-headline flex items-center gap-3 text-black">
-                <Users className="h-8 w-8 text-primary" /> System User Directory
+              <h1 className="text-2xl font-bold font-headline flex items-center gap-3 text-black">
+                <Users className="h-7 w-7 text-primary" /> Users
               </h1>
+              <p className="text-xs text-muted-foreground mt-0.5">Manage operator accounts and directory access permissions.</p>
             </div>
             
             <div className="flex flex-wrap gap-x-[10px] gap-y-[10px] w-full md:w-auto items-center">
@@ -372,7 +388,7 @@ export default function UserManagementPage() {
                         </td>
                       </tr>
                     ) : filteredUsers.length > 0 ? (
-                      filteredUsers.map((u) => (
+                      paginatedUsers.map((u) => (
                         <tr key={u.id} className="hover:bg-muted/10 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -446,10 +462,17 @@ export default function UserManagementPage() {
                   </tbody>
                 </table>
               </div>
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredUsers.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                itemLabel="users"
+              />
             </CardContent>
           </Card>
-        </div>
-      </main>
+        </main>
+      </div>
       <Footer />
     </div>
   );

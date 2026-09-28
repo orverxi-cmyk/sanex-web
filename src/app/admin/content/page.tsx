@@ -46,6 +46,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 function ContentManagementContent() {
   const { user, loading: authLoading } = useUser();
@@ -138,20 +140,21 @@ function ContentManagementContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-arial">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       <Navbar />
-      <main className="flex-grow py-5 bg-muted/10">
-        <div className="container mx-auto px-4">
-          <Button asChild variant="ghost" className="mb-5 -ml-2">
+      <div className="flex-grow flex flex-col lg:flex-row">
+        <AdminSidebar />
+        <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
+          <Button asChild variant="ghost" className="mb-2 -ml-2">
             <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
           </Button>
           
           <div className="flex justify-between items-center mb-5">
             <div>
-              <h1 className="text-[16px] font-bold font-headline flex items-center gap-3">
-                <Layout className="h-8 w-8 text-primary" /> Site Content Manager
+              <h1 className="text-2xl font-bold font-headline flex items-center gap-3">
+                <ImageIcon className="h-7 w-7 text-primary" /> Content Management
               </h1>
-              <p className="text-[14px] font-normal text-muted-foreground">Update branding, pages, and dynamic site sections.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Update branding, pages, media, and dynamic site sections.</p>
             </div>
           </div>
 
@@ -216,8 +219,8 @@ function ContentManagementContent() {
               <GalleryManager photos={photos} loading={photosLoading} />
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
+        </main>
+      </div>
       <Footer />
     </div>
   );
@@ -314,6 +317,14 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   const [formData, setFormData] = React.useState({
     title: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
   });
+
+  const [page, setPage] = React.useState(1);
+  const PAGE_SIZE = 5;
+  const articleList = articles || [];
+  const paginatedArticles = React.useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return articleList.slice(start, start + PAGE_SIZE);
+  }, [articleList, page]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -416,7 +427,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /> : articles?.map((a: any) => (
+            {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /> : paginatedArticles.map((a: any) => (
               <div key={a.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/10 transition-colors">
                 <div className="relative h-16 w-16 flex-shrink-0 bg-muted rounded overflow-hidden">
                   {a.imageUrl && <Image src={a.imageUrl} alt="" fill className="object-cover" />}
@@ -436,6 +447,15 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
               </div>
             ))}
           </div>
+
+          <AdminPagination
+            currentPage={page}
+            totalItems={articleList.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+            itemLabel="articles"
+            className="mt-4"
+          />
         </CardContent>
       </Card>
     </div>
@@ -955,6 +975,14 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
+  const [page, setPage] = React.useState(1);
+  const PAGE_SIZE = 9;
+  const photoList = photos || [];
+  const paginatedPhotos = React.useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return photoList.slice(start, start + PAGE_SIZE);
+  }, [photoList, page]);
+
   const resetForm = () => {
     setIsEditing(null);
     setPhotoUrl("");
@@ -1056,7 +1084,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
         <CardHeader><CardTitle className="text-xl">Gallery Photos</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /> : photos?.map((p: any) => (
+            {loading ? <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /> : paginatedPhotos.map((p: any) => (
               <div key={p.id} className="group relative aspect-video rounded-lg overflow-hidden border border-primary/10">
                 <Image src={p.imageUrl} alt="" fill className="object-cover" />
                 <div className="absolute top-2 right-2 flex flex-col gap-1">
@@ -1084,13 +1112,22 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                 </div>
               </div>
             ))}
-            {!loading && photos?.length === 0 && (
+            {!loading && photoList.length === 0 && (
               <div className="col-span-full py-20 text-center opacity-50">
                 <ImageIcon className="h-10 w-10 mx-auto mb-2" />
                 <p className="text-sm">No photos in gallery.</p>
               </div>
             )}
           </div>
+
+          <AdminPagination
+            currentPage={page}
+            totalItems={photoList.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+            itemLabel="photos"
+            className="mt-4"
+          />
         </CardContent>
       </Card>
     </div>

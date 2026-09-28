@@ -28,22 +28,22 @@ export function HomeSlider() {
 
   const defaultItems = [
     { 
-      title: "Liquid Waste Collection", 
-      description: "<p>Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda. We ensure efficient and hygienic collection processes tailored to your needs.</p>", 
-      imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
-      width: 1200,
-      height: 600,
+      title: "Our Services", 
+      description: "<p>Whether addressing urban or rural challenges, our innovative and eco-friendly solutions are designed to improve public health, protect the environment, and promote sustainable development.</p>", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media&token=789f5d47-98cb-4c35-a048-59bf6a4b39a5",
+      width: 2000,
+      height: 1080,
       link: "/services",
       buttonText: "Our Solutions"
     },
     { 
-      title: "Clean Water Reuse", 
-      description: "<p>Advanced DWTS systems using activated sludge technology for irrigation and flushing. Transform your waste into a sustainable resource for the future.</p>", 
-      imageUrl: "https://picsum.photos/seed/sanexslide2/1200/600",
+      title: "Our Impact", 
+      description: "<p>Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.</p>", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
       width: 1200,
       height: 600,
-      link: "/articles",
-      buttonText: "Environmental Impact"
+      link: "/about",
+      buttonText: "Learn More"
     }
   ];
 

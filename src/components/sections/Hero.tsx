@@ -24,7 +24,7 @@ export function Hero() {
     title: heroData?.title || "Transforming",
     titleAccent: heroData?.titleAccent || "Waste Into Opportunity",
     description: heroData?.description || "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
-    imageUrl: heroData?.imageUrl || "https://picsum.photos/seed/sanex1/1200/800",
+    imageUrl: heroData?.imageUrl || "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media&token=f390e684-ab5b-4ff1-aa5d-fd95f4512e93",
     imageWidth: heroData?.imageWidth || 800,
     imageHeight: heroData?.imageHeight || 600,
     ctaText: heroData?.ctaText || "Book a Service",

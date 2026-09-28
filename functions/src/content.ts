@@ -40,7 +40,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
 
   batch.set(db.collection('settings').doc('general'), {
     siteName: "SANEX Company Ltd",
-    logoUrl: "https://picsum.photos/seed/sanexlogo/200/200",
+    logoUrl: "/logo.png",
     logoWidth: 160,
     logoHeight: 40,
     logoSpacing: 8,
@@ -64,10 +64,10 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
 
   const articleRef = db.collection('articles').doc('kigali-waste-management-2024');
   batch.set(articleRef, {
-    title: "Revolutionizing Waste Management in Kigali",
-    excerpt: "How SANEX transformed liquid waste collection for over 50 schools in the capital.",
-    content: "Detailed story about our 2024 project in Kigali...",
-    imageUrl: "https://picsum.photos/seed/impact1/1200/600",
+    title: "Our Services",
+    excerpt: "At SANEX Company Ltd, we pride ourselves on offering a comprehensive suite of liquid waste management services tailored to meet the diverse needs of our clients.",
+    content: "Detailed story about our services and wastewater management across Rwanda...",
+    imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779810108618_ifoto15.jpg?alt=media&token=80beb761-c45a-4f47-9c7c-2013fea44f65",
     imageWidth: 1200,
     imageHeight: 600,
     category: "Impact",
@@ -81,7 +81,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
       { 
         title: "Liquid Waste Collection", 
         description: "<p>Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.</p>", 
-        imageUrl: "https://picsum.photos/seed/sanexslide1/1200/600",
+        imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
         width: 1200,
         height: 600,
         link: "/services",
@@ -95,7 +95,7 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
     title: "Transforming",
     titleAccent: "Waste Into Opportunity",
     description: "Leading Liquid Waste Management Solutions in Rwanda.",
-    imageUrl: "https://picsum.photos/seed/sanex1/1200/800",
+    imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media&token=f390e684-ab5b-4ff1-aa5d-fd95f4512e93",
     imageWidth: 1200,
     imageHeight: 800,
     ctaText: "Book a Service",
@@ -251,5 +251,14 @@ export const adminGetBookings = onCall({ cors: true }, async (request: CallableR
   await assertAdmin(request);
   const snap = await db.collection('bookings').get();
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+});
+
+export const adminDeleteBooking = onCall({ cors: true }, async (request: CallableRequest) => {
+  await assertAdmin(request);
+  const { bookingId } = request.data;
+  if (!bookingId) throw new HttpsError('invalid-argument', 'Missing bookingId.');
+  
+  await db.collection('bookings').doc(bookingId).delete();
+  return { success: true };
 });
 

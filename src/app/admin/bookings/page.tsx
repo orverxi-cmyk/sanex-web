@@ -4,7 +4,7 @@ import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
-import { doc, collection, updateDoc } from "firebase/firestore";
+import { doc, collection, updateDoc, deleteDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,11 +26,14 @@ import {
   Search,
   Filter,
   X,
-  TrendingUp
+  TrendingUp,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export default function BookingsManagementPage() {
   const { user, loading: authLoading } = useUser();
@@ -148,6 +151,18 @@ export default function BookingsManagementPage() {
     });
   }, [sortedBookings, statusFilter, channelFilter, searchTerm]);
 
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const PAGE_SIZE = 10;
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, channelFilter, searchTerm]);
+
+  const paginatedBookings = React.useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredBookings.slice(start, start + PAGE_SIZE);
+  }, [filteredBookings, currentPage]);
+
   const isLoading = (firestoreLoading && !backupBookings) || (isFetchingBackup && sortedBookings.length === 0);
 
   const handleUpdateStatus = async (bookingId: string, status: string) => {
@@ -191,6 +206,36 @@ export default function BookingsManagementPage() {
     }
   };
 
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    if (!window.confirm("Are you sure you want to permanently delete this service request?")) return;
+    setDeletingId(bookingId);
+    try {
+      if (db) {
+        await deleteDoc(doc(db, 'bookings', bookingId));
+        if (backupBookings) {
+          setBackupBookings(prev => prev ? prev.filter(b => b.id !== bookingId) : null);
+        }
+        toast({ title: "Request Deleted", description: "The service request has been removed." });
+        setDeletingId(null);
+        return;
+      }
+      if (functions) {
+        const deleteFunc = httpsCallable(functions, 'adminDeleteBooking');
+        await deleteFunc({ bookingId });
+        if (backupBookings) {
+          setBackupBookings(prev => prev ? prev.filter(b => b.id !== bookingId) : null);
+        }
+        toast({ title: "Request Deleted", description: "The service request has been removed." });
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Delete Failed", description: err.message });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed': return <Badge className="bg-blue-500 text-white">Confirmed</Badge>;
@@ -228,20 +273,21 @@ export default function BookingsManagementPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       <Navbar />
-      <main className="flex-grow py-5 bg-muted/10">
-        <div className="container mx-auto px-4">
-          <Button asChild variant="ghost" className="mb-5 -ml-2">
+      <div className="flex-grow flex flex-col lg:flex-row">
+        <AdminSidebar />
+        <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
+          <Button asChild variant="ghost" className="mb-2 -ml-2">
             <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
           </Button>
           
           <div className="flex flex-wrap justify-between items-end mb-5 gap-3">
             <div>
               <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
-                <ClipboardList className="h-8 w-8 text-primary" /> Service Requests
+                <ClipboardList className="h-8 w-8 text-primary" /> Bookings
               </h1>
-              <p className="text-muted-foreground">Manage incoming bookings and track service status.</p>
+              <p className="text-muted-foreground text-xs">Manage incoming bookings and track service requests.</p>
             </div>
             <div className="flex items-center gap-3">
               <Button
@@ -368,7 +414,8 @@ export default function BookingsManagementPage() {
                 <p className="mt-3 text-sm text-muted-foreground">Loading service requests...</p>
               </div>
             ) : filteredBookings.length > 0 ? (
-              filteredBookings.map((booking: any) => (
+              <>
+                {paginatedBookings.map((booking: any) => (
                 <Card key={booking.id} className="overflow-hidden border-l-4 border-l-primary hover:shadow-md transition-shadow">
                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 p-5">
                     <div className="space-y-2 lg:col-span-1">
@@ -483,10 +530,29 @@ export default function BookingsManagementPage() {
                           Reset to Pending
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-9 px-3 text-xs text-destructive hover:bg-destructive/10 gap-1.5"
+                        onClick={() => handleDeleteBooking(booking.id)}
+                        disabled={deletingId === booking.id}
+                      >
+                        {deletingId === booking.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} Delete
+                      </Button>
                     </div>
                   </div>
                 </Card>
-              ))
+              ))}
+
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredBookings.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                itemLabel="bookings"
+                className="rounded-xl border shadow-sm"
+              />
+            </>
             ) : sortedBookings.length > 0 ? (
               <div className="text-center py-16 bg-white rounded-xl border border-dashed p-6">
                 <Filter className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
@@ -526,8 +592,8 @@ export default function BookingsManagementPage() {
               </div>
             )}
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
       <Footer />
     </div>
   );

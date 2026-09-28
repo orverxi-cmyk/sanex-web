@@ -4,8 +4,9 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useUser, useDoc, useFirestore, useAuth, useCollection } from "@/firebase";
-import { doc, setDoc, collection, updateDoc } from "firebase/firestore";
+import { useUser, useDoc, useFirestore, useAuth, useCollection, useFunctions } from "@/firebase";
+import { doc, setDoc, collection, updateDoc, deleteDoc } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { 
   signInWithEmailAndPassword, 
   sendPasswordResetEmail,
@@ -50,7 +51,8 @@ import {
   Share2,
   HelpCircle,
   Award,
-  Sparkles
+  Sparkles,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -60,19 +62,22 @@ import {
   CHANNEL_CONFIG, 
   getChannelKey 
 } from "@/components/admin/ChannelAnalyticsDashboard";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
   const { auth } = useAuth();
   const db = useFirestore();
+  const functions = useFunctions();
   const { toast } = useToast();
 
-  const [loginEmail, setLoginEmail] = React.useState("orverxi@gmail.com");
+  const [loginEmail, setLoginEmail] = React.useState("");
   const [loginPassword, setLoginPassword] = React.useState("");
   const [isLoggingIn, setIsLoggingIn] = React.useState(false);
   
   const [showResetForm, setShowResetForm] = React.useState(false);
-  const [resetEmail, setResetEmail] = React.useState("orverxi@gmail.com");
+  const [resetEmail, setResetEmail] = React.useState("");
   const [isResetting, setIsResetting] = React.useState(false);
 
   // In-app password reset code handling (from email links)
@@ -127,6 +132,29 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = React.useState<"all" | "pending" | "confirmed" | "completed" | "cancelled">("all");
   const [searchTerm, setSearchTerm] = React.useState<string>("");
   const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    if (!window.confirm("Are you sure you want to permanently delete this request?")) return;
+    setDeletingId(bookingId);
+    try {
+      if (db) {
+        await deleteDoc(doc(db, 'bookings', bookingId));
+        toast({ title: "Request Deleted", description: "The service request has been removed." });
+        setDeletingId(null);
+        return;
+      }
+      if (functions) {
+        const deleteFunc = httpsCallable(functions, 'adminDeleteBooking');
+        await deleteFunc({ bookingId });
+        toast({ title: "Request Deleted", description: "The service request has been removed." });
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Delete Failed", description: err.message });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -196,6 +224,23 @@ export default function AdminDashboard() {
       return tB - tA;
     });
   }, [firestoreBookings, statusFilter, searchTerm]);
+
+  const [requestsPage, setRequestsPage] = React.useState(1);
+  const [platformPage, setPlatformPage] = React.useState(1);
+  const PAGE_SIZE = 10;
+
+  React.useEffect(() => {
+    setRequestsPage(1);
+  }, [statusFilter, searchTerm]);
+
+  React.useEffect(() => {
+    setPlatformPage(1);
+  }, [selectedPlatformTab]);
+
+  const paginatedRequests = React.useMemo(() => {
+    const start = (requestsPage - 1) * PAGE_SIZE;
+    return filteredBookings.slice(start, start + PAGE_SIZE);
+  }, [filteredBookings, requestsPage]);
 
   const handleUpdateStatus = async (bookingId: string, newStatus: string) => {
     if (!db) return;
@@ -288,7 +333,7 @@ export default function AdminDashboard() {
 
   const topPlatform = React.useMemo(() => {
     const active = platformStats.filter(p => p.total > 0 && p.name !== "Direct / Unspecified");
-    return active.length > 0 ? active[0] : (platformStats[0] || null);
+    return active.length > 0 ? active[0] : null;
   }, [platformStats]);
 
   const platformFilteredBookings = React.useMemo(() => {
@@ -302,6 +347,11 @@ export default function AdminDashboard() {
       return tB - tA;
     });
   }, [firestoreBookings, selectedPlatformTab]);
+
+  const paginatedPlatformBookings = React.useMemo(() => {
+    const start = (platformPage - 1) * PAGE_SIZE;
+    return platformFilteredBookings.slice(start, start + PAGE_SIZE);
+  }, [platformFilteredBookings, platformPage]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -694,131 +744,11 @@ export default function AdminDashboard() {
 
       <div className="flex-grow flex flex-col lg:flex-row">
         {/* Left Side Menu */}
-        <aside className="w-full lg:w-72 bg-white border-r border-border shrink-0 p-4 lg:p-6 flex flex-col justify-between">
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
-                  Command Center
-                </Badge>
-              </div>
-              <h2 className="text-xl font-bold font-headline text-foreground">Admin Portal</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Unified operations and attribution platform</p>
-            </div>
-
-            {/* Main Side Menu */}
-            <nav className="space-y-1.5">
-              {/* Menu 1: Operation Center */}
-              <button
-                type="button"
-                onClick={() => setActiveMenu('operations')}
-                className={cn(
-                  "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
-                  activeMenu === 'operations'
-                    ? "bg-primary text-black shadow-sm"
-                    : "hover:bg-muted text-foreground"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <LayoutDashboard className="h-4 w-4 shrink-0" />
-                  <div>
-                    <div className="font-bold">Operation Center</div>
-                    <div className={cn("text-[10px] font-normal", activeMenu === 'operations' ? "text-black/80" : "text-muted-foreground")}>
-                      System Overview & Hub
-                    </div>
-                  </div>
-                </div>
-              </button>
-
-              {/* Menu 2: Requests */}
-              <button
-                type="button"
-                onClick={() => setActiveMenu('requests')}
-                className={cn(
-                  "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
-                  activeMenu === 'requests'
-                    ? "bg-primary text-black shadow-sm"
-                    : "hover:bg-muted text-foreground"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <ClipboardList className="h-4 w-4 shrink-0" />
-                  <div>
-                    <div className="font-bold">Requests</div>
-                    <div className={cn("text-[10px] font-normal", activeMenu === 'requests' ? "text-black/80" : "text-muted-foreground")}>
-                      Service Requests Pipeline
-                    </div>
-                  </div>
-                </div>
-                {statusCounts.pending > 0 && (
-                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", activeMenu === 'requests' ? "bg-black text-white" : "bg-amber-100 text-amber-900 border-amber-300")}>
-                    {statusCounts.pending} new
-                  </Badge>
-                )}
-              </button>
-
-              {/* Menu 3: Platform Performance */}
-              <button
-                type="button"
-                onClick={() => setActiveMenu('platforms')}
-                className={cn(
-                  "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
-                  activeMenu === 'platforms'
-                    ? "bg-primary text-black shadow-sm"
-                    : "hover:bg-muted text-foreground"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="h-4 w-4 shrink-0" />
-                  <div>
-                    <div className="font-bold">Platform Performance</div>
-                    <div className={cn("text-[10px] font-normal", activeMenu === 'platforms' ? "text-black/80" : "text-muted-foreground")}>
-                      Channels & Attribution
-                    </div>
-                  </div>
-                </div>
-                <Badge variant="outline" className={cn("text-[9px] uppercase font-bold", activeMenu === 'platforms' ? "border-black/30 text-black" : "text-muted-foreground")}>
-                  Metrics
-                </Badge>
-              </button>
-            </nav>
-
-            {/* Quick System Links */}
-            <div className="pt-4 border-t space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-3 mb-2">
-                Quick Shortcuts
-              </div>
-              <Button asChild variant="ghost" className="w-full justify-start h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
-                <Link href="/admin/content">
-                  <ImageIcon className="mr-2 h-4 w-4 text-purple-600" /> Web Presence
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" className="w-full justify-start h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
-                <Link href="/admin/users">
-                  <Users className="mr-2 h-4 w-4 text-emerald-600" /> Directory Access
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" className="w-full justify-start h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
-                <Link href="/admin/bookings">
-                  <ExternalLink className="mr-2 h-4 w-4 text-blue-600" /> Full Bookings Hub
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Operator Auth Status at bottom of sidebar */}
-          <div className="pt-4 border-t mt-6">
-            <div className="bg-muted/50 p-3 rounded-xl flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">
-                <Shield className="h-4 w-4" />
-              </div>
-              <div className="overflow-hidden">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Authorized Operator</div>
-                <div className="text-xs font-bold truncate text-foreground">{userProfile?.displayName || user.email}</div>
-              </div>
-            </div>
-          </div>
-        </aside>
+        <AdminSidebar 
+          activeTab={activeMenu} 
+          onSelectTab={setActiveMenu} 
+          pendingRequestsCount={statusCounts.pending} 
+        />
 
         {/* Right Dynamic View Area */}
         <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
@@ -917,11 +847,11 @@ export default function AdminDashboard() {
                       <TrendingUp className="h-4 w-4 text-emerald-600" />
                     </div>
                     <div className="text-xl font-bold text-foreground truncate">
-                      {topPlatform ? topPlatform.name : "Collecting data"}
+                      {topPlatform ? topPlatform.name : "None yet"}
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t">
                       <span className="text-xs text-muted-foreground">
-                        {topPlatform ? `${topPlatform.share}% of leads` : "0%"}
+                        {topPlatform ? `${topPlatform.share}% of leads` : "0 recorded leads"}
                       </span>
                       <button 
                         onClick={() => setActiveMenu('platforms')}
@@ -934,26 +864,57 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
-              {/* Operational Modules 4-Card Grid */}
+              {/* Operational Modules 4-Card Grid - Former Quick Shortcuts Listed First */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card 
-                  onClick={() => setActiveMenu('requests')}
-                  className="group hover:shadow-lg transition-all border bg-white cursor-pointer"
-                >
+                {/* 1. Content Management (First) */}
+                <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                      <ClipboardList className="h-5 w-5" />
+                    <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
+                      <ImageIcon className="h-5 w-5" />
                     </div>
-                    <CardTitle className="text-[15px] font-bold">Service Requests</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Monitor and update client waste collection requests.</CardDescription>
+                    <CardTitle className="text-[15px] font-bold">Content Management</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Articles.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      Open Requests <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/content">Content Management <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
                     </Button>
                   </CardContent>
                 </Card>
 
+                {/* 2. Users (Second) */}
+                <Card className="group hover:shadow-lg transition-all border bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Users</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Provision operators and manage system roles.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* 3. Bookings (Third) */}
+                <Card className="group hover:shadow-lg transition-all border bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                      <ClipboardList className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Bookings</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Full bookings hub & client pipeline workflow.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/bookings">Manage Bookings <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* 4. Platform Performance (Fourth) */}
                 <Card 
                   onClick={() => setActiveMenu('platforms')}
                   className="group hover:shadow-lg transition-all border bg-white cursor-pointer"
@@ -968,36 +929,6 @@ export default function AdminDashboard() {
                   <CardContent>
                     <Button variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
                       Platform Stats <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="group hover:shadow-lg transition-all border bg-white">
-                  <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
-                      <ImageIcon className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-[15px] font-bold">Web Presence</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Articles.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      <Link href="/admin/content">Content Manager <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="group hover:shadow-lg transition-all border bg-white">
-                  <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-[15px] font-bold">Directory Access</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Provision operators and manage system roles.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -1085,7 +1016,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <Button asChild variant="outline" size="sm" className="h-9 text-xs font-bold gap-1.5">
                     <Link href="/admin/bookings">
-                      <ExternalLink className="h-3.5 w-3.5 text-primary" /> Full Bookings Hub
+                      <ExternalLink className="h-3.5 w-3.5 text-primary" /> Bookings
                     </Link>
                   </Button>
                 </div>
@@ -1263,107 +1194,126 @@ export default function AdminDashboard() {
                       <p className="mt-2 text-xs text-muted-foreground">Loading service requests...</p>
                     </div>
                   ) : filteredBookings.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                            <th className="py-3 px-4">Client / Contact</th>
-                            <th className="py-3 px-4">Service Details</th>
-                            <th className="py-3 px-4">Platform Origin</th>
-                            <th className="py-3 px-4">Appointment</th>
-                            <th className="py-3 px-4">Status</th>
-                            <th className="py-3 px-4 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border text-xs">
-                          {filteredBookings.map((b: any) => (
-                            <tr key={b.id} className="hover:bg-muted/20 transition-colors">
-                              <td className="py-3 px-4">
-                                <div className="font-bold text-foreground">{b.customerName}</div>
-                                <div className="text-[11px] text-muted-foreground flex flex-col gap-0.5 mt-0.5">
-                                  {b.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-primary" /> {b.email}</span>}
-                                  {b.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-primary" /> {b.phone}</span>}
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="font-bold">{b.serviceType}</div>
-                                {b.description && (
-                                  <div className="text-[11px] text-muted-foreground truncate max-w-xs">{b.description}</div>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                {b.referralSource ? (
-                                  <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                                    Via {b.referralSource}
-                                  </span>
-                                ) : (
-                                  <span className="text-[11px] text-muted-foreground">Direct / Untracked</span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="font-semibold text-foreground">
-                                  {b.appointmentDate || "Not Specified"}
-                                </div>
-                                {b.preferredTime && (
-                                  <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                    <Clock className="h-2.5 w-2.5" /> {b.preferredTime}
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <th className="py-3 px-4">Client / Contact</th>
+                              <th className="py-3 px-4">Service Details</th>
+                              <th className="py-3 px-4">Platform Origin</th>
+                              <th className="py-3 px-4">Appointment</th>
+                              <th className="py-3 px-4">Status</th>
+                              <th className="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border text-xs">
+                            {paginatedRequests.map((b: any) => (
+                              <tr key={b.id} className="hover:bg-muted/20 transition-colors">
+                                <td className="py-3 px-4">
+                                  <div className="font-bold text-foreground">{b.customerName}</div>
+                                  <div className="text-[11px] text-muted-foreground flex flex-col gap-0.5 mt-0.5">
+                                    {b.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-primary" /> {b.email}</span>}
+                                    {b.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-primary" /> {b.phone}</span>}
                                   </div>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                {getStatusBadge(b.status)}
-                              </td>
-                              <td className="py-3 px-4 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  {(!b.status || b.status === 'pending') && (
-                                    <Button
-                                      size="sm"
-                                      className="h-7 px-2.5 text-[11px] font-bold bg-primary text-black hover:bg-primary/90"
-                                      onClick={() => handleUpdateStatus(b.id, 'confirmed')}
-                                      disabled={updatingId === b.id}
-                                    >
-                                      {updatingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm"}
-                                    </Button>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="font-bold">{b.serviceType}</div>
+                                  {b.description && (
+                                    <div className="text-[11px] text-muted-foreground truncate max-w-xs">{b.description}</div>
                                   )}
-                                  {b.status === 'confirmed' && (
-                                    <Button
-                                      size="sm"
-                                      className="h-7 px-2.5 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-black"
-                                      onClick={() => handleUpdateStatus(b.id, 'completed')}
-                                      disabled={updatingId === b.id}
-                                    >
-                                      {updatingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Complete"}
-                                    </Button>
+                                </td>
+                                <td className="py-3 px-4">
+                                  {b.referralSource ? (
+                                    <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                                      Via {b.referralSource}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[11px] text-muted-foreground">Direct / Untracked</span>
                                   )}
-                                  {b.status !== 'cancelled' && b.status !== 'completed' && (
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="font-semibold text-foreground">
+                                    {b.appointmentDate || "Not Specified"}
+                                  </div>
+                                  {b.preferredTime && (
+                                    <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                      <Clock className="h-2.5 w-2.5" /> {b.preferredTime}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4">
+                                  {getStatusBadge(b.status)}
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    {(!b.status || b.status === 'pending') && (
+                                      <Button
+                                        size="sm"
+                                        className="h-7 px-2.5 text-[11px] font-bold bg-primary text-black hover:bg-primary/90"
+                                        onClick={() => handleUpdateStatus(b.id, 'confirmed')}
+                                        disabled={updatingId === b.id}
+                                      >
+                                        {updatingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm"}
+                                      </Button>
+                                    )}
+                                    {b.status === 'confirmed' && (
+                                      <Button
+                                        size="sm"
+                                        className="h-7 px-2.5 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-black"
+                                        onClick={() => handleUpdateStatus(b.id, 'completed')}
+                                        disabled={updatingId === b.id}
+                                      >
+                                        {updatingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Complete"}
+                                      </Button>
+                                    )}
+                                    {b.status !== 'cancelled' && b.status !== 'completed' && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 px-2 text-[11px] text-destructive hover:bg-destructive/10"
+                                        onClick={() => handleUpdateStatus(b.id, 'cancelled')}
+                                        disabled={updatingId === b.id}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    )}
+                                    {(b.status === 'completed' || b.status === 'cancelled') && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 px-2 text-[10px] font-bold"
+                                        onClick={() => handleUpdateStatus(b.id, 'pending')}
+                                        disabled={updatingId === b.id}
+                                      >
+                                        Reset
+                                      </Button>
+                                    )}
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      className="h-7 px-2 text-[11px] text-destructive hover:bg-destructive/10"
-                                      onClick={() => handleUpdateStatus(b.id, 'cancelled')}
-                                      disabled={updatingId === b.id}
+                                      title="Delete Request"
+                                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                      onClick={() => handleDeleteBooking(b.id)}
+                                      disabled={deletingId === b.id}
                                     >
-                                      Cancel
+                                      {deletingId === b.id ? <Loader2 className="h-3 w-3 animate-spin text-destructive" /> : <Trash2 className="h-3.5 w-3.5" />}
                                     </Button>
-                                  )}
-                                  {(b.status === 'completed' || b.status === 'cancelled') && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-7 px-2 text-[10px] font-bold"
-                                      onClick={() => handleUpdateStatus(b.id, 'pending')}
-                                      disabled={updatingId === b.id}
-                                    >
-                                      Reset
-                                    </Button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <AdminPagination
+                        currentPage={requestsPage}
+                        totalItems={filteredBookings.length}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={setRequestsPage}
+                        itemLabel="requests"
+                      />
+                    </>
                   ) : (
                     <div className="py-16 text-center p-6">
                       <ClipboardList className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
@@ -1489,6 +1439,24 @@ export default function AdminDashboard() {
                     };
                     const PlatformIcon = currentStat.config?.icon || Globe;
 
+                    if (platformFilteredBookings.length === 0) {
+                      return (
+                        <Card className="border bg-white shadow-sm p-10 text-center max-w-xl mx-auto my-6">
+                          <div 
+                            className="h-14 w-14 rounded-2xl mx-auto flex items-center justify-center mb-4 border"
+                            style={{ backgroundColor: `${currentStat.config?.color}15`, color: currentStat.config?.color, borderColor: `${currentStat.config?.color}30` }}
+                          >
+                            <PlatformIcon className="h-7 w-7" />
+                          </div>
+                          <h3 className="text-lg font-bold text-foreground">{currentStat.name}</h3>
+                          <Badge variant="outline" className="mt-2 text-xs">0 Inquiries Recorded</Badge>
+                          <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                            No service requests have listed &quot;{currentStat.name}&quot; as their acquisition source yet. When incoming requests specify this channel, live attribution metrics and bookings will appear here.
+                          </p>
+                        </Card>
+                      );
+                    }
+
                     return (
                       <>
                         {/* Platform Spotlight Card */}
@@ -1543,68 +1511,73 @@ export default function AdminDashboard() {
                             </div>
                           </CardHeader>
                           <CardContent className="p-0">
-                            {platformFilteredBookings.length > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse text-xs">
-                                  <thead>
-                                    <tr className="border-b bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                      <th className="py-3 px-4">Customer</th>
-                                      <th className="py-3 px-4">Service</th>
-                                      <th className="py-3 px-4">Appointment</th>
-                                      <th className="py-3 px-4">Status</th>
-                                      <th className="py-3 px-4 text-right">Actions</th>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                  <tr className="border-b bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    <th className="py-3 px-4">Customer</th>
+                                    <th className="py-3 px-4">Service</th>
+                                    <th className="py-3 px-4">Appointment</th>
+                                    <th className="py-3 px-4">Status</th>
+                                    <th className="py-3 px-4 text-right">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                  {paginatedPlatformBookings.map((b: any) => (
+                                    <tr key={b.id} className="hover:bg-muted/20">
+                                      <td className="py-3 px-4">
+                                        <div className="font-bold text-foreground">{b.customerName}</div>
+                                        <div className="text-[11px] text-muted-foreground">{b.email} • {b.phone}</div>
+                                      </td>
+                                      <td className="py-3 px-4 font-semibold">{b.serviceType}</td>
+                                      <td className="py-3 px-4 text-muted-foreground">{b.appointmentDate || "Not Set"}</td>
+                                      <td className="py-3 px-4">{getStatusBadge(b.status)}</td>
+                                      <td className="py-3 px-4 text-right">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                          {(!b.status || b.status === 'pending') && (
+                                            <Button
+                                              size="sm"
+                                              className="h-7 text-xs font-bold bg-primary text-black"
+                                              onClick={() => handleUpdateStatus(b.id, 'confirmed')}
+                                              disabled={updatingId === b.id}
+                                            >
+                                              Confirm
+                                            </Button>
+                                          )}
+                                          {b.status === 'confirmed' && (
+                                            <Button
+                                              size="sm"
+                                              className="h-7 text-xs font-bold bg-green-500 text-black"
+                                              onClick={() => handleUpdateStatus(b.id, 'completed')}
+                                              disabled={updatingId === b.id}
+                                            >
+                                              Complete
+                                            </Button>
+                                          )}
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            title="Delete Request"
+                                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                            onClick={() => handleDeleteBooking(b.id)}
+                                            disabled={deletingId === b.id}
+                                          >
+                                            {deletingId === b.id ? <Loader2 className="h-3 w-3 animate-spin text-destructive" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                          </Button>
+                                        </div>
+                                      </td>
                                     </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-border">
-                                    {platformFilteredBookings.map((b: any) => (
-                                      <tr key={b.id} className="hover:bg-muted/20">
-                                        <td className="py-3 px-4">
-                                          <div className="font-bold text-foreground">{b.customerName}</div>
-                                          <div className="text-[11px] text-muted-foreground">{b.email} • {b.phone}</div>
-                                        </td>
-                                        <td className="py-3 px-4 font-semibold">{b.serviceType}</td>
-                                        <td className="py-3 px-4 text-muted-foreground">{b.appointmentDate || "Not Set"}</td>
-                                        <td className="py-3 px-4">{getStatusBadge(b.status)}</td>
-                                        <td className="py-3 px-4 text-right">
-                                          <div className="flex items-center justify-end gap-1.5">
-                                            {(!b.status || b.status === 'pending') && (
-                                              <Button
-                                                size="sm"
-                                                className="h-7 text-xs font-bold bg-primary text-black"
-                                                onClick={() => handleUpdateStatus(b.id, 'confirmed')}
-                                                disabled={updatingId === b.id}
-                                              >
-                                                Confirm
-                                              </Button>
-                                            )}
-                                            {b.status === 'confirmed' && (
-                                              <Button
-                                                size="sm"
-                                                className="h-7 text-xs font-bold bg-green-500 text-black"
-                                                onClick={() => handleUpdateStatus(b.id, 'completed')}
-                                                disabled={updatingId === b.id}
-                                              >
-                                                Complete
-                                              </Button>
-                                            )}
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <div className="py-14 text-center p-4">
-                                <PlatformIcon className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-2" />
-                                <p className="text-sm font-bold text-foreground">
-                                  No inquiries recorded via {currentStat.name} yet
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  When new bookings specify {currentStat.name} in &quot;How did you hear about us?&quot;, they will be tracked here.
-                                </p>
-                              </div>
-                            )}
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            <AdminPagination
+                              currentPage={platformPage}
+                              totalItems={platformFilteredBookings.length}
+                              pageSize={PAGE_SIZE}
+                              onPageChange={setPlatformPage}
+                              itemLabel="leads"
+                            />
                           </CardContent>
                         </Card>
                       </>

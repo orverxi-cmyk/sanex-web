@@ -233,17 +233,17 @@ export default function BookingPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label htmlFor="name" className="text-[10px] font-bold uppercase text-muted-foreground">Full Name *</Label>
-                      <Input id="name" placeholder="John Doe" required className="h-10 text-sm" value={formData.customerName} onChange={(e) => setFormData({...formData, customerName: e.target.value})} />
+                      <Input id="name" placeholder="Enter your full name" required className="h-10 text-sm" value={formData.customerName} onChange={(e) => setFormData({...formData, customerName: e.target.value})} />
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="phone" className="text-[10px] font-bold uppercase text-muted-foreground">Phone Number *</Label>
-                      <Input id="phone" placeholder="+250..." required className="h-10 text-sm" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                      <Input id="phone" placeholder="+250 78..." required className="h-10 text-sm" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <Label htmlFor="email" className="text-[10px] font-bold uppercase text-muted-foreground">Email Address *</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" required className="h-10 text-sm" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                    <Input id="email" type="email" placeholder="name@company.com" required className="h-10 text-sm" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                   </div>
 
                   <div className="space-y-1">
