@@ -60,7 +60,8 @@ import {
   ChannelAnalyticsDashboard, 
   BookingData, 
   CHANNEL_CONFIG, 
-  getChannelKey 
+  getChannelKey,
+  getChannelConfig
 } from "@/components/admin/ChannelAnalyticsDashboard";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
@@ -288,17 +289,11 @@ export default function AdminDashboard() {
   }, [firestoreBookings]);
 
   const platformStats = React.useMemo(() => {
-    const counts: Record<string, { total: number; confirmed: number; pending: number; cancelled: number }> = {
-      "LinkedIn": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Google Search": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Facebook": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Email": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Others": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Direct / Unspecified": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-    };
+    const counts: Record<string, { total: number; confirmed: number; pending: number; cancelled: number }> = {};
 
     (firestoreBookings || []).forEach((booking: any) => {
-      const key = getChannelKey(booking.referralSource);
+      const rawSource = (booking.referralSource || "").trim();
+      const key = rawSource ? getChannelKey(rawSource) : "Direct / Unspecified";
       if (!counts[key]) {
         counts[key] = { total: 0, confirmed: 0, pending: 0, cancelled: 0 };
       }
@@ -313,7 +308,8 @@ export default function AdminDashboard() {
       }
     });
 
-    const totalAll = (firestoreBookings || []).length || 1;
+    const totalAll = (firestoreBookings || []).length;
+    if (totalAll === 0) return [];
 
     return Object.entries(counts).map(([name, data]) => {
       const share = Math.round((data.total / totalAll) * 100);
@@ -326,7 +322,7 @@ export default function AdminDashboard() {
         cancelled: data.cancelled,
         share,
         conversionRate,
-        config: CHANNEL_CONFIG[name] || CHANNEL_CONFIG["Direct / Unspecified"]
+        config: getChannelConfig(name)
       };
     }).sort((a, b) => b.total - a.total);
   }, [firestoreBookings]);
@@ -339,7 +335,8 @@ export default function AdminDashboard() {
   const platformFilteredBookings = React.useMemo(() => {
     if (selectedPlatformTab === "all") return firestoreBookings || [];
     return (firestoreBookings || []).filter((b: any) => {
-      const key = getChannelKey(b.referralSource);
+      const rawSource = (b.referralSource || "").trim();
+      const key = rawSource ? getChannelKey(rawSource) : "Direct / Unspecified";
       return key.toLowerCase() === selectedPlatformTab.toLowerCase();
     }).sort((a: any, b: any) => {
       const tA = typeof a.createdAt === 'number' ? a.createdAt : new Date(a.createdAt || 0).getTime();
@@ -1368,7 +1365,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Tabled Menu for Each Platform */}
+              {/* Tabled Menu for Each Platform - Strictly Live Platforms from Real Bookings */}
               <div className="bg-white p-2 rounded-2xl border shadow-sm flex items-center gap-1.5 overflow-x-auto">
                 <button
                   type="button"
@@ -1381,36 +1378,34 @@ export default function AdminDashboard() {
                   )}
                 >
                   <BarChart3 className="h-3.5 w-3.5" /> All Platforms (Overview)
+                  {firestoreBookings && firestoreBookings.length > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 font-bold">
+                      {firestoreBookings.length}
+                    </span>
+                  )}
                 </button>
 
-                {[
-                  { key: "LinkedIn", label: "LinkedIn", icon: Share2, color: "#0A66C2" },
-                  { key: "Google Search", label: "Google Search", icon: Search, color: "#4285F4" },
-                  { key: "Facebook", label: "Facebook", icon: Globe, color: "#1877F2" },
-                  { key: "Email", label: "Email", icon: Mail, color: "#EA4335" },
-                  { key: "Others", label: "Others & Direct", icon: HelpCircle, color: "#9333EA" }
-                ].map(plat => {
-                  const stat = platformStats.find(p => p.name.toLowerCase().includes(plat.key.toLowerCase()));
-                  const Icon = plat.icon;
+                {/* Dynamically discover real platforms strictly from live booking requests */}
+                {platformStats.filter(p => p.total > 0).map(stat => {
+                  const Icon = stat.config?.icon || Globe;
+                  const isSelected = selectedPlatformTab.toLowerCase() === stat.name.toLowerCase();
                   return (
                     <button
-                      key={plat.key}
+                      key={stat.name}
                       type="button"
-                      onClick={() => setSelectedPlatformTab(plat.key)}
+                      onClick={() => setSelectedPlatformTab(stat.name)}
                       className={cn(
                         "px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 border",
-                        selectedPlatformTab === plat.key
+                        isSelected
                           ? "bg-primary text-black border-primary shadow-sm"
                           : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5" style={{ color: selectedPlatformTab === plat.key ? '#000' : plat.color }} />
-                      <span>{plat.label}</span>
-                      {stat && stat.total > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-bold">
-                          {stat.total}
-                        </span>
-                      )}
+                      <Icon className="h-3.5 w-3.5" style={{ color: isSelected ? '#000' : stat.config?.color }} />
+                      <span>{stat.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-bold">
+                        {stat.total}
+                      </span>
                     </button>
                   );
                 })}
@@ -1427,7 +1422,7 @@ export default function AdminDashboard() {
                 /* Platform-Specific Spotlight and Requests Table */
                 <div className="space-y-6">
                   {(() => {
-                    const currentStat = platformStats.find(p => p.name.toLowerCase().includes(selectedPlatformTab.toLowerCase())) || {
+                    const currentStat = platformStats.find(p => p.name.toLowerCase() === selectedPlatformTab.toLowerCase()) || {
                       name: selectedPlatformTab,
                       total: platformFilteredBookings.length,
                       confirmed: platformFilteredBookings.filter((b: any) => b.status === 'confirmed' || b.status === 'completed').length,
@@ -1435,7 +1430,7 @@ export default function AdminDashboard() {
                       cancelled: platformFilteredBookings.filter((b: any) => b.status === 'cancelled').length,
                       share: 0,
                       conversionRate: platformFilteredBookings.length > 0 ? Math.round((platformFilteredBookings.filter((b: any) => b.status === 'confirmed' || b.status === 'completed').length / platformFilteredBookings.length) * 100) : 0,
-                      config: CHANNEL_CONFIG[selectedPlatformTab] || CHANNEL_CONFIG["Others"]
+                      config: getChannelConfig(selectedPlatformTab)
                     };
                     const PlatformIcon = currentStat.config?.icon || Globe;
 
@@ -1453,6 +1448,11 @@ export default function AdminDashboard() {
                           <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
                             No service requests have listed &quot;{currentStat.name}&quot; as their acquisition source yet. When incoming requests specify this channel, live attribution metrics and bookings will appear here.
                           </p>
+                          <div className="mt-4">
+                            <Button size="sm" variant="outline" onClick={() => setSelectedPlatformTab('all')}>
+                              Back to Overview
+                            </Button>
+                          </div>
                         </Card>
                       );
                     }

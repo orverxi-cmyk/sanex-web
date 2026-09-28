@@ -91,16 +91,43 @@ export const CHANNEL_CONFIG: Record<string, { label: string; color: string; icon
   }
 };
 
-// Normalized Channel Extraction
+// Normalized Channel Extraction - strictly respects live data
 export const getChannelKey = (source?: string): string => {
-  if (!source) return "Direct / Unspecified";
-  const lower = source.toLowerCase();
-  if (lower.includes("linkedin")) return "LinkedIn";
-  if (lower.includes("google")) return "Google Search";
-  if (lower.includes("facebook")) return "Facebook";
-  if (lower.includes("email")) return "Email";
-  if (lower.includes("other")) return "Others";
-  return "Others";
+  if (!source || !source.trim()) return "Direct / Unspecified";
+  const trimmed = source.trim();
+  const lower = trimmed.toLowerCase();
+  if (lower === "linkedin" || lower.includes("linkedin")) return "LinkedIn";
+  if (lower === "google" || lower.includes("google")) return "Google Search";
+  if (lower === "facebook" || lower.includes("facebook")) return "Facebook";
+  if (lower === "email" || lower.includes("email") || lower.includes("mail")) return "Email";
+  if (lower === "other" || lower === "others") return "Others";
+  return trimmed;
+};
+
+export const getChannelConfig = (channelName: string): { label: string; color: string; icon: any; bg: string } => {
+  if (CHANNEL_CONFIG[channelName]) {
+    return CHANNEL_CONFIG[channelName];
+  }
+  const lower = channelName.toLowerCase();
+  if (lower.includes("linkedin")) return CHANNEL_CONFIG["LinkedIn"];
+  if (lower.includes("google") || lower.includes("search")) return CHANNEL_CONFIG["Google Search"];
+  if (lower.includes("facebook") || lower.includes("fb")) return CHANNEL_CONFIG["Facebook"];
+  if (lower.includes("email") || lower.includes("mail")) return CHANNEL_CONFIG["Email"];
+  if (lower.includes("instagram")) {
+    return { label: channelName, color: "#E1306C", icon: Globe, bg: "bg-pink-500/10 text-pink-600 border-pink-500/20" };
+  }
+  if (lower.includes("twitter") || lower.includes("x")) {
+    return { label: channelName, color: "#1DA1F2", icon: Globe, bg: "bg-sky-500/10 text-sky-600 border-sky-500/20" };
+  }
+  if (lower.includes("whatsapp")) {
+    return { label: channelName, color: "#25D366", icon: Globe, bg: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" };
+  }
+  return {
+    label: channelName,
+    color: "#64748B",
+    icon: Globe,
+    bg: "bg-slate-500/10 text-slate-600 border-slate-500/20"
+  };
 };
 
 export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshing = false }: ChannelAnalyticsDashboardProps) {
@@ -118,19 +145,13 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
     });
   }, [bookings, timeFilter]);
 
-  // Aggregate channel statistics
+  // Aggregate channel statistics strictly from real live bookings (zero mock channels)
   const channelStats = React.useMemo(() => {
-    const counts: Record<string, { total: number; confirmed: number; pending: number; cancelled: number }> = {
-      "LinkedIn": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Google Search": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Facebook": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Email": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Others": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-      "Direct / Unspecified": { total: 0, confirmed: 0, pending: 0, cancelled: 0 },
-    };
+    const counts: Record<string, { total: number; confirmed: number; pending: number; cancelled: number }> = {};
 
     filteredBookings.forEach(booking => {
-      const key = getChannelKey(booking.referralSource);
+      const rawSource = (booking.referralSource || "").trim();
+      const key = rawSource ? getChannelKey(rawSource) : "Direct / Unspecified";
       if (!counts[key]) {
         counts[key] = { total: 0, confirmed: 0, pending: 0, cancelled: 0 };
       }
@@ -145,11 +166,13 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
       }
     });
 
-    const totalAll = filteredBookings.length || 1;
+    const totalAll = filteredBookings.length;
+    if (totalAll === 0) return [];
 
     return Object.entries(counts).map(([name, data]) => {
       const share = Math.round((data.total / totalAll) * 100);
       const conversionRate = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
+      const config = getChannelConfig(name);
       return {
         name,
         total: data.total,
@@ -158,9 +181,9 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
         cancelled: data.cancelled,
         share,
         conversionRate,
-        color: CHANNEL_CONFIG[name]?.color || "#64748B",
-        bg: CHANNEL_CONFIG[name]?.bg || "bg-muted",
-        icon: CHANNEL_CONFIG[name]?.icon || Globe
+        color: config.color,
+        bg: config.bg,
+        icon: config.icon
       };
     }).sort((a, b) => b.total - a.total);
   }, [filteredBookings]);
@@ -175,7 +198,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
     .reduce((sum, c) => sum + c.total, 0);
   const trackingCoverage = totalLeads > 0 ? Math.round((trackedDigitalLeads / totalLeads) * 100) : 0;
 
-  // Chart data
+  // Chart data strictly from real live channels
   const pieChartData = channelStats.filter(c => c.total > 0).map(c => ({
     name: c.name,
     value: c.total,
@@ -378,8 +401,12 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[280px] flex items-center justify-center text-muted-foreground text-sm">
-                No booking referral data available for this timeframe.
+              <div className="h-[280px] flex flex-col items-center justify-center text-center p-6 bg-muted/10 rounded-xl border border-dashed text-muted-foreground">
+                <TrendingUp className="h-8 w-8 mb-2 opacity-40 text-primary" />
+                <p className="text-sm font-bold text-foreground">No Live Inbound Channel Data Yet</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                  When clients submit booking requests via the service portal, channel volumes and conversion outcomes will render dynamically here.
+                </p>
               </div>
             )}
           </CardContent>
@@ -430,8 +457,12 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                 </div>
               </div>
             ) : (
-              <div className="h-[280px] flex items-center justify-center text-muted-foreground text-sm">
-                No distribution data.
+              <div className="h-[280px] flex flex-col items-center justify-center text-center p-6 bg-muted/10 rounded-xl border border-dashed text-muted-foreground">
+                <Globe className="h-8 w-8 mb-2 opacity-40 text-primary" />
+                <p className="text-sm font-bold text-foreground">No Acquisition Data</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                  Channel share distribution will appear here once service requests are placed.
+                </p>
               </div>
             )}
           </CardContent>

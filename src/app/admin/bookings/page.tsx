@@ -34,6 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { getChannelKey } from "@/components/admin/ChannelAnalyticsDashboard";
 
 export default function BookingsManagementPage() {
   const { user, loading: authLoading } = useUser();
@@ -116,6 +117,16 @@ export default function BookingsManagementPage() {
     });
   }, [rawBookings]);
 
+  const availableChannels = React.useMemo(() => {
+    const set = new Set<string>();
+    sortedBookings.forEach((b: any) => {
+      const raw = (b.referralSource || "").trim();
+      const channel = raw ? getChannelKey(raw) : "Direct / Unspecified";
+      set.add(channel);
+    });
+    return Array.from(set).sort();
+  }, [sortedBookings]);
+
   const filteredBookings = React.useMemo(() => {
     return sortedBookings.filter((b: any) => {
       // 1. Status Filter
@@ -125,14 +136,11 @@ export default function BookingsManagementPage() {
 
       // 2. Channel Filter
       if (channelFilter !== "all") {
-        const source = (b.referralSource || "Direct / Unspecified").toLowerCase();
-        const target = channelFilter.toLowerCase();
-        if (target.includes("linkedin") && !source.includes("linkedin")) return false;
-        if (target.includes("google") && !source.includes("google")) return false;
-        if (target.includes("facebook") && !source.includes("facebook")) return false;
-        if (target.includes("email") && !source.includes("email")) return false;
-        if (target.includes("other") && !source.includes("other") && !source.includes("direct") && !source.includes("unspecified")) return false;
-        if (target.includes("direct") && b.referralSource) return false;
+        const raw = (b.referralSource || "").trim();
+        const sourceKey = raw ? getChannelKey(raw) : "Direct / Unspecified";
+        if (sourceKey.toLowerCase() !== channelFilter.toLowerCase()) {
+          return false;
+        }
       }
 
       // 3. Search Filter
@@ -359,31 +367,35 @@ export default function BookingsManagementPage() {
               </div>
             </div>
 
-            {/* Channels Filter Row */}
+            {/* Channels Filter Row - Dynamically derived from real bookings */}
             <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t">
               <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 flex items-center gap-1 shrink-0">
                 <Filter className="h-3 w-3" /> Channel:
               </span>
-              {[
-                { key: "all", label: "All Channels" },
-                { key: "LinkedIn", label: "LinkedIn" },
-                { key: "Google Search", label: "Google Search" },
-                { key: "Facebook", label: "Facebook" },
-                { key: "Email", label: "Email" },
-                { key: "Others", label: "Others" },
-                { key: "Direct / Unspecified", label: "Direct / Untracked" }
-              ].map(item => (
+              <button
+                onClick={() => setChannelFilter("all")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shrink-0 border",
+                  channelFilter === "all" 
+                    ? "bg-black text-white border-black shadow-sm" 
+                    : "bg-white text-muted-foreground border-muted-foreground/20 hover:border-foreground/40 hover:text-foreground"
+                )}
+              >
+                All Channels
+              </button>
+
+              {availableChannels.map(channelName => (
                 <button
-                  key={item.key}
-                  onClick={() => setChannelFilter(item.key)}
+                  key={channelName}
+                  onClick={() => setChannelFilter(channelName)}
                   className={cn(
                     "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shrink-0 border",
-                    channelFilter === item.key 
+                    channelFilter.toLowerCase() === channelName.toLowerCase() 
                       ? "bg-black text-white border-black shadow-sm" 
                       : "bg-white text-muted-foreground border-muted-foreground/20 hover:border-foreground/40 hover:text-foreground"
                   )}
                 >
-                  {item.label}
+                  {channelName}
                 </button>
               ))}
 
