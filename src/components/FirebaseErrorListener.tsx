@@ -10,8 +10,7 @@ export function FirebaseErrorListener() {
   useEffect(() => {
     const handlePermissionError = (error: any) => {
       toast({
-        variant: "destructive",
-        title: "Database Error",
+        title: "Permission Notice",
         description: error.message || "You don't have permission to perform this action.",
       });
     };

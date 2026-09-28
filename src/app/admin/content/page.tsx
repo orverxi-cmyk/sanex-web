@@ -125,8 +125,8 @@ function ContentManagementContent() {
       <div className="min-h-screen flex flex-col">
         <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center px-4">
-          <Card className="w-full max-w-md text-center py-12">
-            <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
+          <Card className="w-full max-w-md text-center py-12 border-t-4 border-t-[#8DB833]">
+            <ShieldAlert className="mx-auto h-12 w-12 text-[#8DB833] mb-4" />
             <CardTitle>Unauthorized Access</CardTitle>
             <p className="mt-2 text-muted-foreground">You do not have permission to view this page.</p>
             <Button asChild className="mt-6">

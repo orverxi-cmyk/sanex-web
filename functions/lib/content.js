@@ -47,6 +47,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminDeleteBooking = exports.adminGetBookings = exports.adminUpdateBookingStatus = exports.createBooking = exports.adminUpdateSiteSection = exports.adminDeleteGalleryItem = exports.adminUpdateGalleryItem = exports.adminAddGalleryItem = exports.adminUpdateArticle = exports.adminDeleteArticle = exports.adminAddArticle = exports.adminSeedInitialData = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
+const nodemailer = __importStar(require("nodemailer"));
 const db = admin.firestore();
 /**
  * CORS helper for v2 onRequest functions.
@@ -260,12 +261,88 @@ exports.createBooking = (0, https_1.onRequest)({ cors: true }, async (req, res) 
         res.status(500).json({ error: error.message });
     }
 });
+async function sendStatusNotificationEmail(booking, newStatus, bookingId) {
+    if (!(booking === null || booking === void 0 ? void 0 : booking.email) || !booking.email.includes('@'))
+        return;
+    const BRAND_COLOR = "#8DB833";
+    const BRAND_NAME = "SANEX Company Ltd";
+    const COMPANY_PHONE = "+250 788 385 838";
+    const COMPANY_EMAIL = process.env.COMPANY_EMAIL || "sanexcompany@gmail.com";
+    const DEFAULT_FROM = process.env.EMAIL_FROM || `"${BRAND_NAME}" <${COMPANY_EMAIL}>`;
+    const subject = `Service Request Update: ${booking.serviceType || 'Liquid Waste Management'} is now ${newStatus.toUpperCase()} - ${BRAND_NAME}`;
+    const text = `Hello ${booking.customerName || 'Customer'},\n\nYour service request (${booking.serviceType || 'Liquid Waste Management'}) status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact SANEX at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <div style="background-color: #0f172a; padding: 20px; border-radius: 8px; border-bottom: 4px solid ${BRAND_COLOR};">
+        <h2 style="color: ${BRAND_COLOR}; margin: 0; text-transform: uppercase;">SANEX <span style="color: #ffffff;">Company Ltd</span></h2>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Sustainable Liquid Waste Management · Rwanda</p>
+      </div>
+      <div style="padding: 20px 0;">
+        <p style="font-size: 16px; color: #0f172a;">Hello <strong>${booking.customerName || 'Valued Customer'}</strong>,</p>
+        <p style="color: #334155;">The status of your service request has been updated to: <span style="background-color: ${BRAND_COLOR}; color: #000; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-size: 12px;">${newStatus}</span></p>
+        <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Reference ID:</strong> #${bookingId}</p>
+          <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Service:</strong> ${booking.serviceType || 'Liquid Waste Management'}</p>
+          ${booking.appointmentDate ? `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Date:</strong> ${booking.appointmentDate}</p>` : ''}
+          <p style="margin: 0; font-size: 14px;"><strong>Current Status:</strong> ${newStatus.toUpperCase()}</p>
+        </div>
+        <p style="font-size: 13px; color: #64748b;">Questions? Call us at ${COMPANY_PHONE} or email ${COMPANY_EMAIL}.</p>
+      </div>
+    </div>
+  `;
+    const host = process.env.SMTP_HOST;
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+    const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD;
+    if (user && pass) {
+        try {
+            const transporter = !host && user.includes('@gmail.com')
+                ? nodemailer.createTransport({ service: 'gmail', auth: { user, pass } })
+                : nodemailer.createTransport({ host: host || 'smtp.gmail.com', port, secure: port === 465, auth: { user, pass } });
+            await transporter.sendMail({
+                from: DEFAULT_FROM,
+                to: booking.email,
+                subject,
+                html,
+                text,
+            });
+            console.log(`[sendStatusNotificationEmail] Email sent to ${booking.email}`);
+            return;
+        }
+        catch (err) {
+            console.error(`[sendStatusNotificationEmail] SMTP error: ${err.message}`);
+        }
+    }
+    try {
+        await db.collection('mail').add({
+            to: [booking.email],
+            message: { subject, html, text },
+        });
+    }
+    catch (mailDbErr) {
+        // Ignore if mail collection not configured
+    }
+    console.log(`[sendStatusNotificationEmail] Notification logged for ${booking.email} (${newStatus})`);
+}
 exports.adminUpdateBookingStatus = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
     const { bookingId, status } = request.data;
     if (!bookingId || !status)
         throw new https_1.HttpsError('invalid-argument', 'Missing bookingId or status.');
-    await db.collection('bookings').doc(bookingId).update({ status });
+    const bookingRef = db.collection('bookings').doc(bookingId);
+    const snap = await bookingRef.get();
+    await bookingRef.update({ status, updatedAt: Date.now() });
+    if (snap.exists) {
+        const booking = snap.data();
+        if (booking === null || booking === void 0 ? void 0 : booking.email) {
+            try {
+                await sendStatusNotificationEmail(booking, status, bookingId);
+            }
+            catch (err) {
+                console.warn('Error sending status notification email:', err);
+            }
+        }
+    }
     return { success: true };
 });
 exports.adminGetBookings = (0, https_1.onCall)({ cors: true }, async (request) => {

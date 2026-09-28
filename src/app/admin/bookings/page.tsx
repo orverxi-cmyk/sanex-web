@@ -176,6 +176,36 @@ export default function BookingsManagementPage() {
   const handleUpdateStatus = async (bookingId: string, status: string) => {
     setUpdatingId(bookingId);
     
+    // Helper to send email notification to requester
+    const notifyRequester = async () => {
+      const targetBooking = (firestoreBookings || backupBookings || []).find((b: any) => b.id === bookingId);
+      if (!targetBooking?.email) return "";
+      try {
+        const res = await fetch('/api/bookings/notify-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId,
+            newStatus: status,
+            customerEmail: targetBooking.email,
+            customerName: targetBooking.customerName || 'Valued Customer',
+            serviceType: targetBooking.serviceType || 'Liquid Waste Management',
+            appointmentDate: targetBooking.appointmentDate || targetBooking.appointmentDateFormatted,
+            preferredTime: targetBooking.preferredTime,
+            locationUrl: targetBooking.locationUrl,
+            phone: targetBooking.phone
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          return ` Email notification sent to ${targetBooking.email}.`;
+        }
+      } catch (e) {
+        console.warn("Email notification error:", e);
+      }
+      return "";
+    };
+
     // 1. Direct Firestore update (Instant, real-time sync, zero CORS issues from sanex.rw)
     if (db) {
       try {
@@ -187,7 +217,8 @@ export default function BookingsManagementPage() {
         if (backupBookings) {
           setBackupBookings(prev => prev ? prev.map(b => b.id === bookingId ? { ...b, status } : b) : null);
         }
-        toast({ title: "Status Updated", description: `Booking marked as ${status}.` });
+        const emailNotice = await notifyRequester();
+        toast({ title: "Status Updated", description: `Booking marked as ${status}.${emailNotice}` });
         setUpdatingId(null);
         return;
       } catch (firestoreError: any) {
@@ -203,7 +234,8 @@ export default function BookingsManagementPage() {
         if (backupBookings) {
           setBackupBookings(prev => prev ? prev.map(b => b.id === bookingId ? { ...b, status } : b) : null);
         }
-        toast({ title: "Status Updated", description: `Booking marked as ${status}.` });
+        const emailNotice = await notifyRequester();
+        toast({ title: "Status Updated", description: `Booking marked as ${status}.${emailNotice}` });
         return;
       }
       throw new Error("No database or function connection available.");
@@ -266,8 +298,8 @@ export default function BookingsManagementPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center px-4">
-          <Card className="w-full max-w-md text-center py-12">
-            <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
+          <Card className="w-full max-w-md text-center py-12 border-t-4 border-t-[#8DB833]">
+            <ShieldAlert className="mx-auto h-12 w-12 text-[#8DB833] mb-4" />
             <CardTitle>Unauthorized Access</CardTitle>
             <p className="mt-2 text-muted-foreground">You do not have permission to view bookings.</p>
             <Button asChild className="mt-6">

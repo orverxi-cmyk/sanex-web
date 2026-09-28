@@ -23,7 +23,8 @@ import {
   Calendar as CalendarIcon, 
   Clock,
   HelpCircle,
-  ShieldCheck
+  ShieldCheck,
+  Mail
 } from "lucide-react";
 import Link from "next/link";
 
@@ -85,6 +86,16 @@ export default function BookingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const trimmedEmail = formData.email.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail || !emailPattern.test(trimmedEmail)) {
+      toast({
+        title: "Valid Email Required",
+        description: "Please provide a valid email address to receive your service status updates."
+      });
+      return;
+    }
 
     if (!formData.locationUrl) {
       toast({
@@ -186,6 +197,13 @@ export default function BookingPage() {
               Thank you, <strong>{formData.customerName}</strong>. Our team will contact you shortly regarding your <strong>{formData.serviceType}</strong> request.
             </CardDescription>
 
+            <div className="mt-4 p-3.5 bg-primary/15 rounded-xl border border-primary/30 text-xs text-black text-left flex items-start gap-2.5">
+              <Mail className="h-4 w-4 text-black shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Email Updates Enabled:</span> Automated status change alerts will be sent to <strong>{formData.email}</strong>.
+              </div>
+            </div>
+
             {appointmentDate && (
               <div className="mt-5 p-3.5 bg-muted/40 rounded-xl text-left border text-sm max-w-xs mx-auto">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Requested Appointment</div>
@@ -243,9 +261,25 @@ export default function BookingPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <Label htmlFor="email" className="text-[10px] font-bold uppercase text-muted-foreground">Email Address *</Label>
-                    <Input id="email" type="email" placeholder="name@company.com" required className="h-10 text-sm" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="email" className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1.5">
+                        <Mail className="h-3 w-3 text-primary" /> Email Address *
+                      </Label>
+                      <span className="text-[10px] text-muted-foreground font-medium">Required for status updates</span>
+                    </div>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="name@company.com" 
+                      required 
+                      className="h-10 text-sm" 
+                      value={formData.email} 
+                      onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Our dispatch team will send email notifications whenever the status of this request is updated.
+                    </p>
                   </div>
 
                   <div className="space-y-1">

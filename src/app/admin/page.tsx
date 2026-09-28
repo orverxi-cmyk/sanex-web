@@ -252,7 +252,41 @@ export default function AdminDashboard() {
         status: newStatus,
         updatedAt: Date.now()
       });
-      toast({ title: "Status Updated", description: `Request marked as ${newStatus}.` });
+
+      // Find the booking details to notify requester via email
+      const targetBooking = (firestoreBookings || []).find((b: any) => b.id === bookingId);
+      let emailNotice = "";
+
+      if (targetBooking?.email) {
+        try {
+          const res = await fetch('/api/bookings/notify-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId,
+              newStatus,
+              customerEmail: targetBooking.email,
+              customerName: targetBooking.customerName || 'Valued Customer',
+              serviceType: targetBooking.serviceType || 'Liquid Waste Management',
+              appointmentDate: targetBooking.appointmentDate || targetBooking.appointmentDateFormatted,
+              preferredTime: targetBooking.preferredTime,
+              locationUrl: targetBooking.locationUrl,
+              phone: targetBooking.phone
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            emailNotice = ` Email notification sent to ${targetBooking.email}.`;
+          }
+        } catch (mailErr) {
+          console.warn("Could not dispatch status email:", mailErr);
+        }
+      }
+
+      toast({ 
+        title: "Status Updated", 
+        description: `Request marked as ${newStatus}.${emailNotice}` 
+      });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Update Failed", description: err.message });
     } finally {
@@ -518,7 +552,7 @@ export default function AdminDashboard() {
                     <Loader2 className="h-4 w-4 animate-spin" /> Verifying recovery link...
                   </span>
                 ) : codeError ? (
-                  <span className="text-destructive font-medium">{codeError}</span>
+                  <span className="text-foreground font-medium bg-[#8DB833]/20 px-2 py-0.5 rounded">{codeError}</span>
                 ) : (
                   <span>Updating password for <strong>{resetAccountEmail}</strong></span>
                 )}
@@ -712,9 +746,9 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex flex-col">
         <Navbar isAdmin />
         <main className="flex-grow flex items-center justify-center bg-muted/30 px-4 py-5 font-arial">
-          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-destructive border-x-0 border-b-0">
+          <Card className="w-full max-w-md shadow-xl border-t-4 border-t-[#8DB833] border-x-0 border-b-0">
             <CardHeader className="text-center">
-              <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-2" />
+              <ShieldAlert className="mx-auto h-12 w-12 text-[#8DB833] mb-2" />
               <CardTitle className="text-xl font-bold">Unauthorized Access</CardTitle>
               <CardDescription className="text-sm">
                 Account <strong>{user?.email}</strong> does not have operational permissions.
