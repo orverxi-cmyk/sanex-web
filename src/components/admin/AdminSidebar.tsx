@@ -80,7 +80,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             )}
           >
             <div className="flex items-center gap-3">
-              <ImageIcon className={cn("h-4 w-4 shrink-0", isContentActive ? "text-black" : "text-purple-600")} />
+              <ImageIcon className="h-4 w-4 shrink-0 text-black" />
               <div>
                 <div className="font-bold">Content Management</div>
                 <div className={cn("text-[10px] font-normal", isContentActive ? "text-black/80" : "text-muted-foreground")}>
@@ -102,7 +102,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             )}
           >
             <div className="flex items-center gap-3">
-              <Users className={cn("h-4 w-4 shrink-0", isUsersActive ? "text-black" : "text-emerald-600")} />
+              <Users className="h-4 w-4 shrink-0 text-black" />
               <div>
                 <div className="font-bold">Users</div>
                 <div className={cn("text-[10px] font-normal", isUsersActive ? "text-black/80" : "text-muted-foreground")}>
@@ -124,7 +124,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             )}
           >
             <div className="flex items-center gap-3">
-              <ClipboardList className={cn("h-4 w-4 shrink-0", isBookingsActive ? "text-black" : "text-blue-600")} />
+              <ClipboardList className="h-4 w-4 shrink-0 text-black" />
               <div>
                 <div className="font-bold">Bookings</div>
                 <div className={cn("text-[10px] font-normal", isBookingsActive ? "text-black/80" : "text-muted-foreground")}>
@@ -208,7 +208,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
                 </div>
               </div>
               {pendingCount > 0 ? (
-                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-black text-white" : "bg-amber-100 text-amber-900 border-amber-300")}>
+                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-black text-white" : "bg-primary text-black border-primary")}>
                   {pendingCount} new
                 </Badge>
               ) : isRequestsActive ? (
@@ -235,7 +235,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
                 </div>
               </div>
               {pendingCount > 0 ? (
-                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-black text-white" : "bg-amber-100 text-amber-900 border-amber-300")}>
+                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-black text-white" : "bg-primary text-black border-primary")}>
                   {pendingCount} new
                 </Badge>
               ) : isRequestsActive ? (
@@ -295,7 +295,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
       {/* Operator Auth Status at bottom of sidebar */}
       <div className="pt-4 border-t mt-6">
         <div className="bg-muted/50 p-3 rounded-xl flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">
+          <div className="h-8 w-8 rounded-full bg-primary text-black flex items-center justify-center shrink-0 font-bold">
             <Shield className="h-4 w-4" />
           </div>
           <div className="overflow-hidden">

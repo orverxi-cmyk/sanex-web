@@ -264,13 +264,13 @@ export default function AdminDashboard() {
     const s = (status || 'pending').toLowerCase();
     switch (s) {
       case 'confirmed':
-        return <Badge className="bg-blue-500 text-white font-bold text-[10px]">Confirmed</Badge>;
+        return <Badge className="bg-primary text-black font-bold text-[10px]">Confirmed</Badge>;
       case 'completed':
-        return <Badge className="bg-green-500 text-black font-bold text-[10px]">Completed</Badge>;
+        return <Badge className="bg-black text-white font-bold text-[10px]">Completed</Badge>;
       case 'cancelled':
-        return <Badge variant="destructive" className="font-bold text-[10px]">Cancelled</Badge>;
+        return <Badge variant="outline" className="border-black text-black font-bold text-[10px]">Cancelled</Badge>;
       default:
-        return <Badge className="bg-amber-100 text-amber-900 border-amber-300 font-bold text-[10px]">Pending</Badge>;
+        return <Badge className="bg-muted text-black border border-border font-bold text-[10px]">Pending</Badge>;
     }
   };
 
@@ -799,18 +799,18 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-amber-200">
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-border hover:border-black/30">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between text-muted-foreground mb-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider">Pending Requests</span>
-                      <Clock className="h-4 w-4 text-amber-500" />
+                      <Clock className="h-4 w-4 text-black" />
                     </div>
-                    <div className="text-2xl font-bold text-amber-600">{statusCounts.pending}</div>
+                    <div className="text-2xl font-bold text-black">{statusCounts.pending}</div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t">
                       <span className="text-xs text-muted-foreground">Awaiting review</span>
                       <button 
                         onClick={() => { setActiveMenu('requests'); setStatusFilter('pending'); }}
-                        className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-0.5"
+                        className="text-xs font-bold text-black hover:text-primary hover:underline flex items-center gap-0.5"
                       >
                         Action <ArrowRight className="h-3 w-3" />
                       </button>
@@ -818,18 +818,18 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-blue-200">
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-border hover:border-black/30">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between text-muted-foreground mb-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider">Confirmed Bookings</span>
-                      <Calendar className="h-4 w-4 text-blue-500" />
+                      <Calendar className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="text-2xl font-bold text-blue-600">{statusCounts.confirmed}</div>
+                    <div className="text-2xl font-bold text-black">{statusCounts.confirmed}</div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t">
                       <span className="text-xs text-muted-foreground">Scheduled pickup</span>
                       <button 
                         onClick={() => { setActiveMenu('requests'); setStatusFilter('confirmed'); }}
-                        className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5"
+                        className="text-xs font-bold text-black hover:text-primary hover:underline flex items-center gap-0.5"
                       >
                         Schedule <ArrowRight className="h-3 w-3" />
                       </button>
@@ -837,13 +837,13 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-emerald-200">
+                <Card className="border bg-white shadow-sm hover:shadow transition-shadow border-border hover:border-black/30">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between text-muted-foreground mb-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider">Top Lead Platform</span>
-                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                      <TrendingUp className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="text-xl font-bold text-foreground truncate">
+                    <div className="text-xl font-bold text-black truncate">
                       {topPlatform ? topPlatform.name : "None yet"}
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t">
@@ -852,7 +852,7 @@ export default function AdminDashboard() {
                       </span>
                       <button 
                         onClick={() => setActiveMenu('platforms')}
-                        className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-0.5"
+                        className="text-xs font-bold text-black hover:text-primary hover:underline flex items-center gap-0.5"
                       >
                         Performance <ArrowRight className="h-3 w-3" />
                       </button>
@@ -866,7 +866,7 @@ export default function AdminDashboard() {
                 {/* 1. Content Management (First) */}
                 <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <ImageIcon className="h-5 w-5" />
                     </div>
                     <CardTitle className="text-[15px] font-bold">Content Management</CardTitle>
@@ -882,7 +882,7 @@ export default function AdminDashboard() {
                 {/* 2. Users (Second) */}
                 <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <Users className="h-5 w-5" />
                     </div>
                     <CardTitle className="text-[15px] font-bold">Users</CardTitle>
@@ -898,7 +898,7 @@ export default function AdminDashboard() {
                 {/* 3. Bookings (Third) */}
                 <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <ClipboardList className="h-5 w-5" />
                     </div>
                     <CardTitle className="text-[15px] font-bold">Bookings</CardTitle>
@@ -917,7 +917,7 @@ export default function AdminDashboard() {
                   className="group hover:shadow-lg transition-all border bg-white cursor-pointer"
                 >
                   <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <TrendingUp className="h-5 w-5" />
                     </div>
                     <CardTitle className="text-[15px] font-bold">Platform Performance</CardTitle>
@@ -1028,23 +1028,26 @@ export default function AdminDashboard() {
                   className={cn(
                     "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
                     statusFilter === 'pending'
-                      ? "border-amber-400 ring-2 ring-amber-400/50 bg-amber-50/40 shadow-md"
-                      : "hover:border-amber-300 hover:shadow"
+                      ? "border-primary ring-2 ring-primary/40 bg-primary/10 shadow-md"
+                      : "hover:border-black/30 hover:shadow"
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                    <div className={cn(
+                      "h-9 w-9 rounded-lg flex items-center justify-center font-bold transition-colors",
+                      statusFilter === 'pending' ? "bg-primary text-black" : "bg-black/5 text-black"
+                    )}>
                       <Clock className="h-4 w-4" />
                     </div>
                     <Badge className={cn(
                       "text-[10px] font-bold transition-colors",
-                      statusFilter === 'pending' ? "bg-amber-500 text-black" : "bg-amber-100 text-amber-800 border-amber-200"
+                      statusFilter === 'pending' ? "bg-primary text-black" : "bg-muted text-black border border-border"
                     )}>
                       {statusFilter === 'pending' ? 'Active Filter' : 'Filter'}
                     </Badge>
                   </div>
-                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.pending}</div>
-                  <div className="text-xs font-bold text-amber-900/90 mt-0.5">Requests (Pending)</div>
+                  <div className="text-2xl font-bold font-headline text-black">{statusCounts.pending}</div>
+                  <div className="text-xs font-bold text-black mt-0.5">Requests (Pending)</div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">Awaiting operator confirmation</p>
                 </button>
 
@@ -1055,23 +1058,26 @@ export default function AdminDashboard() {
                   className={cn(
                     "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
                     statusFilter === 'confirmed'
-                      ? "border-blue-500 ring-2 ring-blue-500/50 bg-blue-50/40 shadow-md"
-                      : "hover:border-blue-300 hover:shadow"
+                      ? "border-primary ring-2 ring-primary/40 bg-primary/10 shadow-md"
+                      : "hover:border-black/30 hover:shadow"
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    <div className={cn(
+                      "h-9 w-9 rounded-lg flex items-center justify-center font-bold transition-colors",
+                      statusFilter === 'confirmed' ? "bg-primary text-black" : "bg-black/5 text-black"
+                    )}>
                       <Calendar className="h-4 w-4" />
                     </div>
                     <Badge className={cn(
                       "text-[10px] font-bold transition-colors",
-                      statusFilter === 'confirmed' ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-800 border-blue-200"
+                      statusFilter === 'confirmed' ? "bg-primary text-black" : "bg-muted text-black border border-border"
                     )}>
                       {statusFilter === 'confirmed' ? 'Active Filter' : 'Filter'}
                     </Badge>
                   </div>
-                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.confirmed}</div>
-                  <div className="text-xs font-bold text-blue-900/90 mt-0.5">Confirmed</div>
+                  <div className="text-2xl font-bold font-headline text-black">{statusCounts.confirmed}</div>
+                  <div className="text-xs font-bold text-black mt-0.5">Confirmed</div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">Scheduled for collection</p>
                 </button>
 
@@ -1082,23 +1088,26 @@ export default function AdminDashboard() {
                   className={cn(
                     "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
                     statusFilter === 'completed'
-                      ? "border-emerald-500 ring-2 ring-emerald-500/50 bg-emerald-50/40 shadow-md"
-                      : "hover:border-emerald-300 hover:shadow"
+                      ? "border-black ring-2 ring-black/40 bg-black/5 shadow-md"
+                      : "hover:border-black/30 hover:shadow"
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    <div className={cn(
+                      "h-9 w-9 rounded-lg flex items-center justify-center font-bold transition-colors",
+                      statusFilter === 'completed' ? "bg-black text-white" : "bg-black/5 text-black"
+                    )}>
                       <CheckCircle className="h-4 w-4" />
                     </div>
                     <Badge className={cn(
                       "text-[10px] font-bold transition-colors",
-                      statusFilter === 'completed' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      statusFilter === 'completed' ? "bg-black text-white" : "bg-muted text-black border border-border"
                     )}>
                       {statusFilter === 'completed' ? 'Active Filter' : 'Filter'}
                     </Badge>
                   </div>
-                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.completed}</div>
-                  <div className="text-xs font-bold text-emerald-900/90 mt-0.5">Completed</div>
+                  <div className="text-2xl font-bold font-headline text-black">{statusCounts.completed}</div>
+                  <div className="text-xs font-bold text-black mt-0.5">Completed</div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">Fulfilled service operations</p>
                 </button>
 
@@ -1109,23 +1118,26 @@ export default function AdminDashboard() {
                   className={cn(
                     "text-left p-4 rounded-xl border bg-white shadow-sm transition-all relative overflow-hidden group cursor-pointer",
                     statusFilter === 'cancelled'
-                      ? "border-rose-400 ring-2 ring-rose-400/50 bg-rose-50/40 shadow-md"
-                      : "hover:border-rose-300 hover:shadow"
+                      ? "border-black ring-2 ring-black/40 bg-black/5 shadow-md"
+                      : "hover:border-black/30 hover:shadow"
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="h-9 w-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+                    <div className={cn(
+                      "h-9 w-9 rounded-lg flex items-center justify-center font-bold transition-colors",
+                      statusFilter === 'cancelled' ? "bg-muted text-black border border-border" : "bg-black/5 text-black"
+                    )}>
                       <XCircle className="h-4 w-4" />
                     </div>
                     <Badge className={cn(
                       "text-[10px] font-bold transition-colors",
-                      statusFilter === 'cancelled' ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-800 border-rose-200"
+                      statusFilter === 'cancelled' ? "border border-black text-black bg-white" : "bg-muted text-black border border-border"
                     )}>
                       {statusFilter === 'cancelled' ? 'Active Filter' : 'Filter'}
                     </Badge>
                   </div>
-                  <div className="text-2xl font-bold font-headline text-foreground">{statusCounts.cancelled}</div>
-                  <div className="text-xs font-bold text-rose-900/90 mt-0.5">Canceled</div>
+                  <div className="text-2xl font-bold font-headline text-black">{statusCounts.cancelled}</div>
+                  <div className="text-xs font-bold text-black mt-0.5">Canceled</div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">Declined or withdrawn</p>
                 </button>
               </div>
@@ -1257,7 +1269,7 @@ export default function AdminDashboard() {
                                     {b.status === 'confirmed' && (
                                       <Button
                                         size="sm"
-                                        className="h-7 px-2.5 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-black"
+                                        className="h-7 px-2.5 text-[11px] font-bold bg-black hover:bg-black/80 text-white"
                                         onClick={() => handleUpdateStatus(b.id, 'completed')}
                                         disabled={updatingId === b.id}
                                       >
@@ -1463,8 +1475,7 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                           <Card className="border bg-white shadow-sm p-5 flex items-center gap-4">
                             <div 
-                              className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border"
-                              style={{ backgroundColor: `${currentStat.config?.color}15`, color: currentStat.config?.color, borderColor: `${currentStat.config?.color}30` }}
+                              className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border bg-primary/10 text-black border-primary/20"
                             >
                               <PlatformIcon className="h-6 w-6" />
                             </div>
@@ -1476,19 +1487,19 @@ export default function AdminDashboard() {
 
                           <Card className="border bg-white shadow-sm p-5">
                             <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Inquiries</div>
-                            <div className="text-2xl font-bold">{currentStat.total}</div>
+                            <div className="text-2xl font-bold text-black">{currentStat.total}</div>
                             <div className="text-xs text-muted-foreground mt-0.5">{currentStat.share}% of all inbound requests</div>
                           </Card>
 
                           <Card className="border bg-white shadow-sm p-5">
                             <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Confirmed / Completed</div>
-                            <div className="text-2xl font-bold text-emerald-600">{currentStat.confirmed}</div>
+                            <div className="text-2xl font-bold text-black">{currentStat.confirmed}</div>
                             <div className="text-xs text-muted-foreground mt-0.5">Fulfillment scheduled</div>
                           </Card>
 
                           <Card className="border bg-white shadow-sm p-5">
                             <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Conversion Rate</div>
-                            <div className="text-2xl font-bold text-blue-600">{currentStat.conversionRate}%</div>
+                            <div className="text-2xl font-bold text-black">{currentStat.conversionRate}%</div>
                             <div className="text-xs text-muted-foreground mt-0.5">{currentStat.pending} pending confirmation</div>
                           </Card>
                         </div>
@@ -1547,7 +1558,7 @@ export default function AdminDashboard() {
                                           {b.status === 'confirmed' && (
                                             <Button
                                               size="sm"
-                                              className="h-7 text-xs font-bold bg-green-500 text-black"
+                                              className="h-7 text-xs font-bold bg-black hover:bg-black/80 text-white"
                                               onClick={() => handleUpdateStatus(b.id, 'completed')}
                                               disabled={updatingId === b.id}
                                             >

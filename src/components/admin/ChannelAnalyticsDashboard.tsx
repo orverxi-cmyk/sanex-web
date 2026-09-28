@@ -52,42 +52,46 @@ interface ChannelAnalyticsDashboardProps {
   isRefreshing?: boolean;
 }
 
+export const BRAND_GREEN = "#8DB833";
+export const BRAND_BLACK = "#000000";
+export const BRAND_PIE_COLORS = ["#8DB833", "#000000", "#6E9222", "#262626", "#A5CD4C", "#404040"];
+
 export const CHANNEL_CONFIG: Record<string, { label: string; color: string; icon: any; bg: string }> = {
   "LinkedIn": { 
     label: "LinkedIn", 
-    color: "#0A66C2", 
+    color: BRAND_GREEN, 
     icon: Share2, 
-    bg: "bg-[#0A66C2]/10 text-[#0A66C2] border-[#0A66C2]/20" 
+    bg: "bg-primary/10 text-black border-primary/20" 
   },
   "Google Search": { 
     label: "Google Search", 
-    color: "#4285F4", 
+    color: BRAND_GREEN, 
     icon: Search, 
-    bg: "bg-[#4285F4]/10 text-[#4285F4] border-[#4285F4]/20" 
+    bg: "bg-primary/10 text-black border-primary/20" 
   },
   "Facebook": { 
     label: "Facebook", 
-    color: "#1877F2", 
+    color: BRAND_GREEN, 
     icon: Globe, 
-    bg: "bg-[#1877F2]/10 text-[#1877F2] border-[#1877F2]/20" 
+    bg: "bg-primary/10 text-black border-primary/20" 
   },
   "Email": { 
     label: "Email", 
-    color: "#EA4335", 
+    color: BRAND_GREEN, 
     icon: Mail, 
-    bg: "bg-[#EA4335]/10 text-[#EA4335] border-[#EA4335]/20" 
+    bg: "bg-primary/10 text-black border-primary/20" 
   },
   "Others": { 
     label: "Others", 
-    color: "#9333EA", 
+    color: BRAND_BLACK, 
     icon: HelpCircle, 
-    bg: "bg-[#9333EA]/10 text-[#9333EA] border-[#9333EA]/20" 
+    bg: "bg-muted text-black border-border" 
   },
   "Direct / Unspecified": { 
     label: "Direct / Unspecified", 
-    color: "#64748B", 
+    color: BRAND_BLACK, 
     icon: Globe, 
-    bg: "bg-slate-500/10 text-slate-600 border-slate-500/20" 
+    bg: "bg-muted text-black border-border" 
   }
 };
 
@@ -113,20 +117,11 @@ export const getChannelConfig = (channelName: string): { label: string; color: s
   if (lower.includes("google") || lower.includes("search")) return CHANNEL_CONFIG["Google Search"];
   if (lower.includes("facebook") || lower.includes("fb")) return CHANNEL_CONFIG["Facebook"];
   if (lower.includes("email") || lower.includes("mail")) return CHANNEL_CONFIG["Email"];
-  if (lower.includes("instagram")) {
-    return { label: channelName, color: "#E1306C", icon: Globe, bg: "bg-pink-500/10 text-pink-600 border-pink-500/20" };
-  }
-  if (lower.includes("twitter") || lower.includes("x")) {
-    return { label: channelName, color: "#1DA1F2", icon: Globe, bg: "bg-sky-500/10 text-sky-600 border-sky-500/20" };
-  }
-  if (lower.includes("whatsapp")) {
-    return { label: channelName, color: "#25D366", icon: Globe, bg: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" };
-  }
   return {
     label: channelName,
-    color: "#64748B",
+    color: BRAND_GREEN,
     icon: Globe,
-    bg: "bg-slate-500/10 text-slate-600 border-slate-500/20"
+    bg: "bg-primary/10 text-black border-primary/20"
   };
 };
 
@@ -198,11 +193,11 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
     .reduce((sum, c) => sum + c.total, 0);
   const trackingCoverage = totalLeads > 0 ? Math.round((trackedDigitalLeads / totalLeads) * 100) : 0;
 
-  // Chart data strictly from real live channels
-  const pieChartData = channelStats.filter(c => c.total > 0).map(c => ({
+  // Chart data strictly from real live channels using brand palette
+  const pieChartData = channelStats.filter(c => c.total > 0).map((c, index) => ({
     name: c.name,
     value: c.total,
-    color: c.color
+    color: BRAND_PIE_COLORS[index % BRAND_PIE_COLORS.length]
   }));
 
   const barChartData = channelStats.filter(c => c.total > 0).map(c => ({
@@ -286,7 +281,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-3">
               <span className="text-[10px] font-bold uppercase tracking-wider">Top Acquisition Channel</span>
-              <Award className="h-4 w-4 text-primary" />
+              <Award className="h-4 w-4 text-black" />
             </div>
             <div className="text-2xl font-bold text-foreground">
               {topVolumeChannel && topVolumeChannel.total > 0 ? topVolumeChannel.name : "None yet"}
@@ -304,17 +299,17 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
 
         {/* Card 2: Highest Conversion Channel */}
         <Card className="border bg-white shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full pointer-events-none" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-3">
               <span className="text-[10px] font-bold uppercase tracking-wider">Highest Conversion Rate</span>
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
+              <TrendingUp className="h-4 w-4 text-black" />
             </div>
             <div className="text-2xl font-bold text-foreground">
               {topConversionChannel && topConversionChannel.total > 0 ? topConversionChannel.name : "None yet"}
             </div>
             <div className="flex items-center gap-2 mt-2">
-              <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 font-bold text-[10px]">
+              <Badge className="bg-black text-white font-bold text-[10px]">
                 {topConversionChannel && topConversionChannel.total > 0 ? `${topConversionChannel.conversionRate}% Conversion` : "0%"}
               </Badge>
               <span className="text-xs text-muted-foreground">
@@ -326,11 +321,11 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
 
         {/* Card 3: Total Service Inquiries */}
         <Card className="border bg-white shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-black/5 rounded-bl-full pointer-events-none" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-3">
               <span className="text-[10px] font-bold uppercase tracking-wider">Total Service Inquiries</span>
-              <Clock className="h-4 w-4 text-blue-600" />
+              <Clock className="h-4 w-4 text-black" />
             </div>
             <div className="text-3xl font-bold text-foreground">{totalLeads}</div>
             <p className="text-xs text-muted-foreground mt-2">
@@ -341,15 +336,15 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
 
         {/* Card 4: Digital Attribution Rate */}
         <Card className="border bg-white shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full pointer-events-none" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-3">
               <span className="text-[10px] font-bold uppercase tracking-wider">Digital Channel Attribution</span>
-              <Sparkles className="h-4 w-4 text-purple-600" />
+              <Sparkles className="h-4 w-4 text-primary" />
             </div>
             <div className="text-3xl font-bold text-foreground">{trackingCoverage}%</div>
             <div className="mt-2 space-y-1">
-              <Progress value={trackingCoverage} className="h-1.5 bg-muted" />
+              <Progress value={trackingCoverage} className="h-1.5 bg-muted [&>div]:bg-primary" />
               <div className="flex justify-between text-[10px] text-muted-foreground font-medium pt-0.5">
                 <span>{trackedDigitalLeads} identified</span>
                 <span>{totalLeads - trackedDigitalLeads} direct/untracked</span>
@@ -395,8 +390,8 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                       }} 
                     />
                     <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
-                    <Bar dataKey="Confirmed Bookings" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={32} />
-                    <Bar dataKey="Pending Inquiries" fill="#F59E0B" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                    <Bar dataKey="Confirmed Bookings" fill={BRAND_GREEN} radius={[4, 4, 0, 0]} maxBarSize={32} />
+                    <Bar dataKey="Pending Inquiries" fill={BRAND_BLACK} radius={[4, 4, 0, 0]} maxBarSize={32} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -504,8 +499,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                     {/* Left: Channel Brand Icon & Name */}
                     <div className="flex items-center gap-3.5 min-w-[220px]">
                       <div 
-                        className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border"
-                        style={{ backgroundColor: `${channel.color}15`, borderColor: `${channel.color}30`, color: channel.color }}
+                        className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border bg-primary/10 border-primary/20 text-black"
                       >
                         <IconComponent className="h-5 w-5" />
                       </div>
@@ -513,7 +507,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                         <div className="font-bold text-sm text-foreground flex items-center gap-2">
                           {channel.name}
                           {channel.conversionRate >= 60 && channel.total >= 1 && (
-                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] px-1.5 py-0 h-4 font-bold">
+                            <Badge className="bg-primary text-black border-none text-[9px] px-1.5 py-0 h-4 font-bold">
                               High Yield
                             </Badge>
                           )}
@@ -528,12 +522,12 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                     <div className="flex-grow max-w-md hidden sm:block">
                       <div className="flex justify-between text-[11px] mb-1 font-medium">
                         <span className="text-muted-foreground">Share of inquiries</span>
-                        <span className="font-bold">{channel.share}%</span>
+                        <span className="font-bold text-black">{channel.share}%</span>
                       </div>
                       <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                         <div 
                           className="h-full rounded-full transition-all duration-500" 
-                          style={{ width: `${channel.share}%`, backgroundColor: channel.color }}
+                          style={{ width: `${channel.share}%`, backgroundColor: BRAND_GREEN }}
                         />
                       </div>
                     </div>
@@ -553,7 +547,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                         asChild 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 px-2.5 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10"
+                        className="h-8 px-2.5 text-[10px] font-bold uppercase tracking-wider text-black hover:bg-primary hover:text-black"
                       >
                         <Link href={`/admin/bookings?channel=${encodeURIComponent(channel.name)}`}>
                           Filter <ArrowUpRight className="ml-1 h-3 w-3" />

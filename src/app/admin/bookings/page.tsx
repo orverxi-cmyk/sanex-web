@@ -246,10 +246,10 @@ export default function BookingsManagementPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed': return <Badge className="bg-blue-500 text-white">Confirmed</Badge>;
-      case 'completed': return <Badge className="bg-green-500 text-black">Completed</Badge>;
-      case 'cancelled': return <Badge variant="destructive">Cancelled</Badge>;
-      default: return <Badge variant="secondary">Pending</Badge>;
+      case 'confirmed': return <Badge className="bg-primary text-black font-bold">Confirmed</Badge>;
+      case 'completed': return <Badge className="bg-black text-white font-bold">Completed</Badge>;
+      case 'cancelled': return <Badge variant="outline" className="border-black text-black font-bold">Cancelled</Badge>;
+      default: return <Badge variant="secondary" className="font-bold">Pending</Badge>;
     }
   };
 
@@ -513,7 +513,7 @@ export default function BookingsManagementPage() {
                         <Button 
                           size="sm" 
                           variant="default" 
-                          className="bg-green-500 hover:bg-green-600 text-black font-bold gap-2 h-9"
+                          className="bg-black hover:bg-black/90 text-white font-bold gap-2 h-9"
                           onClick={() => handleUpdateStatus(booking.id, 'completed')}
                           disabled={updatingId === booking.id}
                         >
