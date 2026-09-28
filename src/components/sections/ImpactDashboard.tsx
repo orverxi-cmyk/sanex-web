@@ -68,18 +68,21 @@ export function ImpactDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {content.items.map((impact: any, i: number) => (
-            <div key={i} className="p-8 rounded-2xl bg-black border border-white/5 hover:border-primary/20 transition-all shadow-xl flex flex-col space-y-4">
-              <div className="border-b border-white/10 pb-3">
-                <h4 className="text-[16px] font-bold text-white leading-tight">
+            <div 
+              key={i} 
+              className="p-8 rounded-2xl bg-primary text-black border border-black/10 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 shadow-lg flex flex-col space-y-4"
+            >
+              <div className="border-b border-black/15 pb-3">
+                <h4 className="text-[17px] font-bold text-black font-headline leading-tight">
                   {impact.title}
                 </h4>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {impact.points?.map((point: string, pi: number) => (
                   <div 
                     key={pi} 
-                    className="text-[14px] font-normal text-white/70 leading-relaxed" 
+                    className="text-[14px] font-medium text-black/90 leading-relaxed" 
                     dangerouslySetInnerHTML={{ __html: point.startsWith('<p>') ? point : `<p>${point}</p>` }} 
                   />
                 ))}
