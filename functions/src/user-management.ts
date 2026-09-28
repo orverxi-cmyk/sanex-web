@@ -69,10 +69,10 @@ export const adminUpdateUserRole = onCall({ cors: true }, async (request: Callab
     throw new HttpsError('failed-precondition', 'You cannot change your own role.');
   }
   
-  const masterEmail = 'sanexcompany@gmail.com'; 
+  const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com']; 
   
   const targetUserDoc = await db.collection('users').doc(targetUserId).get();
-  if (targetUserDoc.exists && targetUserDoc.data()?.email === masterEmail) {
+  if (targetUserDoc.exists && masterEmails.includes(targetUserDoc.data()?.email)) {
     throw new HttpsError('permission-denied', 'Cannot modify the master administrator.');
   }
   
@@ -86,9 +86,9 @@ export const adminBootstrapMaster = onCall({ cors: true }, async (request: Calla
   
   const uid = request.auth.uid;
   const email = request.auth.token.email;
-  const masterEmail = 'sanexcompany@gmail.com';
+  const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com'];
   
-  if (email !== masterEmail) {
+  if (!email || !masterEmails.includes(email)) {
     throw new HttpsError('permission-denied', 'Email not authorized to bootstrap.');
   }
   

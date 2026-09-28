@@ -112,7 +112,11 @@ function ContentManagementContent() {
     );
   }
 
-  const isAuthorized = userProfile?.role === "admin";
+  const isAuthorized = 
+    userProfile?.role === "admin" || 
+    (user as any)?.admin === true || 
+    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
+    user?.email?.toLowerCase() === "sanexcompany@gmail.com";
 
   if (!user || !isAuthorized) {
     return (
