@@ -98,6 +98,117 @@ export default function AdminDashboard() {
   const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user?.uid]);
   const { data: userProfile, loading: profileLoading } = useDoc(userDocRef);
 
+  const isAuthorized = 
+    userProfile?.role === "admin" || 
+    (user as any)?.admin === true || 
+    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
+    user?.email?.toLowerCase() === "sanexcompany@gmail.com";
+
+  const bookingsQuery = React.useMemo(() => {
+    if (!db || !user || !isAuthorized) return null;
+    return collection(db, "bookings");
+  }, [db, user, isAuthorized]);
+
+  const { data: firestoreBookings, loading: bookingsLoading } = useCollection(bookingsQuery);
+
+  const [statusFilter, setStatusFilter] = React.useState<"all" | "pending" | "confirmed" | "completed" | "cancelled">("all");
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+
+  const statusCounts = React.useMemo(() => {
+    let pending = 0;
+    let confirmed = 0;
+    let completed = 0;
+    let cancelled = 0;
+    (firestoreBookings || []).forEach((b: any) => {
+      const s = (b.status || 'pending').toLowerCase();
+      if (s === 'confirmed') confirmed++;
+      else if (s === 'completed') completed++;
+      else if (s === 'cancelled') cancelled++;
+      else pending++;
+    });
+    return {
+      all: (firestoreBookings || []).length,
+      pending,
+      confirmed,
+      completed,
+      cancelled,
+    };
+  }, [firestoreBookings]);
+
+  const filteredBookings = React.useMemo(() => {
+    return (firestoreBookings || []).filter((b: any) => {
+      const s = (b.status || 'pending').toLowerCase();
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'pending' && s !== 'pending') return false;
+        if (statusFilter === 'confirmed' && s !== 'confirmed') return false;
+        if (statusFilter === 'completed' && s !== 'completed') return false;
+        if (statusFilter === 'cancelled' && s !== 'cancelled') return false;
+      }
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        const matchesName = b.customerName?.toLowerCase().includes(term);
+        const matchesEmail = b.email?.toLowerCase().includes(term);
+        const matchesPhone = b.phone?.toLowerCase().includes(term);
+        const matchesService = b.serviceType?.toLowerCase().includes(term);
+        const matchesSource = b.referralSource?.toLowerCase().includes(term);
+        if (!matchesName && !matchesEmail && !matchesPhone && !matchesService && !matchesSource) {
+          return false;
+        }
+      }
+      return true;
+    }).sort((a: any, b: any) => {
+      const tA = typeof a.createdAt === 'number' ? a.createdAt : new Date(a.createdAt || 0).getTime();
+      const tB = typeof b.createdAt === 'number' ? b.createdAt : new Date(b.createdAt || 0).getTime();
+      return tB - tA;
+    });
+  }, [firestoreBookings, statusFilter, searchTerm]);
+
+  const handleUpdateStatus = async (bookingId: string, newStatus: string) => {
+    if (!db) return;
+    setUpdatingId(bookingId);
+    try {
+      const bookingRef = doc(db, 'bookings', bookingId);
+      await updateDoc(bookingRef, {
+        status: newStatus,
+        updatedAt: Date.now()
+      });
+      toast({ title: "Status Updated", description: `Request marked as ${newStatus}.` });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Update Failed", description: err.message });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const getStatusBadge = (status?: string) => {
+    const s = (status || 'pending').toLowerCase();
+    switch (s) {
+      case 'confirmed':
+        return <Badge className="bg-blue-500 text-white font-bold text-[10px]">Confirmed</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-500 text-black font-bold text-[10px]">Completed</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive" className="font-bold text-[10px]">Cancelled</Badge>;
+      default:
+        return <Badge className="bg-amber-100 text-amber-900 border-amber-300 font-bold text-[10px]">Pending</Badge>;
+    }
+  };
+
+  const bookingsList: BookingData[] = React.useMemo(() => {
+    return (firestoreBookings || []).map((b: any) => ({
+      id: b.id,
+      customerName: b.customerName,
+      email: b.email,
+      phone: b.phone,
+      serviceType: b.serviceType,
+      status: b.status,
+      referralSource: b.referralSource,
+      description: b.description,
+      createdAt: b.createdAt
+    }));
+  }, [firestoreBookings]);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
@@ -455,12 +566,6 @@ export default function AdminDashboard() {
     );
   }
 
-  const isAuthorized = 
-    userProfile?.role === "admin" || 
-    (user as any)?.admin === true || 
-    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
-    user?.email?.toLowerCase() === "sanexcompany@gmail.com";
-
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -471,7 +576,7 @@ export default function AdminDashboard() {
               <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-2" />
               <CardTitle className="text-xl font-bold">Unauthorized Access</CardTitle>
               <CardDescription className="text-sm">
-                Account <strong>{user.email}</strong> does not have operational permissions.
+                Account <strong>{user?.email}</strong> does not have operational permissions.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
@@ -488,111 +593,6 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
-  const bookingsQuery = React.useMemo(() => {
-    if (!db || !user || !isAuthorized) return null;
-    return collection(db, "bookings");
-  }, [db, user, isAuthorized]);
-
-  const { data: firestoreBookings, loading: bookingsLoading } = useCollection(bookingsQuery);
-
-  const [statusFilter, setStatusFilter] = React.useState<"all" | "pending" | "confirmed" | "completed" | "cancelled">("all");
-  const [searchTerm, setSearchTerm] = React.useState<string>("");
-  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
-
-  const statusCounts = React.useMemo(() => {
-    let pending = 0;
-    let confirmed = 0;
-    let completed = 0;
-    let cancelled = 0;
-    (firestoreBookings || []).forEach((b: any) => {
-      const s = (b.status || 'pending').toLowerCase();
-      if (s === 'confirmed') confirmed++;
-      else if (s === 'completed') completed++;
-      else if (s === 'cancelled') cancelled++;
-      else pending++;
-    });
-    return {
-      all: (firestoreBookings || []).length,
-      pending,
-      confirmed,
-      completed,
-      cancelled,
-    };
-  }, [firestoreBookings]);
-
-  const filteredBookings = React.useMemo(() => {
-    return (firestoreBookings || []).filter((b: any) => {
-      const s = (b.status || 'pending').toLowerCase();
-      if (statusFilter !== 'all') {
-        if (statusFilter === 'pending' && s !== 'pending') return false;
-        if (statusFilter === 'confirmed' && s !== 'confirmed') return false;
-        if (statusFilter === 'completed' && s !== 'completed') return false;
-        if (statusFilter === 'cancelled' && s !== 'cancelled') return false;
-      }
-      if (searchTerm.trim()) {
-        const term = searchTerm.toLowerCase();
-        const matchesName = b.customerName?.toLowerCase().includes(term);
-        const matchesEmail = b.email?.toLowerCase().includes(term);
-        const matchesPhone = b.phone?.toLowerCase().includes(term);
-        const matchesService = b.serviceType?.toLowerCase().includes(term);
-        const matchesSource = b.referralSource?.toLowerCase().includes(term);
-        if (!matchesName && !matchesEmail && !matchesPhone && !matchesService && !matchesSource) {
-          return false;
-        }
-      }
-      return true;
-    }).sort((a: any, b: any) => {
-      const tA = typeof a.createdAt === 'number' ? a.createdAt : new Date(a.createdAt || 0).getTime();
-      const tB = typeof b.createdAt === 'number' ? b.createdAt : new Date(b.createdAt || 0).getTime();
-      return tB - tA;
-    });
-  }, [firestoreBookings, statusFilter, searchTerm]);
-
-  const handleUpdateStatus = async (bookingId: string, newStatus: string) => {
-    if (!db) return;
-    setUpdatingId(bookingId);
-    try {
-      const bookingRef = doc(db, 'bookings', bookingId);
-      await updateDoc(bookingRef, {
-        status: newStatus,
-        updatedAt: Date.now()
-      });
-      toast({ title: "Status Updated", description: `Request marked as ${newStatus}.` });
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Update Failed", description: err.message });
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const getStatusBadge = (status?: string) => {
-    const s = (status || 'pending').toLowerCase();
-    switch (s) {
-      case 'confirmed':
-        return <Badge className="bg-blue-500 text-white font-bold text-[10px]">Confirmed</Badge>;
-      case 'completed':
-        return <Badge className="bg-green-500 text-black font-bold text-[10px]">Completed</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive" className="font-bold text-[10px]">Cancelled</Badge>;
-      default:
-        return <Badge className="bg-amber-100 text-amber-900 border-amber-300 font-bold text-[10px]">Pending</Badge>;
-    }
-  };
-
-  const bookingsList: BookingData[] = React.useMemo(() => {
-    return (firestoreBookings || []).map((b: any) => ({
-      id: b.id,
-      customerName: b.customerName,
-      email: b.email,
-      phone: b.phone,
-      serviceType: b.serviceType,
-      status: b.status,
-      referralSource: b.referralSource,
-      description: b.description,
-      createdAt: b.createdAt
-    }));
-  }, [firestoreBookings]);
 
   return (
     <div className="min-h-screen flex flex-col font-arial text-[14px]">
