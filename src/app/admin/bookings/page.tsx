@@ -9,6 +9,7 @@ import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
   Loader2, 
   ChevronLeft, 
@@ -21,7 +22,11 @@ import {
   Clock,
   XCircle,
   ShieldAlert,
-  RefreshCw
+  RefreshCw,
+  Search,
+  Filter,
+  X,
+  TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -77,6 +82,20 @@ export default function BookingsManagementPage() {
     }
   }, [user, isAuthorized, firestoreError, firestoreLoading, firestoreBookings, fetchBookingsViaFunction]);
 
+  const [channelFilter, setChannelFilter] = React.useState<string>("all");
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const channelParam = params.get("channel");
+      if (channelParam) {
+        setChannelFilter(channelParam);
+      }
+    }
+  }, []);
+
   const rawBookings = (firestoreBookings && firestoreBookings.length > 0)
     ? firestoreBookings
     : (backupBookings || firestoreBookings || []);
@@ -89,6 +108,41 @@ export default function BookingsManagementPage() {
       return tB - tA;
     });
   }, [rawBookings]);
+
+  const filteredBookings = React.useMemo(() => {
+    return sortedBookings.filter((b: any) => {
+      // 1. Status Filter
+      if (statusFilter !== "all" && (b.status || "pending").toLowerCase() !== statusFilter.toLowerCase()) {
+        return false;
+      }
+
+      // 2. Channel Filter
+      if (channelFilter !== "all") {
+        const source = (b.referralSource || "Direct / Unspecified").toLowerCase();
+        const target = channelFilter.toLowerCase();
+        if (target.includes("linkedin") && !source.includes("linkedin")) return false;
+        if (target.includes("google") && !source.includes("google")) return false;
+        if (target.includes("facebook") && !source.includes("facebook")) return false;
+        if (target.includes("email") && !source.includes("email")) return false;
+        if (target.includes("other") && !source.includes("other") && !source.includes("direct") && !source.includes("unspecified")) return false;
+        if (target.includes("direct") && b.referralSource) return false;
+      }
+
+      // 3. Search Filter
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        const matchesName = b.customerName?.toLowerCase().includes(term);
+        const matchesEmail = b.email?.toLowerCase().includes(term);
+        const matchesPhone = b.phone?.toLowerCase().includes(term);
+        const matchesService = b.serviceType?.toLowerCase().includes(term);
+        if (!matchesName && !matchesEmail && !matchesPhone && !matchesService) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [sortedBookings, statusFilter, channelFilter, searchTerm]);
 
   const isLoading = (firestoreLoading && !backupBookings) || (isFetchingBackup && sortedBookings.length === 0);
 
@@ -196,9 +250,110 @@ export default function BookingsManagementPage() {
                 <RefreshCw className={cn("h-3.5 w-3.5", isFetchingBackup && "animate-spin")} />
                 Refresh
               </Button>
+              <Button asChild variant="outline" size="sm" className="gap-2 h-9 text-xs font-bold">
+                <Link href="/admin/analytics">
+                  <TrendingUp className="h-3.5 w-3.5 text-primary" /> Channel Analytics
+                </Link>
+              </Button>
               <Badge variant="outline" className="text-sm px-4 py-1.5">
-                {sortedBookings.length} Requests
+                {filteredBookings.length} of {sortedBookings.length} Requests
               </Badge>
+            </div>
+          </div>
+
+          {/* Interactive Filters Bar */}
+          <div className="bg-white p-4 rounded-xl border shadow-sm space-y-3 mb-6">
+            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+              {/* Search input */}
+              <div className="relative flex-grow max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by customer, email, phone, or service..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-10 text-xs"
+                />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm("")} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 shrink-0">Status:</span>
+                {[
+                  { key: "all", label: "All" },
+                  { key: "pending", label: "Pending" },
+                  { key: "confirmed", label: "Confirmed" },
+                  { key: "completed", label: "Completed" },
+                  { key: "cancelled", label: "Cancelled" }
+                ].map(item => (
+                  <button
+                    key={item.key}
+                    onClick={() => setStatusFilter(item.key)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0",
+                      statusFilter === item.key 
+                        ? "bg-primary text-black shadow-sm" 
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Channels Filter Row */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 flex items-center gap-1 shrink-0">
+                <Filter className="h-3 w-3" /> Channel:
+              </span>
+              {[
+                { key: "all", label: "All Channels" },
+                { key: "LinkedIn", label: "LinkedIn" },
+                { key: "Google Search", label: "Google Search" },
+                { key: "Facebook", label: "Facebook" },
+                { key: "Email", label: "Email" },
+                { key: "Others", label: "Others" },
+                { key: "Direct / Unspecified", label: "Direct / Untracked" }
+              ].map(item => (
+                <button
+                  key={item.key}
+                  onClick={() => setChannelFilter(item.key)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shrink-0 border",
+                    channelFilter === item.key 
+                      ? "bg-black text-white border-black shadow-sm" 
+                      : "bg-white text-muted-foreground border-muted-foreground/20 hover:border-foreground/40 hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+
+              {(channelFilter !== "all" || statusFilter !== "all" || searchTerm) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setChannelFilter("all");
+                    setStatusFilter("all");
+                    setSearchTerm("");
+                    if (typeof window !== "undefined") {
+                      window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                  }}
+                  className="h-7 text-[10px] font-bold uppercase tracking-wider text-destructive hover:bg-destructive/10 ml-auto gap-1"
+                >
+                  <X className="h-3 w-3" /> Clear Filters
+                </Button>
+              )}
             </div>
           </div>
 
@@ -208,8 +363,8 @@ export default function BookingsManagementPage() {
                 <Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" />
                 <p className="mt-3 text-sm text-muted-foreground">Loading service requests...</p>
               </div>
-            ) : sortedBookings.length > 0 ? (
-              sortedBookings.map((booking: any) => (
+            ) : filteredBookings.length > 0 ? (
+              filteredBookings.map((booking: any) => (
                 <Card key={booking.id} className="overflow-hidden border-l-4 border-l-primary hover:shadow-md transition-shadow">
                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 p-5">
                     <div className="space-y-2 lg:col-span-1">
@@ -328,6 +483,29 @@ export default function BookingsManagementPage() {
                   </div>
                 </Card>
               ))
+            ) : sortedBookings.length > 0 ? (
+              <div className="text-center py-16 bg-white rounded-xl border border-dashed p-6">
+                <Filter className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+                <h3 className="text-lg font-bold">No Matching Requests</h3>
+                <p className="text-xs text-muted-foreground mb-4 max-w-sm mx-auto">
+                  No service requests match your current channel, status, or search filters.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setChannelFilter("all");
+                    setStatusFilter("all");
+                    setSearchTerm("");
+                    if (typeof window !== "undefined") {
+                      window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                  }}
+                  className="h-8 text-[11px] font-bold uppercase tracking-wider"
+                >
+                  Reset All Filters
+                </Button>
+              </div>
             ) : (
               <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed">
                 <ClipboardList className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />

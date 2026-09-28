@@ -4,8 +4,8 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useUser, useDoc, useFirestore, useAuth } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { useUser, useDoc, useFirestore, useAuth, useCollection } from "@/firebase";
+import { doc, setDoc, collection } from "firebase/firestore";
 import { 
   signInWithEmailAndPassword, 
   sendPasswordResetEmail,
@@ -30,9 +30,12 @@ import {
   Mail, 
   ClipboardList, 
   Image as ImageIcon,
-  CheckCircle2
+  CheckCircle2,
+  TrendingUp,
+  BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ChannelAnalyticsDashboard, BookingData } from "@/components/admin/ChannelAnalyticsDashboard";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -473,15 +476,36 @@ export default function AdminDashboard() {
     );
   }
 
+  const bookingsQuery = React.useMemo(() => {
+    if (!db || !user || !isAuthorized) return null;
+    return collection(db, "bookings");
+  }, [db, user, isAuthorized]);
+
+  const { data: firestoreBookings, loading: bookingsLoading } = useCollection(bookingsQuery);
+
+  const bookingsList: BookingData[] = React.useMemo(() => {
+    return (firestoreBookings || []).map((b: any) => ({
+      id: b.id,
+      customerName: b.customerName,
+      email: b.email,
+      phone: b.phone,
+      serviceType: b.serviceType,
+      status: b.status,
+      referralSource: b.referralSource,
+      description: b.description,
+      createdAt: b.createdAt
+    }));
+  }, [firestoreBookings]);
+
   return (
     <div className="min-h-screen flex flex-col font-arial text-[14px]">
       <Navbar />
-      <main className="flex-grow py-5 bg-muted/10">
-        <div className="container mx-auto px-4 md:px-16">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+      <main className="flex-grow py-8 bg-muted/10">
+        <div className="container mx-auto px-4 md:px-16 space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold font-headline">Operations Center</h1>
-              <p className="text-[14px] text-muted-foreground">Managing SANEX Company digital infrastructure.</p>
+              <p className="text-[14px] text-muted-foreground">Managing SANEX Company digital infrastructure and marketing insights.</p>
             </div>
             
             <Card className="bg-white border-primary/20 w-full md:w-auto shadow-sm">
@@ -497,57 +521,75 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Quick Access Operational Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <ClipboardList className="h-6 w-6" />
+              <CardHeader className="pb-3">
+                <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <ClipboardList className="h-5 w-5" />
                 </div>
-                <CardTitle className="text-[16px] font-bold">Service Requests</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Monitor and update status for all client liquid waste bookings.</CardDescription>
+                <CardTitle className="text-[15px] font-bold">Service Requests</CardTitle>
+                <CardDescription className="text-[12px] font-normal">Monitor and update client waste collection requests.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
-                  <Button asChild variant="outline" className="flex-grow h-10 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                    <Link href="/admin/bookings">View Bookings <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                </div>
+                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Link href="/admin/bookings">View Bookings <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                </Button>
               </CardContent>
             </Card>
 
             <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <ImageIcon className="h-6 w-6" />
+              <CardHeader className="pb-3">
+                <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-3">
+                  <TrendingUp className="h-5 w-5" />
                 </div>
-                <CardTitle className="text-[16px] font-bold">Web Presence</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Public Articles.</CardDescription>
+                <CardTitle className="text-[15px] font-bold">Channel Analytics</CardTitle>
+                <CardDescription className="text-[12px] font-normal">Marketing intelligence on lead channels & conversion.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
-                  <Button asChild variant="outline" className="flex-grow h-10 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                    <Link href="/admin/content">Content Manager <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                </div>
+                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Link href="/admin/analytics">Analytics Center <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                </Button>
               </CardContent>
             </Card>
 
             <Card className="group hover:shadow-lg transition-all border-none bg-white">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6" />
+              <CardHeader className="pb-3">
+                <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
+                  <ImageIcon className="h-5 w-5" />
                 </div>
-                <CardTitle className="text-[16px] font-bold">Directory Access</CardTitle>
-                <CardDescription className="text-[12px] font-normal">Provision new accounts and manage system roles.</CardDescription>
+                <CardTitle className="text-[15px] font-bold">Web Presence</CardTitle>
+                <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Articles.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
-                  <Button asChild variant="outline" className="flex-grow h-10 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                    <Link href="/admin/users">Manage Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                </div>
+                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Link href="/admin/content">Content Manager <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                </Button>
               </CardContent>
             </Card>
+
+            <Card className="group hover:shadow-lg transition-all border-none bg-white">
+              <CardHeader className="pb-3">
+                <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+                  <Users className="h-5 w-5" />
+                </div>
+                <CardTitle className="text-[15px] font-bold">Directory Access</CardTitle>
+                <CardDescription className="text-[12px] font-normal">Provision operators and manage system roles.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Embedded Real-Time Marketing Channel Performance Dashboard */}
+          <div className="pt-2">
+            <ChannelAnalyticsDashboard 
+              bookings={bookingsList} 
+              isRefreshing={bookingsLoading}
+            />
           </div>
         </div>
       </main>
