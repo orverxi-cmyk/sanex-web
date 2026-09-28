@@ -21,6 +21,16 @@ export default function GalleryPage() {
   }, [db]);
 
   const { data: photos, loading } = useCollection(galleryQuery);
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimedOut(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showLoading = loading && !timedOut && (!photos || photos.length === 0);
 
   const handlePrevious = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -62,7 +72,7 @@ export default function GalleryPage() {
             </p>
           </div>
 
-          {loading ? (
+          {showLoading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>

@@ -64,8 +64,6 @@ export function Services() {
     }
   };
 
-  if (loading) return <div className="py-2.5 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>;
-
   return (
     <section id="services" className="py-2.5 bg-background relative group">
       {isAdmin && (

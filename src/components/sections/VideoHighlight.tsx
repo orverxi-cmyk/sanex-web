@@ -30,8 +30,6 @@ export function VideoHighlight() {
     return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0` : url;
   };
 
-  if (loading) return null;
-  
   if (!content.videoUrl) return null;
 
   const isYouTube = content.videoUrl.includes("youtube.com") || content.videoUrl.includes("youtu.be");

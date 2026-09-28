@@ -20,7 +20,8 @@ export function MilestoneTracker() {
   const { data: userProfile } = useDoc(userDocRef);
   const isAdmin = userProfile?.role === "admin";
 
-  const { data: milestonesData, loading } = useDoc(db ? doc(db, "settings", "milestones") : null);
+  const milestonesRef = React.useMemo(() => (db ? doc(db, "settings", "milestones") : null), [db]);
+  const { data: milestonesData } = useDoc(milestonesRef);
 
   const defaultMilestones = [
     { year: "2017", title: "Founding", description: "Established to address Rwanda's liquid waste challenges.", icon: "clock" },
@@ -47,8 +48,6 @@ export function MilestoneTracker() {
       default: return <Clock className={iconClass} />;
     }
   };
-
-  if (loading) return null;
 
   return (
     <section className="py-0 bg-background relative group">

@@ -14,7 +14,8 @@ export function RegionalPortal() {
   const { data: userProfile } = useDoc(userDocRef);
   const isAdmin = userProfile?.role === "admin";
 
-  const { data: regionalData, loading } = useDoc(db ? doc(db, "settings", "regional") : null);
+  const regionalRef = React.useMemo(() => (db ? doc(db, "settings", "regional") : null), [db]);
+  const { data: regionalData } = useDoc(regionalRef);
 
   const defaultRegions = [
     { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },
@@ -27,8 +28,6 @@ export function RegionalPortal() {
     description: regionalData?.description || "Establishing operational offices in key towns across Rwanda...",
     items: regionalData?.items?.length ? regionalData.items : defaultRegions
   };
-
-  if (loading) return null;
 
   return (
     <div className="relative group">

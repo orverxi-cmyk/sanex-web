@@ -19,6 +19,16 @@ export default function ArticlesPage() {
   }, [db]);
 
   const { data: articles, loading } = useCollection(articlesQuery);
+  const [timedOut, setTimedOut] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimedOut(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showLoading = loading && !timedOut && (!articles || articles.length === 0);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -35,7 +45,7 @@ export default function ArticlesPage() {
             </p>
           </div>
 
-          {loading ? (
+          {showLoading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>

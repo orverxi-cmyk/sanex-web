@@ -31,12 +31,6 @@ export function Hero() {
     ctaLink: heroData?.ctaLink || "/book"
   };
 
-  if (loading) return (
-    <div className="h-[200px] flex items-center justify-center bg-black">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
-
   return (
     <section className="relative overflow-hidden py-2.5 bg-black text-white group font-arial">
       {isAdmin && (

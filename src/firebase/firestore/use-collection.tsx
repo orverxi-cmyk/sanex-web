@@ -5,33 +5,24 @@ import {
   Query, 
   onSnapshot, 
   QuerySnapshot, 
-  DocumentData,
-  queryEqual
+  DocumentData
 } from 'firebase/firestore';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError } from '../errors';
 
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(query));
   const [error, setError] = useState<Error | null>(null);
-
-  const prevQuery = useState<{ current: Query<T> | null }>({ current: null })[0];
 
   useEffect(() => {
     if (!query) {
-      prevQuery.current = null;
       setData(null);
       setLoading(false);
       setError(null);
       return;
     }
 
-    if (prevQuery.current && queryEqual(prevQuery.current, query)) {
-      return;
-    }
-
-    prevQuery.current = query;
     setLoading(true);
 
     const unsubscribe = onSnapshot(
@@ -64,3 +55,4 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
   return { data, loading, error };
 }
+

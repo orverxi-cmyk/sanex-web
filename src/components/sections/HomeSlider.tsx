@@ -55,12 +55,6 @@ export function HomeSlider() {
     return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || (url.includes('firebasestorage') && url.toLowerCase().includes('.mp4'));
   };
 
-  if (loading) return (
-    <div className="h-[200px] flex items-center justify-center">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-    </div>
-  );
-
   return (
     <section className="py-[20px] overflow-hidden relative group font-arial bg-transparent">
       {isAdmin && (

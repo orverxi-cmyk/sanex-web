@@ -31,13 +31,21 @@ export default function RootLayout({
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                  console.log('ServiceWorker registration successful');
-                }).catch(function(err) {
-                  console.log('ServiceWorker registration failed: ', err);
+              if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for (var i = 0; i < registrations.length; i++) {
+                    registrations[i].unregister();
+                  }
                 });
-              });
+              } else {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                  }).catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
             }
           `}
         </Script>

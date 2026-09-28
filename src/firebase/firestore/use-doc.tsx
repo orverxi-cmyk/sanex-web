@@ -5,33 +5,26 @@ import {
   DocumentReference, 
   onSnapshot, 
   DocumentSnapshot, 
-  DocumentData,
-  refEqual
+  DocumentData
 } from 'firebase/firestore';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError } from '../errors';
 
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(docRef));
   const [error, setError] = useState<Error | null>(null);
 
-  const prevRef = useState<{ current: DocumentReference<T> | null }>({ current: null })[0];
+  const docPath = docRef?.path;
 
   useEffect(() => {
     if (!docRef) {
-      prevRef.current = null;
       setData(null);
       setLoading(false);
       setError(null);
       return;
     }
 
-    if (prevRef.current && refEqual(prevRef.current, docRef)) {
-      return;
-    }
-
-    prevRef.current = docRef;
     setLoading(true);
 
     const unsubscribe = onSnapshot(
@@ -56,7 +49,8 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
     return () => {
       unsubscribe();
     };
-  }, [docRef]);
+  }, [docPath]);
 
   return { data, loading, error };
 }
+

@@ -79,8 +79,6 @@ export function Highlights() {
     }
   };
 
-  if (loading) return null;
-
   return (
     <div className="relative group">
       {isAdmin && (

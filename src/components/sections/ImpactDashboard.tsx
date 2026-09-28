@@ -15,7 +15,8 @@ export function ImpactDashboard() {
   const { data: userProfile } = useDoc(userDocRef);
   const isAdmin = userProfile?.role === "admin";
 
-  const { data: impactData, loading } = useDoc(db ? doc(db, "settings", "impact") : null);
+  const impactRef = React.useMemo(() => (db ? doc(db, "settings", "impact") : null), [db]);
+  const { data: impactData } = useDoc(impactRef);
 
   const defaultImpacts = [
     { title: "Environmental Preservation", points: ["<p>We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.</p>"], icon: "leaf" },
@@ -39,8 +40,6 @@ export function ImpactDashboard() {
       default: return <Sparkles className={iconClass} />;
     }
   };
-
-  if (loading) return null;
 
   return (
     <section className="py-2.5 bg-background relative group overflow-hidden">

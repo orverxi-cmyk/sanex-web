@@ -40,8 +40,14 @@ self.addEventListener('fetch', (event) => {
   // Skip browser extensions and non-http(s) requests
   if (!event.request.url.startsWith('http')) return;
 
-  // Skip Firebase Functions and Auth calls to avoid CORS/intercept issues
-  if (event.request.url.includes('cloudfunctions.net') || event.request.url.includes('identitytoolkit')) return;
+  // Skip Firebase Functions, Auth, Firestore and Google APIs to avoid CORS and stream breakage
+  if (
+    event.request.url.includes('cloudfunctions.net') || 
+    event.request.url.includes('identitytoolkit') ||
+    event.request.url.includes('firestore.googleapis.com') ||
+    event.request.url.includes('googleapis.com') ||
+    event.request.url.includes('firebaseio.com')
+  ) return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
