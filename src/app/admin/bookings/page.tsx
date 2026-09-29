@@ -27,7 +27,8 @@ import {
   Filter,
   X,
   TrendingUp,
-  Trash2
+  Trash2,
+  FileDown
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { getChannelKey } from "@/components/admin/ChannelAnalyticsDashboard";
+import { exportBookingsToExcel } from "@/lib/exportExcel";
 
 export default function BookingsManagementPage() {
   const { user, loading: authLoading } = useUser();
@@ -329,7 +331,7 @@ export default function BookingsManagementPage() {
               </h1>
               <p className="text-muted-foreground text-xs">Manage incoming bookings and track service requests.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -344,6 +346,30 @@ export default function BookingsManagementPage() {
                 <Link href="/admin/analytics">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" /> Channel Analytics
                 </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9 text-xs font-bold border-[#8DB833] text-[#4a6b1a] hover:bg-[#8DB833]/10"
+                onClick={() => {
+                  const label =
+                    statusFilter !== "all"
+                      ? statusFilter
+                      : channelFilter !== "all"
+                      ? channelFilter.replace(/[^a-z0-9]/gi, "_")
+                      : "all";
+                  exportBookingsToExcel(filteredBookings, label);
+                }}
+                disabled={filteredBookings.length === 0}
+                title={`Export ${filteredBookings.length} booking(s) to Excel`}
+              >
+                <FileDown className="h-3.5 w-3.5" />
+                Export Excel
+                {filteredBookings.length > 0 && (
+                  <span className="ml-1 bg-[#8DB833] text-black rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">
+                    {filteredBookings.length}
+                  </span>
+                )}
               </Button>
               <Badge variant="outline" className="text-sm px-4 py-1.5">
                 {filteredBookings.length} of {sortedBookings.length} Requests

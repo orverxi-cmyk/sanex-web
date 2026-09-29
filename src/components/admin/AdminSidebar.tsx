@@ -14,7 +14,8 @@ import {
   TrendingUp, 
   Shield, 
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  UserCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
   const isContentActive = pathname.startsWith("/admin/content");
   const isUsersActive = pathname.startsWith("/admin/users");
   const isBookingsActive = pathname.startsWith("/admin/bookings");
+  const isClientsActive = pathname.startsWith("/admin/clients");
   const isAnalyticsActive = pathname.startsWith("/admin/analytics") || (pathname === "/admin" && (activeTab === "platforms" || currentTab === "platforms"));
   const isRequestsActive = pathname === "/admin" && (activeTab === "requests" || currentTab === "requests");
   const isOperationsActive = pathname === "/admin" && !currentTab && (activeTab === "operations" || !activeTab);
@@ -133,6 +135,28 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               </div>
             </div>
             {isBookingsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+          </Link>
+
+          {/* Client Lifecycle */}
+          <Link
+            href="/admin/clients"
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+              isClientsActive
+                ? "bg-primary text-black shadow-sm"
+                : "hover:bg-muted text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <UserCheck className="h-4 w-4 shrink-0 text-black" />
+              <div>
+                <div className="font-bold">Client Lifecycle</div>
+                <div className={cn("text-[10px] font-normal", isClientsActive ? "text-black/80" : "text-muted-foreground")}>
+                  Leads, Clients &amp; Regulars
+                </div>
+              </div>
+            </div>
+            {isClientsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
           </Link>
 
           {/* Divider between primary modules and operational tabs */}
