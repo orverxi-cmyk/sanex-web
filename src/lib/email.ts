@@ -312,9 +312,10 @@ Service: ${serviceType}
 ======================================================
   `);
 
-  return { 
-    success: true, 
-    method: 'logged', 
-    message: 'Email prepared and logged. Outbound SMTP can be enabled in .env' 
+  // Fallback: No email service configured. Indicate failure so callers can handle it.
+  return {
+    success: false,
+    method: 'logged',
+    message: 'Email not sent: no SMTP or Resend configuration. Enable email service in .env.'
   };
 }
