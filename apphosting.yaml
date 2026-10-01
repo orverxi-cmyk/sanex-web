@@ -6,6 +6,24 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
+# HTTP response headers to control browser caching and performance
+headers:
+  # Next.js static assets (JS, CSS, fonts) – cache for 1 year (immutable)
+  - glob: "/_next/static/**"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=31536000, immutable"
+  # Next.js Image Optimizer output – cache for 30 days
+  - glob: "/_next/image*"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=2592000, stale-while-revalidate=86400"
+  # HTML pages – short cache with revalidation for freshness
+  - glob: "/**/*.html"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, must-revalidate"
+
 env:
   - variable: SMTP_HOST
     value: smtp.gmail.com

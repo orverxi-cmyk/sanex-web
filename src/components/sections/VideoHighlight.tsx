@@ -58,6 +58,8 @@ export function VideoHighlight() {
             <video 
               src={content.videoUrl} 
               controls 
+              playsInline
+              preload="metadata"
               className="w-full h-full object-cover"
             />
           )}

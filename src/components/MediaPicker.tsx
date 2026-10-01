@@ -18,6 +18,66 @@ interface MediaPickerProps {
   accept?: string;
 }
 
+async function compressImageFile(file: File): Promise<{ blob: Blob; fileName: string; type: string }> {
+  // If not an image or is GIF/SVG, do not convert via canvas
+  if (!file.type.startsWith("image/") || file.type.includes("gif") || file.type.includes("svg")) {
+    return { blob: file, fileName: file.name, type: file.type };
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX_DIMENSION = 1920;
+        let { width, height } = img;
+
+        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIMENSION) / width);
+            width = MAX_DIMENSION;
+          } else {
+            width = Math.round((width * MAX_DIMENSION) / height);
+            height = MAX_DIMENSION;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve({ blob: file, fileName: file.name, type: file.type });
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob && blob.size < file.size) {
+              const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+              resolve({
+                blob,
+                fileName: `${baseName}.webp`,
+                type: "image/webp",
+              });
+            } else {
+              resolve({ blob: file, fileName: file.name, type: file.type });
+            }
+          },
+          "image/webp",
+          0.82
+        );
+      };
+      img.onerror = () => resolve({ blob: file, fileName: file.name, type: file.type });
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => resolve({ blob: file, fileName: file.name, type: file.type });
+    reader.readAsDataURL(file);
+  });
+}
+
 export function MediaPicker({ value, onChange, label, folder = "uploads", accept = "image/*,video/*" }: MediaPickerProps) {
   const storage = useStorage();
   const [uploadProgress, setUploadProgress] = React.useState<number | null>(null);
@@ -32,27 +92,40 @@ export function MediaPicker({ value, onChange, label, folder = "uploads", accept
     setError(null);
     setUploadProgress(0);
 
-    const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    try {
+      const { blob: uploadBlob, fileName: targetName, type: mimeType } = await compressImageFile(file);
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      },
-      (err) => {
-        setError(err.message);
-        setIsUploading(false);
-        setUploadProgress(null);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        onChange(downloadURL);
-        setIsUploading(false);
-        setUploadProgress(null);
-      }
-    );
+      const storageRef = ref(storage, `${folder}/${Date.now()}_${targetName}`);
+      const metadata = {
+        contentType: mimeType || file.type || "application/octet-stream",
+        cacheControl: "public, max-age=31536000, immutable",
+      };
+
+      const uploadTask = uploadBytesResumable(storageRef, uploadBlob, metadata);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (err) => {
+          setError(err.message);
+          setIsUploading(false);
+          setUploadProgress(null);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          onChange(downloadURL);
+          setIsUploading(false);
+          setUploadProgress(null);
+        }
+      );
+    } catch (err: any) {
+      setError(err?.message || "Failed to process and upload media.");
+      setIsUploading(false);
+      setUploadProgress(null);
+    }
   };
 
   return (

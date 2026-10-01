@@ -84,7 +84,16 @@ export function Services() {
           {content.items.map((service: any, i: number) => (
             <Card key={i} className="group overflow-hidden border shadow-sm transition-all duration-300 hover:shadow-md bg-white rounded-xl">
               <div className="relative h-40 overflow-hidden bg-muted">
-                {service.imageUrl && <Image src={service.imageUrl} alt={service.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />}
+                {service.imageUrl && (
+                  <Image 
+                    src={service.imageUrl} 
+                    alt={service.title} 
+                    fill 
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                )}
                 <div className="absolute top-2 left-2 h-8 w-8 rounded-lg bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-sm border border-primary/20">
                   {getIcon(service.icon || 'users')}
                 </div>

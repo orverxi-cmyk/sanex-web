@@ -59,7 +59,9 @@ export default function ArticlesPage() {
                         src={article.imageUrl} 
                         alt={article.title} 
                         fill 
-                        className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="h-full w-full bg-muted flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

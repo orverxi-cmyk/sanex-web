@@ -112,7 +112,9 @@ export default function ArticleDetailPage() {
                 alt={article.title} 
                 width={article.imageWidth || 1200}
                 height={article.imageHeight || 600}
+                sizes="(max-width: 1024px) 100vw, 896px"
                 className="object-contain h-auto w-full max-w-full" 
+                priority
               />
             </div>
           )}

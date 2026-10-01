@@ -74,9 +74,22 @@ export function HomeSlider() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-0 lg:h-[500px]">
                   <div className="relative w-full h-[200px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
-                      <video src={slide.imageUrl} controls playsInline className="w-full h-full object-cover" />
+                      <video 
+                        src={slide.imageUrl} 
+                        controls 
+                        playsInline 
+                        preload="metadata" 
+                        className="w-full h-full object-cover" 
+                      />
                     ) : slide.imageUrl ? (
-                      <Image src={slide.imageUrl} alt={slide.title || "Slide media"} fill className="object-cover" priority={i === 0} />
+                      <Image 
+                        src={slide.imageUrl} 
+                        alt={slide.title || "Slide media"} 
+                        fill 
+                        sizes="(max-width: 1024px) 100vw, 75vw"
+                        className="object-cover" 
+                        priority={i === 0} 
+                      />
                     ) : (
                       <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground text-[16px] uppercase font-bold">
                         Media Pending

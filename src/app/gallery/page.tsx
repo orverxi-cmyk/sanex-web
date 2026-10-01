@@ -7,9 +7,15 @@ import { Footer } from "@/components/sections/Footer";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import Image from "next/image";
-import { Loader2, Camera, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Loader2, Camera, ChevronLeft, ChevronRight, X, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+
+const isVideo = (url: string) => {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || (url.includes('firebasestorage') && url.toLowerCase().includes('.mp4'));
+};
 
 export default function GalleryPage() {
   const db = useFirestore();
@@ -86,12 +92,31 @@ export default function GalleryPage() {
                     onClick={() => setSelectedIndex(index)}
                   >
                     {photo.imageUrl ? (
-                      <Image
-                        src={photo.imageUrl}
-                        alt={photo.description || "Gallery photo"}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      isVideo(photo.imageUrl) ? (
+                        <>
+                          <video
+                            src={photo.imageUrl}
+                            className="w-full h-full object-cover"
+                            muted
+                            playsInline
+                            preload="none"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="h-10 w-10 rounded-full bg-black/60 flex items-center justify-center text-white shadow-md">
+                              <Play className="h-5 w-5 fill-white ml-0.5" />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <Image
+                          src={photo.imageUrl}
+                          alt={photo.description || "Gallery photo"}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      )
                     ) : (
                       <div className="h-full w-full bg-muted flex items-center justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         No Image
@@ -110,7 +135,7 @@ export default function GalleryPage() {
                 <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-none bg-black/95 flex flex-col overflow-hidden">
                   <DialogHeader className="sr-only">
                     <DialogTitle>Photo Gallery Viewer</DialogTitle>
-                    <DialogDescription>Viewing image {selectedIndex !== null ? selectedIndex + 1 : ''} of {photos.length}</DialogDescription>
+                    <DialogDescription>Viewing item {selectedIndex !== null ? selectedIndex + 1 : ''} of {photos.length}</DialogDescription>
                   </DialogHeader>
                   {selectedIndex !== null && photos[selectedIndex] && (
                     <div className="relative flex-grow flex flex-col">
@@ -136,14 +161,26 @@ export default function GalleryPage() {
                           <ChevronLeft className="h-8 w-8" />
                         </Button>
 
-                        <div className="relative w-full h-full">
-                          <Image
-                            src={photos[selectedIndex].imageUrl}
-                            alt={photos[selectedIndex].description}
-                            fill
-                            className="object-contain"
-                            priority
-                          />
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          {isVideo(photos[selectedIndex].imageUrl) ? (
+                            <video
+                              src={photos[selectedIndex].imageUrl}
+                              controls
+                              autoPlay
+                              playsInline
+                              preload="metadata"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <Image
+                              src={photos[selectedIndex].imageUrl}
+                              alt={photos[selectedIndex].description}
+                              fill
+                              sizes="95vw"
+                              className="object-contain"
+                              priority
+                            />
+                          )}
                         </div>
 
                         <Button
