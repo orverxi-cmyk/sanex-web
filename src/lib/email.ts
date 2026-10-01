@@ -217,7 +217,25 @@ function getTransporter() {
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;
   const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD;
+  const clientId = process.env.SMTP_CLIENT_ID;
+  const clientSecret = process.env.SMTP_CLIENT_SECRET;
+  const refreshToken = process.env.SMTP_REFRESH_TOKEN;
 
+  // OAuth2 transport (preferred when OAuth credentials are present)
+  if (user && clientId && clientSecret && refreshToken) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user,
+        clientId,
+        clientSecret,
+        refreshToken,
+      },
+    });
+  }
+
+  // Password‑based transport (fallback / legacy)
   if (user && pass) {
     if (!host && (user.includes('@gmail.com') || process.env.SMTP_SERVICE === 'gmail')) {
       return nodemailer.createTransport({
@@ -235,6 +253,7 @@ function getTransporter() {
 
   return null;
 }
+
 
 /**
  * Sends a real-time status update email to the requester.
