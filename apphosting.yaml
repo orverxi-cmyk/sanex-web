@@ -23,5 +23,9 @@ env:
     value: 1049365258999-eopv3fgo0nahhr5ra1ln2tdjqedosefg.apps.googleusercontent.com
   - variable: SMTP_CLIENT_SECRET
     secret: SMTP_CLIENT_SECRET
+    availability:
+      - RUNTIME
   - variable: SMTP_REFRESH_TOKEN
     secret: SMTP_REFRESH_TOKEN
+    availability:
+      - RUNTIME
