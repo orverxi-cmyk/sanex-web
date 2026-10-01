@@ -25,7 +25,7 @@ orverxi@gmail.com        Owner
 2. Search **Gmail API** and click **Enable**.
 
 ```bash
-gcloud services enable gmail.googleapis.com --project studio-1670844393-18cbb
+gcloud services enable gmail.googleapis.com --project studio-9595184890-5bb3c
 ```
 
 ---
@@ -71,7 +71,14 @@ SMTP_PORT=587
 # SMTP_PASS=   # comment/remove – not needed when using OAuth2
 ```
 
-> **Security note:** Do not commit `.env` to version control. Use your hosting platform's secret manager for production (Vercel Env Vars, Cloud Run Secrets, etc.).
+> **Security note:** Do not commit `.env` to version control. Use your hosting platform's secret manager for production (Firebase App Hosting, Secret Manager, etc.).
+>
+> **For Firebase App Hosting:**
+> If you create secrets in Google Cloud Secret Manager (`SMTP_CLIENT_SECRET`, `SMTP_REFRESH_TOKEN`), you must grant your App Hosting backend access:
+> ```bash
+> npx firebase-tools apphosting:secrets:grantaccess -l us-central1 -b studio SMTP_CLIENT_SECRET --project studio-9595184890-5bb3c
+> npx firebase-tools apphosting:secrets:grantaccess -l us-central1 -b studio SMTP_REFRESH_TOKEN --project studio-9595184890-5bb3c
+> ```
 
 ---
 
