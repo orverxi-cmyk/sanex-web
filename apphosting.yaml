@@ -5,3 +5,23 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+env:
+  - variable: SMTP_HOST
+    value: smtp.gmail.com
+  - variable: SMTP_PORT
+    value: "587"
+  - variable: SMTP_USER
+    value: sanexcompany@gmail.com
+  - variable: EMAIL_FROM
+    value: '"SANEX Company Ltd" <sanexcompany@gmail.com>'
+  - variable: COMPANY_EMAIL
+    value: sanexcompany@gmail.com
+  - variable: MASTER_ADMIN_EMAIL
+    value: orverxi@gmail.com
+  - variable: SMTP_CLIENT_ID
+    value: 1049365258999-eopv3fgo0nahhr5ra1ln2tdjqedosefg.apps.googleusercontent.com
+  - variable: SMTP_CLIENT_SECRET
+    secret: SMTP_CLIENT_SECRET
+  - variable: SMTP_REFRESH_TOKEN
+    secret: SMTP_REFRESH_TOKEN
