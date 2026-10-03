@@ -1,12 +1,12 @@
 
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Sanex Core | Leading Liquid Waste Management in Rwanda',
+  title: 'Sanex | Leading Liquid Waste Management in Rwanda',
   description: 'SANEX Company Ltd provides sustainable liquid waste management solutions, decentralized wastewater treatment systems, and professional sanitation services across Rwanda.',
   manifest: '/manifest.webmanifest',
   icons: {
