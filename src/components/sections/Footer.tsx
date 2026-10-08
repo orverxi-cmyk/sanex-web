@@ -22,10 +22,38 @@ export function Footer() {
 
   const socials = generalData?.socials || {};
 
+  const [newsletterEmail, setNewsletterEmail] = React.useState("");
+  const [newsletterStatus, setNewsletterStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+  const [newsletterMessage, setNewsletterMessage] = React.useState("");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus("loading");
+    setNewsletterMessage("");
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newsletterEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok && res.status !== 200) {
+        throw new Error(data.error || "Failed to subscribe");
+      }
+      setNewsletterStatus("success");
+      setNewsletterMessage(data.message || "Subscribed successfully!");
+      setNewsletterEmail("");
+    } catch (err: any) {
+      setNewsletterStatus("error");
+      setNewsletterMessage(err.message || "Failed to subscribe");
+    }
+  };
+
   return (
     <footer id="contact" className="bg-black text-white py-5">
       <div className="container mx-auto px-4 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 text-center md:text-left">
           <div className="space-y-4">
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Links</h4>
             <ul className="space-y-2 text-[14px] font-normal">
@@ -61,6 +89,36 @@ export function Footer() {
                 <a href={`mailto:${email}`} className="hover:text-primary transition-colors">{email}</a>
               </li>
             </ul>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Newsletter</h4>
+            <p className="text-[14px] text-white/70">
+              Subscribe to get the latest news and updates directly to your inbox.
+            </p>
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="email"
+                  required
+                  placeholder="Your email address"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  className="bg-white/10 border border-white/20 rounded px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary flex-1"
+                />
+                <button
+                  type="submit"
+                  disabled={newsletterStatus === "loading"}
+                  className="bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {newsletterStatus === "loading" ? "..." : "Subscribe"}
+                </button>
+              </div>
+              {newsletterMessage && (
+                <p className={`text-xs ${newsletterStatus === "success" ? "text-primary" : "text-red-400"}`}>
+                  {newsletterMessage}
+                </p>
+              )}
+            </form>
           </div>
         </div>
         
