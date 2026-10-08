@@ -23,6 +23,9 @@ export function Footer() {
   const socials = generalData?.socials || {};
 
   const [newsletterEmail, setNewsletterEmail] = React.useState("");
+  const [newsletterFirstName, setNewsletterFirstName] = React.useState("");
+  const [newsletterLastName, setNewsletterLastName] = React.useState("");
+  const [newsletterAddress, setNewsletterAddress] = React.useState("");
   const [newsletterStatus, setNewsletterStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [newsletterMessage, setNewsletterMessage] = React.useState("");
 
@@ -35,7 +38,12 @@ export function Footer() {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: newsletterEmail }),
+        body: JSON.stringify({
+          email: newsletterEmail,
+          firstName: newsletterFirstName,
+          lastName: newsletterLastName,
+          address: newsletterAddress,
+        }),
       });
       const data = await res.json();
       if (!res.ok && res.status !== 200) {
@@ -44,6 +52,9 @@ export function Footer() {
       setNewsletterStatus("success");
       setNewsletterMessage(data.message || "Subscribed successfully!");
       setNewsletterEmail("");
+      setNewsletterFirstName("");
+      setNewsletterLastName("");
+      setNewsletterAddress("");
     } catch (err: any) {
       setNewsletterStatus("error");
       setNewsletterMessage(err.message || "Failed to subscribe");
@@ -96,11 +107,34 @@ export function Footer() {
               Subscribe to get the latest news and updates directly to your inbox.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={newsletterFirstName}
+                  onChange={(e) => setNewsletterFirstName(e.target.value)}
+                  className="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary w-full"
+                />
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  value={newsletterLastName}
+                  onChange={(e) => setNewsletterLastName(e.target.value)}
+                  className="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary w-full"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Address"
+                value={newsletterAddress}
+                onChange={(e) => setNewsletterAddress(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary w-full"
+              />
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   required
-                  placeholder="Your email address"
+                  placeholder="Your email address *"
                   value={newsletterEmail}
                   onChange={(e) => setNewsletterEmail(e.target.value)}
                   className="bg-white/10 border border-white/20 rounded px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary flex-1"
@@ -108,7 +142,7 @@ export function Footer() {
                 <button
                   type="submit"
                   disabled={newsletterStatus === "loading"}
-                  className="bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  className="bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 shrink-0"
                 >
                   {newsletterStatus === "loading" ? "..." : "Subscribe"}
                 </button>
