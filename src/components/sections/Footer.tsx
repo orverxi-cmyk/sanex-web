@@ -6,6 +6,13 @@ import Link from "next/link";
 import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export function Footer() {
   const db = useFirestore();
@@ -26,8 +33,21 @@ export function Footer() {
   const [newsletterFirstName, setNewsletterFirstName] = React.useState("");
   const [newsletterLastName, setNewsletterLastName] = React.useState("");
   const [newsletterAddress, setNewsletterAddress] = React.useState("");
+  const [isNewsletterModalOpen, setIsNewsletterModalOpen] = React.useState(false);
   const [newsletterStatus, setNewsletterStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [newsletterMessage, setNewsletterMessage] = React.useState("");
+
+  const handleOpenModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      setNewsletterStatus("error");
+      setNewsletterMessage("Please enter a valid email address.");
+      return;
+    }
+    setNewsletterStatus("idle");
+    setNewsletterMessage("");
+    setIsNewsletterModalOpen(true);
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +71,15 @@ export function Footer() {
       }
       setNewsletterStatus("success");
       setNewsletterMessage(data.message || "Subscribed successfully!");
-      setNewsletterEmail("");
-      setNewsletterFirstName("");
-      setNewsletterLastName("");
-      setNewsletterAddress("");
+      setTimeout(() => {
+        setNewsletterEmail("");
+        setNewsletterFirstName("");
+        setNewsletterLastName("");
+        setNewsletterAddress("");
+        setIsNewsletterModalOpen(false);
+        setNewsletterStatus("idle");
+        setNewsletterMessage("");
+      }, 2500);
     } catch (err: any) {
       setNewsletterStatus("error");
       setNewsletterMessage(err.message || "Failed to subscribe");
@@ -106,48 +131,30 @@ export function Footer() {
             <p className="text-[14px] text-white/70">
               Subscribe to get the latest news and updates directly to your inbox.
             </p>
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="First Name"
-                  value={newsletterFirstName}
-                  onChange={(e) => setNewsletterFirstName(e.target.value)}
-                  className="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary w-full"
-                />
-                <input
-                  type="text"
-                  placeholder="Last Name"
-                  value={newsletterLastName}
-                  onChange={(e) => setNewsletterLastName(e.target.value)}
-                  className="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary w-full"
-                />
-              </div>
-              <input
-                type="text"
-                placeholder="Address"
-                value={newsletterAddress}
-                onChange={(e) => setNewsletterAddress(e.target.value)}
-                className="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary w-full"
-              />
+            <form onSubmit={handleOpenModal} className="space-y-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   required
                   placeholder="Your email address *"
                   value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  onChange={(e) => {
+                    setNewsletterEmail(e.target.value);
+                    if (newsletterStatus === "error") {
+                      setNewsletterStatus("idle");
+                      setNewsletterMessage("");
+                    }
+                  }}
                   className="bg-white/10 border border-white/20 rounded px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary flex-1"
                 />
                 <button
                   type="submit"
-                  disabled={newsletterStatus === "loading"}
-                  className="bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 shrink-0"
+                  className="bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors shrink-0"
                 >
-                  {newsletterStatus === "loading" ? "..." : "Subscribe"}
+                  Subscribe
                 </button>
               </div>
-              {newsletterMessage && (
+              {newsletterMessage && !isNewsletterModalOpen && (
                 <p className={`text-xs ${newsletterStatus === "success" ? "text-primary" : "text-red-400"}`}>
                   {newsletterMessage}
                 </p>
@@ -192,6 +199,96 @@ export function Footer() {
           </div>
         </div>
       </div>
+
+      <Dialog open={isNewsletterModalOpen} onOpenChange={setIsNewsletterModalOpen}>
+        <DialogContent className="bg-zinc-950 text-white border-zinc-800 sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Complete Newsletter Subscription
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-sm">
+              Please enter your details to complete subscribing to the SANEX newsletter.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubscribe} className="space-y-4 mt-2">
+            <div className="space-y-1">
+              <label className="text-xs text-zinc-400 font-medium">Email Address *</label>
+              <input
+                type="email"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-zinc-400 font-medium">First Name</label>
+                <input
+                  type="text"
+                  value={newsletterFirstName}
+                  onChange={(e) => setNewsletterFirstName(e.target.value)}
+                  placeholder="First Name"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-zinc-400 font-medium">Last Name</label>
+                <input
+                  type="text"
+                  value={newsletterLastName}
+                  onChange={(e) => setNewsletterLastName(e.target.value)}
+                  placeholder="Last Name"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-zinc-400 font-medium">Address</label>
+              <input
+                type="text"
+                value={newsletterAddress}
+                onChange={(e) => setNewsletterAddress(e.target.value)}
+                placeholder="e.g. Kigali, Rwanda"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {newsletterMessage && (
+              <div className={`p-3 rounded-md text-xs border ${
+                newsletterStatus === "success" 
+                  ? "bg-emerald-950/50 text-emerald-400 border-emerald-800/50" 
+                  : "bg-red-950/50 text-red-400 border-red-800/50"
+              }`}>
+                {newsletterMessage}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsNewsletterModalOpen(false)}
+                className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
+                className="bg-primary text-black font-semibold px-5 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {newsletterStatus === "loading" ? "Subscribing..." : newsletterStatus === "success" ? "Subscribed!" : "Confirm Subscription"}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 }
+
