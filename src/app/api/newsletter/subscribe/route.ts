@@ -8,9 +8,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Valid email address is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.MAILCHIMP_API_KEY;
-    const audienceId = process.env.MAILCHIMP_AUDIENCE_ID;
-    const server = process.env.MAILCHIMP_API_SERVER || (apiKey ? apiKey.split('-')[1] : '');
+    const apiKey = process.env.MAILCHIMP_API_KEY?.trim();
+    const audienceId = process.env.MAILCHIMP_AUDIENCE_ID?.trim();
+    const server = process.env.MAILCHIMP_API_SERVER?.trim() || (apiKey ? apiKey.split('-')[1] : '');
 
     if (!apiKey || !audienceId || !server) {
       return NextResponse.json(
