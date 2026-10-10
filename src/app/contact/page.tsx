@@ -17,8 +17,21 @@ export default function ContactPage() {
     React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db])
   );
 
-  const phone = generalData?.phone || "+250 788303628";
-  const email = generalData?.email || "sanexcompany@gmail.com";
+  const phones: string[] = React.useMemo(() => {
+    if (Array.isArray(generalData?.phones) && generalData.phones.length > 0) {
+      const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
+      if (valid.length > 0) return valid;
+    }
+    return [generalData?.phone || "+250 788303628"];
+  }, [generalData]);
+
+  const emails: string[] = React.useMemo(() => {
+    if (Array.isArray(generalData?.emails) && generalData.emails.length > 0) {
+      const valid = generalData.emails.filter((e: any) => typeof e === "string" && e.trim() !== "");
+      if (valid.length > 0) return valid;
+    }
+    return [generalData?.email || "sanexcompany@gmail.com"];
+  }, [generalData]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -37,27 +50,43 @@ export default function ContactPage() {
                   <CardTitle className="text-xl">Contact Information</CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
                       <Phone className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Phone</div>
-                      <a href={`tel:${phone.replace(/\s+/g, '')}`} className="text-lg font-bold hover:text-primary transition-colors">
-                        {phone}
-                      </a>
+                      <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                        {phones.length > 1 ? "Phone Numbers" : "Phone"}
+                      </div>
+                      <div className="space-y-1">
+                        {phones.map((p, idx) => (
+                          <div key={idx}>
+                            <a href={`tel:${p.replace(/[^0-9+]/g, '')}`} className="text-lg font-bold hover:text-primary transition-colors block">
+                              {p}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
                       <Mail className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Email</div>
-                      <a href={`mailto:${email}`} className="text-lg font-bold hover:text-primary transition-colors">
-                        {email}
-                      </a>
+                      <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                        {emails.length > 1 ? "Email Addresses" : "Email"}
+                      </div>
+                      <div className="space-y-1">
+                        {emails.map((e, idx) => (
+                          <div key={idx}>
+                            <a href={`mailto:${e}`} className="text-lg font-bold hover:text-primary transition-colors block break-all">
+                              {e}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

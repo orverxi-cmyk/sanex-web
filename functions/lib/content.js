@@ -86,7 +86,9 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         logoHeight: 40,
         logoSpacing: 8,
         phone: "+250 788303628",
+        phones: ["+250 788303628"],
         email: "sanexcompany@gmail.com",
+        emails: ["sanexcompany@gmail.com"],
         socials: {
             twitter: "https://twitter.com/sanex_rw",
             linkedin: "https://linkedin.com/company/sanex-rw",

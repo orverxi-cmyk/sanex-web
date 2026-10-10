@@ -42,7 +42,13 @@ import {
   Facebook,
   Instagram,
   Edit3,
-  X
+  X,
+  Phone,
+  Mail,
+  ChevronUp,
+  ChevronDown,
+  MessageCircle,
+  Youtube
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -520,39 +526,149 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
   );
 }
 
+function parseArrayField(arr: any, fallbackStr: any, defaultValue: string): string[] {
+  if (Array.isArray(arr) && arr.length > 0) {
+    const filtered = arr.filter((x: any) => typeof x === "string");
+    if (filtered.length > 0) return filtered;
+  }
+  if (typeof fallbackStr === "string" && fallbackStr.trim()) {
+    return [fallbackStr.trim()];
+  }
+  return [defaultValue];
+}
+
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { 
-    siteName: "SANEX Company Ltd", 
-    logoUrl: "", 
-    logoWidth: 160, 
-    logoHeight: 40, 
-    logoSpacing: 8, 
-    phone: "", 
-    email: "",
-    socials: { twitter: "", linkedin: "", facebook: "", instagram: "" }
+  const [formData, setFormData] = React.useState({ 
+    siteName: initialData?.siteName || "SANEX Company Ltd", 
+    logoUrl: initialData?.logoUrl || "", 
+    logoWidth: initialData?.logoWidth || 160, 
+    logoHeight: initialData?.logoHeight || 40, 
+    logoSpacing: initialData?.logoSpacing ?? 8, 
+    phones: parseArrayField(initialData?.phones, initialData?.phone, "+250 788303628"), 
+    emails: parseArrayField(initialData?.emails, initialData?.email, "sanexcompany@gmail.com"),
+    socials: initialData?.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
   });
   
   React.useEffect(() => { 
     if (initialData) {
       setFormData({
-        ...initialData,
-        socials: initialData.socials || { twitter: "", linkedin: "", facebook: "", instagram: "" }
+        siteName: initialData.siteName || "SANEX Company Ltd",
+        logoUrl: initialData.logoUrl || "",
+        logoWidth: initialData.logoWidth || 160,
+        logoHeight: initialData.logoHeight || 40,
+        logoSpacing: initialData.logoSpacing ?? 8,
+        phones: parseArrayField(initialData.phones, initialData.phone, "+250 788303628"),
+        emails: parseArrayField(initialData.emails, initialData.email, "sanexcompany@gmail.com"),
+        socials: initialData.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
       });
     }
   }, [initialData]);
 
   const updateSocial = (key: string, value: string) => {
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
+      socials: { ...prev.socials, [key]: value }
+    }));
+  };
+
+  const addPhone = () => {
+    setFormData(prev => ({
+      ...prev,
+      phones: [...prev.phones, ""]
+    }));
+  };
+
+  const removePhone = (index: number) => {
+    setFormData(prev => {
+      const updated = prev.phones.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        phones: updated.length > 0 ? updated : [""]
+      };
+    });
+  };
+
+  const updatePhone = (index: number, value: string) => {
+    setFormData(prev => {
+      const updated = [...prev.phones];
+      updated[index] = value;
+      return { ...prev, phones: updated };
+    });
+  };
+
+  const movePhone = (index: number, direction: 'up' | 'down') => {
+    setFormData(prev => {
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.phones.length) return prev;
+      const updated = [...prev.phones];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return { ...prev, phones: updated };
+    });
+  };
+
+  const addEmail = () => {
+    setFormData(prev => ({
+      ...prev,
+      emails: [...prev.emails, ""]
+    }));
+  };
+
+  const removeEmail = (index: number) => {
+    setFormData(prev => {
+      const updated = prev.emails.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        emails: updated.length > 0 ? updated : [""]
+      };
+    });
+  };
+
+  const updateEmail = (index: number, value: string) => {
+    setFormData(prev => {
+      const updated = [...prev.emails];
+      updated[index] = value;
+      return { ...prev, emails: updated };
+    });
+  };
+
+  const moveEmail = (index: number, direction: 'up' | 'down') => {
+    setFormData(prev => {
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.emails.length) return prev;
+      const updated = [...prev.emails];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return { ...prev, emails: updated };
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPhones = formData.phones.map(p => p.trim()).filter(Boolean);
+    const cleanEmails = formData.emails.map(em => em.trim()).filter(Boolean);
+
+    onSave({
       ...formData,
-      socials: { ...formData.socials, [key]: value }
+      phones: cleanPhones.length > 0 ? cleanPhones : [formData.phones[0] || ""],
+      phone: cleanPhones[0] || formData.phones[0] || "",
+      emails: cleanEmails.length > 0 ? cleanEmails : [formData.emails[0] || ""],
+      email: cleanEmails[0] || formData.emails[0] || ""
     });
   };
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-xl">Branding & Social Links</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle className="text-xl">Branding & Social Links</CardTitle>
+        <CardDescription className="text-xs">
+          Manage your organization name, logo, contact phone numbers, email addresses, and social media channels.
+        </CardDescription>
+      </CardHeader>
       <CardContent>
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Site Name</Label>
@@ -576,20 +692,188 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</Label>
-              <Input className="h-9 text-xs" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+          {/* Contact Numbers and Emails */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl border bg-muted/10">
+            {/* Phone Numbers Column */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b">
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <Label className="text-xs font-bold uppercase tracking-wider">
+                    Phone Numbers
+                  </Label>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-black font-semibold">
+                    {formData.phones.length}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addPhone}
+                  className="h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider gap-1 border-primary/40 text-primary hover:bg-primary/10"
+                >
+                  <Plus className="h-3 w-3" /> Add Phone
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {formData.phones.map((p, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 bg-background p-2 rounded-lg border shadow-sm">
+                    <span className="text-[10px] font-mono text-muted-foreground w-6 text-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <div className="relative flex-grow">
+                      <Input
+                        type="tel"
+                        className="h-8 text-xs pr-16"
+                        value={p}
+                        onChange={e => updatePhone(idx, e.target.value)}
+                        placeholder={idx === 0 ? "e.g. +250 788 303 628 (Primary)" : "e.g. +250 788 000 000"}
+                      />
+                      {idx === 0 && (
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-black pointer-events-none">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                    {/* Reorder buttons */}
+                    <div className="flex flex-col shrink-0">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                        disabled={idx === 0}
+                        onClick={() => movePhone(idx, 'up')}
+                        title="Move up"
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                        disabled={idx === formData.phones.length - 1}
+                        onClick={() => movePhone(idx, 'down')}
+                        title="Move down"
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    {/* Delete button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                      disabled={formData.phones.length <= 1 && !p}
+                      onClick={() => removePhone(idx)}
+                      title="Remove phone"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Phone #1 is your primary contact number. All phone numbers will be available to visitors.
+              </p>
             </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Email</Label>
-              <Input className="h-9 text-xs" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+
+            {/* Email Addresses Column */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <Label className="text-xs font-bold uppercase tracking-wider">
+                    Email Addresses
+                  </Label>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-black font-semibold">
+                    {formData.emails.length}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addEmail}
+                  className="h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider gap-1 border-primary/40 text-primary hover:bg-primary/10"
+                >
+                  <Plus className="h-3 w-3" /> Add Email
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {formData.emails.map((em, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 bg-background p-2 rounded-lg border shadow-sm">
+                    <span className="text-[10px] font-mono text-muted-foreground w-6 text-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <div className="relative flex-grow">
+                      <Input
+                        type="email"
+                        className="h-8 text-xs pr-16"
+                        value={em}
+                        onChange={e => updateEmail(idx, e.target.value)}
+                        placeholder={idx === 0 ? "e.g. sanexcompany@gmail.com (Primary)" : "e.g. support@sanex.rw"}
+                      />
+                      {idx === 0 && (
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-black pointer-events-none">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                    {/* Reorder buttons */}
+                    <div className="flex flex-col shrink-0">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                        disabled={idx === 0}
+                        onClick={() => moveEmail(idx, 'up')}
+                        title="Move up"
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                        disabled={idx === formData.emails.length - 1}
+                        onClick={() => moveEmail(idx, 'down')}
+                        title="Move down"
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    {/* Delete button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                      disabled={formData.emails.length <= 1 && !em}
+                      onClick={() => removeEmail(idx)}
+                      title="Remove email"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Email #1 is your primary contact address. All email addresses will be displayed on the site.
+              </p>
             </div>
           </div>
 
           <div className="border-t pt-5">
             <Label className="text-sm font-bold mb-4 block">Social Media Links</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Twitter className="h-3 w-3" /> Twitter URL</Label>
                 <Input className="h-9 text-xs" value={formData.socials?.twitter || ""} onChange={e => updateSocial('twitter', e.target.value)} placeholder="https://twitter.com/..." />
@@ -605,6 +889,14 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram URL</Label>
                 <Input className="h-9 text-xs" value={formData.socials?.instagram || ""} onChange={e => updateSocial('instagram', e.target.value)} placeholder="https://instagram.com/..." />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><MessageCircle className="h-3 w-3" /> WhatsApp Link / Number</Label>
+                <Input className="h-9 text-xs" value={formData.socials?.whatsapp || ""} onChange={e => updateSocial('whatsapp', e.target.value)} placeholder="https://wa.me/250788303628" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2"><Youtube className="h-3 w-3" /> YouTube Channel URL</Label>
+                <Input className="h-9 text-xs" value={formData.socials?.youtube || ""} onChange={e => updateSocial('youtube', e.target.value)} placeholder="https://youtube.com/@..." />
               </div>
             </div>
           </div>

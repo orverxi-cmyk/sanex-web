@@ -3,7 +3,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin, MessageCircle, Youtube } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 import {
@@ -18,8 +18,21 @@ export function Footer() {
   const db = useFirestore();
   const { data: generalData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]));
 
-  const phone = generalData?.phone || "+250 788303628";
-  const email = generalData?.email || "sanexcompany@gmail.com";
+  const phones: string[] = React.useMemo(() => {
+    if (Array.isArray(generalData?.phones) && generalData.phones.length > 0) {
+      const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
+      if (valid.length > 0) return valid;
+    }
+    return [generalData?.phone || "+250 788303628"];
+  }, [generalData]);
+
+  const emails: string[] = React.useMemo(() => {
+    if (Array.isArray(generalData?.emails) && generalData.emails.length > 0) {
+      const valid = generalData.emails.filter((e: any) => typeof e === "string" && e.trim() !== "");
+      if (valid.length > 0) return valid;
+    }
+    return [generalData?.email || "sanexcompany@gmail.com"];
+  }, [generalData]);
   const navLinks = generalData?.navLinks || [
     { name: "About Us", href: "/about" },
     { name: "Solutions", href: "/services" },
@@ -113,17 +126,21 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Contact</h4>
             <ul className="space-y-2 text-[14px] font-normal text-white/70">
-              <li className="flex gap-2 justify-center md:justify-start">
-                <MapPin className="h-3.5 w-3.5 text-primary" /> Kigali, Rwanda
+              <li className="flex gap-2 justify-center md:justify-start items-center">
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" /> Kigali, Rwanda
               </li>
-              <li className="flex gap-2 justify-center md:justify-start">
-                <Phone className="h-3.5 w-3.5 text-primary" />
-                <a href={`tel:${phone.replace(/\s+/g, '')}`} className="hover:text-primary transition-colors">{phone}</a>
-              </li>
-              <li className="flex gap-2 justify-center md:justify-start">
-                <Mail className="h-3.5 w-3.5 text-primary" />
-                <a href={`mailto:${email}`} className="hover:text-primary transition-colors">{email}</a>
-              </li>
+              {phones.map((phoneItem, idx) => (
+                <li key={`phone-${idx}`} className="flex gap-2 justify-center md:justify-start items-center">
+                  <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <a href={`tel:${phoneItem.replace(/[^0-9+]/g, '')}`} className="hover:text-primary transition-colors">{phoneItem}</a>
+                </li>
+              ))}
+              {emails.map((emailItem, idx) => (
+                <li key={`email-${idx}`} className="flex gap-2 justify-center md:justify-start items-center">
+                  <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <a href={`mailto:${emailItem}`} className="hover:text-primary transition-colors break-all">{emailItem}</a>
+                </li>
+              ))}
             </ul>
           </div>
           <div className="space-y-4">
@@ -177,23 +194,33 @@ export function Footer() {
           </div>
           <div className="flex gap-3">
             {socials.twitter && (
-              <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white">
+              <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="Twitter / X">
                 <Twitter className="h-4 w-4" />
               </a>
             )}
             {socials.linkedin && (
-              <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white">
+              <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </a>
             )}
             {socials.facebook && (
-              <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white">
+              <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="Facebook">
                 <Facebook className="h-4 w-4" />
               </a>
             )}
             {socials.instagram && (
-              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white">
+              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="Instagram">
                 <Instagram className="h-4 w-4" />
+              </a>
+            )}
+            {socials.whatsapp && (
+              <a href={socials.whatsapp.startsWith('http') ? socials.whatsapp : `https://wa.me/${socials.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="WhatsApp">
+                <MessageCircle className="h-4 w-4" />
+              </a>
+            )}
+            {socials.youtube && (
+              <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="YouTube">
+                <Youtube className="h-4 w-4" />
               </a>
             )}
           </div>
